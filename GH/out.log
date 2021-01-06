@@ -1,0 +1,97 @@
+16:13:29  
+16:13:29  
+16:13:29    ***********************************************
+16:13:29    *                 ===========                 *
+16:13:29    *                  CARAT 2.0                  *
+16:13:29    *                 ===========                 *
+16:13:29    *                                             *
+16:13:29    *                 SERIAL CODE!                *
+16:13:29    *                                             *
+16:13:29    *                Version 0.1.0                *
+16:13:29    *                                             *
+16:13:29    *  Computer Aided Research and Analysis Tool  *
+16:13:29    *          (object-oriented version)          *
+16:13:29    *        Chair of Structural Analysis,        *
+16:13:29    *   Prof. Dr. K.-U. Bletzinger, TU Muenchen   *
+16:13:29    ***********************************************
+16:13:29  
+16:13:29  
+16:13:29 Used logging system: RLOG
+16:13:29 
+16:13:29 This is a RELEASE version of Carat
+16:13:29 
+16:13:29 --------------------------------------
+16:13:29  ... starting Preprocessing
+16:13:29 --------------------------------------
+16:13:29  
+16:13:29 Reading input file: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH/MyAnalysis.txt
+16:13:29  
+16:13:29 Input file path detected: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH
+16:13:29 Reading of design nodes finished
+16:13:29 Reading of design evaluation points finished
+16:13:29 Reading of design elements finished
+16:13:29 Reading of design boundaries finished
+16:13:29 Reading of design optimization refinement finished
+16:13:29 Reading of design elements finished
+16:13:29 Reading of design joints finished
+16:13:29 Reading of design supports finished
+16:13:29 Reading of design loads finished
+16:13:29 Reading of design interfaces finished
+16:13:29 load design finished
+16:13:29 Starting to mesh design elements!
+16:13:29 
+16:13:29 Finish meshing design elements!
+16:13:29 
+16:13:29 Starting to mesh design boundary elements!
+16:13:29 
+16:13:29 Finish meshing design boundary elements!
+16:13:29 
+16:13:29 Starting to create the elements from DE elements!
+16:13:29 
+16:13:29 Creating elements from DE elements done!
+16:13:29 
+16:13:29 Starting to create elements from DE boundary elements!
+16:13:29 
+16:13:29 Creating elements from DE boundary elements done!
+16:13:29 
+16:13:29 complete preprocessing done in 0.115000 seconds.
+16:13:29  
+16:13:29 --------------------------------------
+16:13:29  ... starting Solution of problem 1:
+16:13:29 --------------------------------------
+16:13:29  
+16:13:29 AnalysisStaGeoLin: starting static linear analysis.
+16:13:29  
+16:13:29 Bandwidth reduction started!
+16:13:29 Original bandwith  : 42 
+16:13:29 Original profile   : 7231 
+16:13:29 Using 'CUTHILL_MCKEE' algorithm
+16:13:29 Original ordering better than new one!
+16:13:29 Bandwith reduction finished in 0.007000 seconds!
+16:13:29  
+16:13:29 GlobalSparseMatrix: starting dry run
+16:13:29 GlobalSparseMatrix: dry run done in 0.012000 seconds.
+16:13:29  
+16:13:29 AnalysisStaGeoLin: starting assembly stiffness matrix (507 DOF).
+16:13:29 AnalysisStaGeoLin: ... assembling done in 0.049000 seconds.
+16:13:29  
+16:13:29 AnalysisStaGeoLin: solution startet!
+16:13:29 AnalysisStaGeoLin: ... equation solving in 0.109000 seconds.
+16:13:29 AnalysisStaGeoLin: solution finished!
+16:13:29 
+16:13:29 AnalysisStaGeoLin: starting postprocessing!
+16:13:29  
+16:13:29 Summation of Support Forces
+16:13:29 -----------------------------------------------------------
+16:13:29       F_x          |      F_y         |        F_z
+16:13:29 -----------------------------------------------------------
+16:13:29     0.000000e+00   |    0.000000e+00  |    0.000000e+00  |
+16:13:29  
+16:13:29 AnalysisStaGeoLin: ...postprocessing done in 0.182000 seconds.
+16:13:29 AnalysisStaGeoLin: static linear analysis finished!
+16:13:29  
+16:13:29 complete programm execution done in 0 hours, 0 minutes and  0.554000 seconds.
+16:13:29  
+16:13:29 finishing Carat++ successfully.
+16:13:29  
+16:13:29 ...Feierabend! 
