@@ -4,9 +4,26 @@ import Rhino.RhinoDoc as rd
 from System import IO
 import os
 
+def segmentation(mesh, thickness):
+    '''Use Karamba3D to perform initial analysis.
+
+    TODO: Allow custom material from material testing data?
+
+    Parameters:
+        mesh (Mesh): Meshed surface. Make users mesh this as opposed to
+            meshing ourselves.
+        thickness (float): Shell thickness.
+
+    Returns:
+        segments (List[Surface]): Segmented shells.
+        cables (List[Curv]): Cable profiles.
+    '''
+
 def form_find(plan_surface, corners, height, run):
     '''Use Kiwi3D to form-find the shell.
     Uses Kiwi3D v0.5.0
+
+    TODO: Allow custom material from material testing data?
 
     Parameters:
         plan_surface (Brep): Flat surface to be form found.
