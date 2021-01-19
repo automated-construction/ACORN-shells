@@ -25,7 +25,7 @@ def form_find(plan_surface, corners, height, run):
     SURF_DEGREE = 3
     SURF_SUBDIV = 10
     ANAL_OUTPUT = [1, 2, 3]
-    thickness = 0.1
+    thickness = height * 0.1
 
     tmp_directory = os.path.join(IO.Path.GetTempPath(), IO.Path.GetRandomFileName())
     if (os.path.exists(tmp_directory)):
