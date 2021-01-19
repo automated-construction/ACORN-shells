@@ -11,6 +11,7 @@ Thumbs.db
 *.rsuser
 *.suo
 *.user
+*.userosscache
 *.sln.docstates
 
 # User-specific files (MonoDevelop/Xamarin Studio)
