@@ -8,6 +8,7 @@
 *.post.res
 MyAnalysis.txt
 out.log
+out.err
 
 Thumbs.db
 .DS_Store
