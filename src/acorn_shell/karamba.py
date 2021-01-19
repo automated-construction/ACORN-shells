@@ -2,6 +2,7 @@ import clr
 from os import path
 import Rhino.Geometry as rg
 import Rhino.RhinoDoc as rd
+import math
 
 from System.Collections.Generic import List
 
@@ -26,10 +27,67 @@ elif (path.exists(KARAMBA_R7[0])):
 
 import Karamba
 import KarambaCommon
+import feb
 
-def build_shell_model(mesh, corners, thickness, e = 35000000, g_ip = 12920000, g_op = 12920000, density = 25,
-    f_y = 25000, alpha_t = 0.00001):
-    '''Build gravitational load Karamba3D model of the shell
+def principal_stress_line(k3d_model, point):
+    '''Gets principal stress lines from analysed Karamba model.
+
+    Parameters:
+        k3d_model (Model): Analysed Karamba3D model.
+        point (List[Point3d]): Source point for principal stress line.
+
+    Returns:
+        stress_line_1 (Curve): Stress line related to tension.
+        stress_line_2 (Curve): Stress line related to compression.
+    '''
+    tol = rd.ActiveDoc.ModelAbsoluteTolerance
+
+    A_TOL = 5 / 180 * math.pi # Karamba default
+    MAX_ITER = 500 # Karamba default
+
+    k3d_point = Karamba.GHopper.Geometry.GeometryExtensions.Convert(point)
+    viv_mesh = Karamba.GHopper.Geometry.VivinityMesh(k3d_model)
+    line = viv_mesh.IntersectionLine(k3d_point)[1]
+    res = Karamba.Results.PrincipalStressLines.solve(k3d_model, 0,
+        List[Karamba.Geometry.Line3]([line]),
+        tol,
+        A_TOL,
+        MAX_ITER, # Karamba default
+        k3d_model.superimpFacsStates)
+    
+    # Unpack the Karamba line results and create polylines from it
+    stress_lines_1 = []
+    for i in res[0]:
+        poly_segs = []
+        for j in i:
+            for k in j:
+                lines = [Karamba.GHopper.Geometry.GeometryExtensions.Convert(k)]
+                points = [l.From for l in lines]
+                points.append(lines[-1].To)
+                poly = rg.PolylineCurve(points)
+                poly_segs.append(poly)
+        stress_line = rg.Curve.JoinCurves(poly_segs)
+        stress_lines_1.extend(stress_line)
+
+    stress_lines_2 = []
+    for i in res[1]:
+        poly_segs = []
+        for j in i:
+            for k in j:
+                lines = [Karamba.GHopper.Geometry.GeometryExtensions.Convert(k)]
+                points = [l.From for l in lines]
+                points.append(lines[-1].To)
+                poly = rg.PolylineCurve(points)
+                poly_segs.append(poly)
+        stress_line = rg.Curve.JoinCurves(poly_segs)
+        stress_lines_2.extend(stress_line)
+    
+    return [stress_lines_1[0], stress_lines_2[0]]
+
+def build_shell_model(mesh, corners, thickness, e = 35000000, g_ip = 12920000, g_op = 12920000,
+    density = 25, f_y = 25000, alpha_t = 0.00001):
+    '''Build gravitational load Karamba3D model of the shell.
+    Force units in kN and length units in document units.
 
     Parameters:
         mesh (Mesh): Meshed surface
@@ -40,7 +98,6 @@ def build_shell_model(mesh, corners, thickness, e = 35000000, g_ip = 12920000, g
         k3d_model (Model): Karamba3D model.
         gh_model (Model): Karamba3d model wrapped for GH components.
     '''
-    
     tol = rd.ActiveDoc.ModelAbsoluteTolerance
 
     logger = Karamba.Utilities.MessageLogger()

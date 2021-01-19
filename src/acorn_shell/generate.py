@@ -3,6 +3,10 @@ import Rhino.Geometry as rg
 import Rhino.RhinoDoc as rd
 from System import IO
 import os
+import math
+import acorn_shell
+from acorn_shell.karamba import principal_stress_line
+acorn_shell.karamba = reload(acorn_shell.karamba)
 
 def segmentation(mesh, thickness):
     '''Use Karamba3D to perform initial analysis.
@@ -16,8 +20,123 @@ def segmentation(mesh, thickness):
 
     Returns:
         segments (List[Surface]): Segmented shells.
-        cables (List[Curv]): Cable profiles.
+        cables (List[Curve]): Cable profiles.
     '''
+
+def stress_lines(k3d_model, surface, corners, edges, keystone_width, cornerstone_width,
+    length_param_1, length_param_2):
+    '''Generate stress lines and cable profiles from Karamba model.
+
+    TODO: Allow custom material from material testing data?
+
+    Parameters:
+        k3d_model (Model): Analysed Karamba3D model.
+        surface (Brep): Form found shell brep.
+        corners (List[Curve]): Corner curves of shell.
+        edges (List[Curve]): Edge curves of shell.
+        keystone_width (float): Width of the keystone.
+        cornerstone_width (float): Width of the cornerstone.
+        length_param_1 (float): Distance between stress lines 1.
+        length_param_2 (float): Distance between stress lines 2.
+
+    Returns:
+        stress_lines_1 (List[Curve]): Stress lines related to tension.
+        stress_lines_2 (List[Curve]): Stress lines related to compression.
+        cable_profiles_1 (List[Curve]): Cable profiles related to tension.
+        cable_profiles_2 (List[Curve]): Cable profiles related to compression.
+    '''
+    tol = rd.ActiveDoc.ModelAbsoluteTolerance
+
+    # Find centroid of shell
+    area_mass_prop = rg.AreaMassProperties.Compute(surface)
+    centroid = area_mass_prop.Centroid
+
+    # Calculate points to analyse stress lines at
+    edge_midpoints = [e.PointAtNormalizedLength(0.5) for e in edges]
+    corner_midpoints = [c.PointAtNormalizedLength(0.5) for c in corners]
+    wires = surface.GetWireframe(-1)
+    wires = rg.PointCloud([w.PointAtNormalizedLength(0.5) for w in wires])
+    edge_midpoints = [wires[wires.ClosestPoint(e)].Location for e in edge_midpoints]
+    corner_midpoints = [wires[wires.ClosestPoint(c)].Location for c in corner_midpoints]
+
+    # Use shortest path to get generating lines
+    surface_surf = surface.Surfaces[0]
+    centroid_uv = surface_surf.ClosestPoint(centroid)
+    centroid_uv = rg.Point2d(centroid_uv[1], centroid_uv[2])
+
+    edge_gen_lines = []
+    keystone_points = []
+    for p in edge_midpoints:
+        p_uv = surface_surf.ClosestPoint(p)
+        p_uv = rg.Point2d(p_uv[1], p_uv[2])
+        line = surface_surf.ShortPath(centroid_uv, p_uv, tol)
+        line = line.Trim(rg.CurveEnd.Start, keystone_width / 2 * math.sqrt(2))
+        keystone_points.append(line.PointAtNormalizedLength(0))
+        edge_gen_lines.append(line)
+
+    # Get keystone polylinecurve to trim corner generating lines
+    keystone_points.append(keystone_points[0])
+    keystone_poly = rg.PolylineCurve(keystone_points)
+    keystone_poly = rg.Curve.ProjectToBrep(keystone_poly, surface, rg.Vector3d.ZAxis, tol)[0]
+    
+    corner_gen_lines = []
+    for p in corner_midpoints:
+        p_uv = surface_surf.ClosestPoint(p)
+        p_uv = rg.Point2d(p_uv[1], p_uv[2])
+        line = surface_surf.ShortPath(centroid_uv, p_uv, tol)
+        line = line.Trim(rg.CurveEnd.End, cornerstone_width)
+        intersect = rg.Intersect.Intersection.CurveCurve(line, keystone_poly, tol, tol)[0]
+        param_trim = intersect.ParameterA
+        line = line.Trim(param_trim, 0)
+        corner_gen_lines.append(line)
+
+    # Find source points
+    stress_line_sources_1 = []
+    cable_line_sources_1 = []
+    for l in corner_gen_lines:
+        length = l.GetLength()
+        divs = math.ceil(length / length_param_1) # Want ceil to use as upper bound
+        stress_params = [i / divs for i in range(1, int(divs) + 1)]
+        cable_params = [(i + 0.5) / divs for i in range(int(divs))]
+        stress_line_sources_1.extend([l.PointAtNormalizedLength(t) for t in stress_params])
+        cable_line_sources_1.extend([l.PointAtNormalizedLength(t) for t in cable_params])
+    
+    stress_line_sources_2 = []
+    cable_line_sources_2 = []
+    for l in edge_gen_lines:
+        length = l.GetLength()
+        divs = math.ceil(length / length_param_2) # Want ceil to use as upper bound
+        stress_params = [i / divs for i in range(int(divs))]
+        cable_params = [(i + 0.5) / divs for i in range(int(divs))]
+        stress_line_sources_2.extend([l.PointAtNormalizedLength(t) for t in stress_params])
+        cable_line_sources_2.extend([l.PointAtNormalizedLength(t) for t in cable_params])
+    
+    # Get stress lines
+    stress_lines_1 = []
+    for s in stress_line_sources_1:
+        s_1, _ = principal_stress_line(k3d_model, s)
+        # Only keep the result relevant to tension
+        stress_lines_1.append(s_1)
+    
+    stress_lines_2 = []
+    for s in stress_line_sources_2:
+        _, s_2 = principal_stress_line(k3d_model, s)
+        # Only keep the result relevant to compression
+        stress_lines_2.append(s_2)
+
+    cable_profiles_1 = []
+    for s in cable_line_sources_1:
+        s_1, _ = principal_stress_line(k3d_model, s)
+        # Only keep the result relevant to tension
+        cable_profiles_1.append(s_1)
+    
+    cable_profiles_2 = []
+    for s in cable_line_sources_2:
+        _, s_2 = principal_stress_line(k3d_model, s)
+        # Only keep the result relevant to compression
+        cable_profiles_2.append(s_2)
+    
+    return [stress_lines_1, stress_lines_2, cable_profiles_1, cable_profiles_2]
 
 def form_find(plan_surface, corners, height, run):
     '''Use Kiwi3D to form-find the shell.
