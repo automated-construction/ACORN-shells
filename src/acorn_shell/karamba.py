@@ -29,27 +29,27 @@ import Karamba
 import KarambaCommon
 import feb
 
-def principal_stress_line(k3d_model, point):
+def principal_stress_line(k3d_model, points):
     '''Gets principal stress lines from analysed Karamba model.
 
     Parameters:
         k3d_model (Model): Analysed Karamba3D model.
-        point (List[Point3d]): Source point for principal stress line.
+        points (List[Point3d]): Source points for principal stress line.
 
     Returns:
-        stress_line_1 (Curve): Stress line related to tension.
-        stress_line_2 (Curve): Stress line related to compression.
+        stress_lines_1 (List[Curve]): Stress lines related to tension.
+        stress_lines_2 (List[Curve]): Stress lines related to compression.
     '''
     tol = rd.ActiveDoc.ModelAbsoluteTolerance
 
     A_TOL = 5 / 180 * math.pi # Karamba default
     MAX_ITER = 500 # Karamba default
 
-    k3d_point = Karamba.GHopper.Geometry.GeometryExtensions.Convert(point)
+    k3d_points = [Karamba.GHopper.Geometry.GeometryExtensions.Convert(p) for p in points]
     viv_mesh = Karamba.GHopper.Geometry.VivinityMesh(k3d_model)
-    line = viv_mesh.IntersectionLine(k3d_point)[1]
+    lines = [viv_mesh.IntersectionLine(p)[1] for p in k3d_points]
     res = Karamba.Results.PrincipalStressLines.solve(k3d_model, 0,
-        List[Karamba.Geometry.Line3]([line]),
+        List[Karamba.Geometry.Line3](lines),
         tol,
         A_TOL,
         MAX_ITER, # Karamba default
@@ -82,7 +82,7 @@ def principal_stress_line(k3d_model, point):
         stress_line = rg.Curve.JoinCurves(poly_segs)
         stress_lines_2.extend(stress_line)
     
-    return [stress_lines_1[0], stress_lines_2[0]]
+    return [stress_lines_1, stress_lines_2]
 
 def build_shell_model(mesh, corners, thickness, e = 35000000, g_ip = 12920000, g_op = 12920000,
     density = 25, f_y = 25000, alpha_t = 0.00001):

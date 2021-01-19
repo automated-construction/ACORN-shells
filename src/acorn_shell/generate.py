@@ -110,31 +110,12 @@ def stress_lines(k3d_model, surface, corners, edges, keystone_width, cornerstone
         cable_params = [(i + 0.5) / divs for i in range(int(divs))]
         stress_line_sources_2.extend([l.PointAtNormalizedLength(t) for t in stress_params])
         cable_line_sources_2.extend([l.PointAtNormalizedLength(t) for t in cable_params])
-    
+   
     # Get stress lines
-    stress_lines_1 = []
-    for s in stress_line_sources_1:
-        s_1, _ = principal_stress_line(k3d_model, s)
-        # Only keep the result relevant to tension
-        stress_lines_1.append(s_1)
-    
-    stress_lines_2 = []
-    for s in stress_line_sources_2:
-        _, s_2 = principal_stress_line(k3d_model, s)
-        # Only keep the result relevant to compression
-        stress_lines_2.append(s_2)
-
-    cable_profiles_1 = []
-    for s in cable_line_sources_1:
-        s_1, _ = principal_stress_line(k3d_model, s)
-        # Only keep the result relevant to tension
-        cable_profiles_1.append(s_1)
-    
-    cable_profiles_2 = []
-    for s in cable_line_sources_2:
-        _, s_2 = principal_stress_line(k3d_model, s)
-        # Only keep the result relevant to compression
-        cable_profiles_2.append(s_2)
+    stress_lines_1, _ = principal_stress_line(k3d_model, stress_line_sources_1)
+    _, stress_lines_2,= principal_stress_line(k3d_model, stress_line_sources_2)
+    cable_profiles_1, _ = principal_stress_line(k3d_model, cable_line_sources_1)
+    _, cable_profiles_2,= principal_stress_line(k3d_model, cable_line_sources_2)
     
     return [stress_lines_1, stress_lines_2, cable_profiles_1, cable_profiles_2]
 
