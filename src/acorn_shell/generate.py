@@ -6,22 +6,90 @@ import os
 import math
 import acorn_shell
 from acorn_shell.karamba import principal_stress_line
-acorn_shell.karamba = reload(acorn_shell.karamba)
 
-def segmentation(mesh, thickness):
-    '''Use Karamba3D to perform initial analysis.
-
-    TODO: Allow custom material from material testing data?
+def segment(surface, stress_lines_1, stress_lines_2):
+    '''Segment shell using stress lines.
 
     Parameters:
-        mesh (Mesh): Meshed surface. Make users mesh this as opposed to
-            meshing ourselves.
-        thickness (float): Shell thickness.
+        surface (Brep): Form found shell brep.
+        stress_lines_1 (List[Curve]): Stress lines related to tension to segment with.
+        stress_lines_2 (List[Curve]): Stress lines related to compression to segment with.
 
     Returns:
         segments (List[Surface]): Segmented shells.
-        cables (List[Curve]): Cable profiles.
     '''
+    tol = rd.ActiveDoc.ModelAbsoluteTolerance
+
+    # Intersect with each stress line sets and retrieve polyline
+    segment_lines = []
+    points_1 = {}
+    points_2 = {}
+    for i in range(len(stress_lines_1)):
+        points_1[i] = []
+        s_1 = stress_lines_1[i]
+        for j in range(len(stress_lines_2)):
+            if (not j in points_2):
+                points_2[j] = []
+            s_2 = stress_lines_2[j]
+            intersections = rg.Intersect.Intersection.CurveCurve(s_1, s_2, tol, tol)
+            points_1[i].extend([x.ParameterA for x in intersections])
+            points_2[j].extend([x.ParameterB for x in intersections])
+    
+    intersection_points = []
+
+    for k, v in points_1.items():
+        v.sort()
+        points = [stress_lines_1[k].PointAt(t) for t in v]
+        intersection_points.extend(points)
+        segment_lines.append(rg.PolylineCurve(points))
+    
+    for k, v in points_2.items():
+        v.sort()
+        points = [stress_lines_2[k].PointAt(t) for t in v]
+        intersection_points.extend(points)
+        segment_lines.append(rg.PolylineCurve(points))
+    
+    # Make keystone
+    area_mass_prop = rg.AreaMassProperties.Compute(surface)
+    centroid = area_mass_prop.Centroid
+
+    wires = surface.GetWireframe(-1)
+    num_edges = wires.Count / 2
+
+    point_cloud = rg.PointCloud(intersection_points)
+
+    keystone_points = []
+    for i in range(num_edges):
+        idx = point_cloud.ClosestPoint(centroid)
+        p = point_cloud[idx].Location
+        keystone_points.append(p)
+        point_cloud.RemoveAt(idx)
+        # Need to remove the point closest to this point since all points are doubled
+        idx = point_cloud.ClosestPoint(p)
+        point_cloud.RemoveAt(idx)
+    
+    # Order keystone points
+    translated_keystone_points = [p - centroid for p in keystone_points]
+    sorting_criteria = []
+    for p in translated_keystone_points:
+        mag = math.sqrt(p.X**2 + p.Y**2)
+        if p.Y > 0:
+            sorting_criteria.append(math.acos(p.X / mag))
+        else:
+            sorting_criteria.append(2 * math.pi - math.acos(p.X / mag))
+    zip_points = zip(sorting_criteria, keystone_points)
+    zip_points = sorted(zip_points)
+    keystone_points = [p for _, p in zip_points]
+
+    keystone_points.append(keystone_points[0])
+    keystone = rg.PolylineCurve(keystone_points)
+    segment_lines.append(keystone)
+
+    # Segment
+    segments = surface.Split(segment_lines, rg.Vector3d.ZAxis, True, tol)
+
+    return segments
+
 
 def stress_lines(k3d_model, surface, corners, edges, keystone_width, cornerstone_width,
     length_param_1, length_param_2):
@@ -55,9 +123,9 @@ def stress_lines(k3d_model, surface, corners, edges, keystone_width, cornerstone
     edge_midpoints = [e.PointAtNormalizedLength(0.5) for e in edges]
     corner_midpoints = [c.PointAtNormalizedLength(0.5) for c in corners]
     wires = surface.GetWireframe(-1)
-    wires = rg.PointCloud([w.PointAtNormalizedLength(0.5) for w in wires])
-    edge_midpoints = [wires[wires.ClosestPoint(e)].Location for e in edge_midpoints]
-    corner_midpoints = [wires[wires.ClosestPoint(c)].Location for c in corner_midpoints]
+    wires_points = rg.PointCloud([w.PointAtNormalizedLength(0.5) for w in wires])
+    edge_midpoints = [wires_points[wires_points.ClosestPoint(e)].Location for e in edge_midpoints]
+    corner_midpoints = [wires_points[wires_points.ClosestPoint(c)].Location for c in corner_midpoints]
 
     # Use shortest path to get generating lines
     surface_surf = surface.Surfaces[0]
@@ -116,6 +184,19 @@ def stress_lines(k3d_model, surface, corners, edges, keystone_width, cornerstone
     _, stress_lines_2,= principal_stress_line(k3d_model, stress_line_sources_2)
     cable_profiles_1, _ = principal_stress_line(k3d_model, cable_line_sources_1)
     _, cable_profiles_2,= principal_stress_line(k3d_model, cable_line_sources_2)
+
+    # Add line from centroid to edge to tension stress lines set
+    for p in edge_midpoints:
+        p_uv = surface_surf.ClosestPoint(p)
+        p_uv = rg.Point2d(p_uv[1], p_uv[2])
+        line = surface_surf.ShortPath(centroid_uv, p_uv, tol)
+        stress_lines_1.append(line)
+    
+    # Add edges to compression stress line set
+    for e in edges:
+        p_mid = e.PointAtNormalizedLength(0.5)
+        idx = wires_points.ClosestPoint(p_mid)
+        stress_lines_2.append(wires[idx])
     
     return [stress_lines_1, stress_lines_2, cable_profiles_1, cable_profiles_2]
 

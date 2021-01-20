@@ -6,6 +6,8 @@ import math
 
 from System.Collections.Generic import List
 
+# TODO: This is a horrible way to import the assemblies. Try to find a better way
+
 KARAMBA_R5 = ["C:\Program Files\Rhino 5\Plug-ins\Karamba\Karamba.gha",
     "C:\Program Files\Rhino 5\Plug-ins\Karamba\KarambaCommon.dll"]
 
