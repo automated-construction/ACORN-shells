@@ -16,7 +16,7 @@ def segment(surface, stress_lines_1, stress_lines_2):
         stress_lines_2 (List[Curve]): Stress lines related to compression to segment with.
 
     Returns:
-        segments (List[Surface]): Segmented shell.
+        segments (List[Surface]): Segmented shell pieces.
     '''
     tol = rd.ActiveDoc.ModelAbsoluteTolerance
 
