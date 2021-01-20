@@ -5,10 +5,10 @@ import Rhino
 import clr
 from acorn_shell.generate import make_2d_plan
 
-class MakePlan(component):
+class MakeShellPlan(component):
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "MakePlan", "ACORN_MakePlan", """Creates a 2D shell plan on the XY plane.""", "ACORN", "Shell")
+            "MakeShellPlan", "A:MakeShellPlan", """Creates a 2D shell plan on the XY plane.""", "ACORN", "Shell")
         return instance
     
     def get_ComponentGuid(self):
@@ -22,26 +22,26 @@ class MakePlan(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "outline", "outline", "Outline curve. Should be a PolyLine.")
+        self.SetUpParam(p, "outline", "O", "Outline curve. Should be a PolyLine.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "corner_radius", "corner_radius", "Radius to bevel corners by.")
+        self.SetUpParam(p, "corner_radius", "R", "Radius to bevel corners by.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
     
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "plan", "plan", "Outline curve of generated plan.")
+        self.SetUpParam(p, "plan", "P", "Outline curve of generated plan.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "corners", "corners", "Curves of plan corners.")
+        self.SetUpParam(p, "corners", "C", "Curves of plan corners.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "edges", "edges", "Curves of plan edges.")
+        self.SetUpParam(p, "edges", "E", "Curves of plan edges.")
         self.Params.Output.Add(p)
     
     def SolveInstance(self, DA):

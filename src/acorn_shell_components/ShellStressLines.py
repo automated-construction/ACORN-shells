@@ -5,10 +5,10 @@ import Rhino
 import clr
 from acorn_shell.generate import stress_lines
 
-class StressLines(component):
+class ShellStressLines(component):
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "StressLines", "ACORN_StressLines", """Generate stress lines and cable profiles from Karamba model.""", "ACORN", "Shell")
+            "ShellStressLines", "A:ShellStressLines", """Generate stress lines and cable profiles from Karamba model.""", "ACORN", "Shell")
         return instance
 
     def get_ComponentGuid(self):
@@ -22,60 +22,60 @@ class StressLines(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_GenericObject()
-        self.SetUpParam(p, "k3d_model", "k3d_model", "Analysed Karamba3D model.")
+        self.SetUpParam(p, "k3d_model", "KM", "Analysed Karamba3D model.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Brep()
-        self.SetUpParam(p, "surface", "surface", "Form found shell brep.")
+        self.SetUpParam(p, "surface", "S", "Form found shell brep.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "corners", "corners", "Corner curves of shell.")
+        self.SetUpParam(p, "corners", "C", "Corner curves of shell.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "edges", "edges", "Edge curves of shell.")
+        self.SetUpParam(p, "edges", "E", "Edge curves of shell.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "keystone_width", "keystone_width", "Width of the keystone.")
+        self.SetUpParam(p, "keystone_width", "KW", "Width of the keystone.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "cornerstone_width", "cornerstone_width", "Width of the cornerstone.")
+        self.SetUpParam(p, "cornerstone_width", "CW", "Width of the cornerstone.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "length_param_1", "length_param_1", "Distance between stress lines 1.")
+        self.SetUpParam(p, "length_param_1", "L1", "Distance between stress lines 1.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "length_param_2", "length_param_2", "Distance between stress lines 2.")
+        self.SetUpParam(p, "length_param_2", "L2", "Distance between stress lines 2.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
     
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "stress_lines_1", "stress_lines_1", "Stress lines related to tension.")
+        self.SetUpParam(p, "stress_lines_1", "SL1", "Stress lines related to tension.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "stress_lines_2", "stress_lines_2", "Stress lines related to compression.")
+        self.SetUpParam(p, "stress_lines_2", "SL2", "Stress lines related to compression.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "cable_profiles_1", "cable_profiles_1", "Stress lines related to tension.")
+        self.SetUpParam(p, "cable_profiles_1", "CP1", "Stress lines related to tension.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "cable_profiles_2", "cable_profiles_2", "Stress lines related to compression.")
+        self.SetUpParam(p, "cable_profiles_2", "CP2", "Stress lines related to compression.")
         self.Params.Output.Add(p)
 
 

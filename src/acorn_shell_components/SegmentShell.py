@@ -5,10 +5,10 @@ import Rhino
 import clr
 from acorn_shell.generate import segment
 
-class Segment(component):
+class SegmentShell(component):
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "Segment", "ACORN_Segment", """Segment shell using stress lines.""", "ACORN", "Shell")
+            "SegmentShell", "A:SegmentShell", """Segment shell using stress lines.""", "ACORN", "Shell")
         return instance
     
     def __init__(self):
@@ -26,23 +26,23 @@ class Segment(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Brep()
-        self.SetUpParam(p, "surface", "surface", "Form found shell brep.")
+        self.SetUpParam(p, "surface", "S", "Form found shell brep.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "stress_lines_1", "stress_lines_1", "Stress lines related to tension.")
+        self.SetUpParam(p, "stress_lines_1", "SL1", "Stress lines related to tension.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "stress_lines_2", "stress_lines_2", "Stress lines related to compression.")
+        self.SetUpParam(p, "stress_lines_2", "SL2", "Stress lines related to compression.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Brep()
-        self.SetUpParam(p, "segments", "segments", "Segmented shell pieces.")
+        self.SetUpParam(p, "segments", "SEG", "Segmented shell pieces.")
         self.Params.Output.Add(p)
 
 

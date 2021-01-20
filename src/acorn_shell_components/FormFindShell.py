@@ -5,10 +5,10 @@ import Rhino
 import clr
 from acorn_shell.generate import form_find
 
-class FormFind(component):
+class FormFindShell(component):
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "FormFind", "ACORN_FormFind", """Use Kiwi3D to form-find the shell. Uses Kiwi3D v0.5.0""", "ACORN", "Shell")
+            "FormFindShell", "A:FormFindShell", """Use Kiwi3D to form-find the shell. Uses Kiwi3D v0.5.0""", "ACORN", "Shell")
         return instance
     
     def __init__(self):
@@ -26,32 +26,32 @@ class FormFind(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Brep()
-        self.SetUpParam(p, "plan_surface", "plan_surface", "Flat surface to be form found.")
+        self.SetUpParam(p, "plan_surface", "P", "Flat surface to be form found.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "corners", "corners", "Radius to bevel corners by.")
+        self.SetUpParam(p, "corners", "C", "Radius to bevel corners by.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "height", "height", "Target height of shell.")
+        self.SetUpParam(p, "height", "H", "Target height of shell.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Boolean()
-        self.SetUpParam(p, "run", "run", "Toggle to run analysis.")
+        self.SetUpParam(p, "run", "R", "Toggle to run analysis.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
     
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Brep()
-        self.SetUpParam(p, "form_found_surface", "form_found_surface", "Form found shell.")
+        self.SetUpParam(p, "form_found_surface", "S", "Form found shell.")
         self.Params.Output.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_String()
-        self.SetUpParam(p, "kiwi_errors", "kiwi_errors", "Errors from Kiwi3D.")
+        self.SetUpParam(p, "kiwi_errors", "E", "Errors from Kiwi3D.")
         self.Params.Output.Add(p)
     
     def SolveInstance(self, DA):

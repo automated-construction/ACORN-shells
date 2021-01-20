@@ -8,7 +8,7 @@ from acorn_shell.karamba import build_shell_model
 class BuildShellModel(component):
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "BuildShellModel", "ACORN_BuildShellModel", """Build gravitational load Karamba3D model of the shell. Force units in kN and length units in document units.""", "ACORN", "Shell")
+            "BuildShellModel", "A:BuildShellModel", """Build gravitational load Karamba3D model of the shell. Force units in kN and length units in document units.""", "ACORN", "Shell")
         return instance
 
     def get_ComponentGuid(self):
@@ -22,23 +22,23 @@ class BuildShellModel(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Mesh()
-        self.SetUpParam(p, "mesh", "mesh", "Meshed surface.")
+        self.SetUpParam(p, "mesh", "M", "Meshed surface.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Curve()
-        self.SetUpParam(p, "corners", "corners", "Support curves.")
+        self.SetUpParam(p, "corners", "C", "Support curves.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
 
         p = Grasshopper.Kernel.Parameters.Param_Number()
-        self.SetUpParam(p, "thickness", "thickness", "Thickness of shell.")
+        self.SetUpParam(p, "thickness", "T", "Thickness of shell.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
     
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_GenericObject()
-        self.SetUpParam(p, "k3d_model", "k3d_model", "Karamba3D model.")
+        self.SetUpParam(p, "k3d_model", "KM", "Karamba3D model.")
         self.Params.Output.Add(p)
 
     def SolveInstance(self, DA):
