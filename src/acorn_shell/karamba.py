@@ -92,7 +92,7 @@ def build_shell_model(mesh, corners, thickness, e = 35000000, g_ip = 12920000, g
     Force units in kN and length units in document units.
 
     Parameters:
-        mesh (Mesh): Meshed surface
+        mesh (Mesh): Meshed surface.
         corners (List[Curve]): Support curves.
         thickness (float): Thickness of shell.
 

@@ -16,7 +16,7 @@ def segment(surface, stress_lines_1, stress_lines_2):
         stress_lines_2 (List[Curve]): Stress lines related to compression to segment with.
 
     Returns:
-        segments (List[Surface]): Segmented shells.
+        segments (List[Surface]): Segmented shell.
     '''
     tol = rd.ActiveDoc.ModelAbsoluteTolerance
 
@@ -208,7 +208,7 @@ def form_find(plan_surface, corners, height, run):
 
     Parameters:
         plan_surface (Brep): Flat surface to be form found.
-        corners (Curve): Curves of plan corners.
+        corners (List[Curve]): Curves of plan corners.
         height (float): Target height of shell.
         run (bool): Toggle to run analysis.
 
@@ -272,7 +272,7 @@ def make_2d_plan(outline, corner_radius):
 
     Parameters:
         outline (Curve): Outline curve. Should be a PolyLine.
-        corner_radius (float): radius to bevel corner by.
+        corner_radius (float): Radius to bevel corners by.
 
     Returns:
         plan (Curve): Outline curve of generated plan.
