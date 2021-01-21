@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="ACORNshellsComponent.cs" />
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="FormFindKiwi.cs" />
     <Compile Include="MakeShellPlan.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
