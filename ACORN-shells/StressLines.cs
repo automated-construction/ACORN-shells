@@ -167,11 +167,6 @@ namespace ACORN_shells
             DA.SetDataList(1, stressLines2);
             DA.SetDataList(2, cableProfiles1);
             DA.SetDataList(3, cableProfiles2);
-
-            //DA.SetDataList(0, stressLineSources1);
-            //DA.SetDataList(1, stressLineSources2);
-            //DA.SetDataList(2, cableLineSources1);
-            //DA.SetDataList(3, cableLineSources2);
         }
 
         private Tuple<List<Curve>, List<Curve>> PrincipalStressLines(Karamba.Models.Model model, List<Point3d> points)
