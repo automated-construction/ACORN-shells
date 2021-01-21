@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -54,10 +55,23 @@
       <HintPath>C:\Program Files\Rhino 6\Plug-ins\Grasshopper\GH_IO.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="KarambaCommon">
+      <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karambaCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Karamba">
+      <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karamba.gha</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORNshellsComponent.cs" />
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="FormFindKiwi.cs" />
+    <Compile Include="MakeShellPlan.cs" />
+    <Compile Include="Segment.cs" />
+    <Compile Include="StressLines.cs" />
+    <Compile Include="PreliminaryShellAnalysisModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -86,7 +100,7 @@
   <PropertyGroup>
     <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"
 Copy "$(TargetPath)" "$(TargetDir)\..\..\$(ProjectName).gha"
-Copy "$(TargetPath)" "C:\Users\ec977\AppData\Roaming\Grasshopper\Libraries\$(ProjectName).gha"
+Copy "$(TargetPath)" "%25AppData%25\Grasshopper\Libraries\$(ProjectName).gha"
 Erase "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
