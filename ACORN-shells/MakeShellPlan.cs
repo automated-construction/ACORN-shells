@@ -24,7 +24,7 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("Plan", "P", "Outlinie curve of generated plan.", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Plan", "P", "Outline curve of generated plan.", GH_ParamAccess.item);
             pManager.AddCurveParameter("Corners", "C", "Curves of plan corners.", GH_ParamAccess.list);
             pManager.AddCurveParameter("Edges", "E", "Curves of plan Edges.", GH_ParamAccess.list);
         }
