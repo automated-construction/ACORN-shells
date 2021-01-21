@@ -55,11 +55,11 @@
       <HintPath>C:\Program Files\Rhino 6\Plug-ins\Grasshopper\GH_IO.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="karambaCommon">
+    <Reference Include="KarambaCommon">
       <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karambaCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="karamba">
+    <Reference Include="Karamba">
       <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karamba.gha</HintPath>
       <Private>False</Private>
     </Reference>
@@ -69,6 +69,7 @@
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="FormFindKiwi.cs" />
     <Compile Include="MakeShellPlan.cs" />
+    <Compile Include="PreliminaryShellAnalysisModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
