@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ACORNshellsComponent.cs" />
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="MakeShellPlan.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -86,7 +87,7 @@
   <PropertyGroup>
     <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"
 Copy "$(TargetPath)" "$(TargetDir)\..\..\$(ProjectName).gha"
-Copy "$(TargetPath)" "C:\Users\ec977\AppData\Roaming\Grasshopper\Libraries\$(ProjectName).gha"
+Copy "$(TargetPath)" "%25AppData%25\Grasshopper\Libraries\$(ProjectName).gha"
 Erase "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
