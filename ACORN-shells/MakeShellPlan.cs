@@ -19,7 +19,7 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Outline", "O", "Outline curve. Should be a PolyLine.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("CornerRadius", "R", "Radius to bevel corners by.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("CornerRadius", "R", "Radius to bevel corners by.", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -57,7 +57,8 @@ namespace ACORN_shells
             {
                 var cornerPoint = explodedOutline[i].PointAtStart;
                 var arcStart = explodedOutline[i].PointAtLength(cornerRadius);
-                var arcEnd = explodedOutline[i - 1].PointAtLength(explodedOutline[i - 1].GetLength() - cornerRadius);
+                var prevIndex = i == 0 ? edges.Count - 1 : i - 1;
+                var arcEnd = explodedOutline[prevIndex].PointAtLength(explodedOutline[prevIndex].GetLength() - cornerRadius);
                 var toCentroid = new Vector3d(centroid - cornerPoint);
                 toCentroid.Unitize();
                 var arcInterior = cornerPoint + toCentroid * cornerRadius;
@@ -67,7 +68,7 @@ namespace ACORN_shells
 
             // Join edges and corners
             var zippedCurves = corners.Zip(edges, (x, y) => new List<Curve>() { x, y }).SelectMany(x => x);
-            var plan = Curve.JoinCurves(zippedCurves);
+            var plan = Curve.JoinCurves(zippedCurves).FirstOrDefault();
 
             DA.SetData(0, plan);
             DA.SetDataList(1, corners);
