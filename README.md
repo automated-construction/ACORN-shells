@@ -23,6 +23,7 @@ After installing the plugin, you should be able to run example files that can be
 **Dependencies**
 
 * RhinoCommon: https://developer.rhino3d.com/6/guides/rhinocommon/
+* Karamba3D [version?]: https://www.karamba3d.com/
 
 **Contact**
 
