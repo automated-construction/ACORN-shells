@@ -174,7 +174,7 @@ namespace ACORN_shells
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
             var k3dPoints = points.Select(p => p.Convert()).ToList();
-            var vivMesh = new Karamba.GHopper.Geometry.VivinityMesh(model);
+            var vivMesh = new Karamba.GHopper.Geometry.VicinityMesh(model);
             var sourceLines = new List<Line3>();
             foreach(var p in k3dPoints)
             {
@@ -184,7 +184,7 @@ namespace ACORN_shells
             }
             var result = new List<List<List<List<Line3>>>>();
             Karamba.Results.PrincipalStressLines.solve(model,
-                0, sourceLines, fileTol, A_TOL, MAX_ITER, model.superimpFacsStates, out result);
+                0, sourceLines, fileTol, A_TOL, MAX_ITER, model.lc_super_model_results, out result);
 
             // Unpack Karamba line results and create polylines from it
             var stressLines1 = new List<Curve>();
