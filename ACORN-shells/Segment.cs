@@ -40,6 +40,10 @@ namespace ACORN_shells
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
+            // Pull stress lines to shell
+            stressLines1 = stressLines1.Select(l => l.PullToBrepFace(shell.Faces[0], fileTol).First()).ToList();
+            stressLines2 = stressLines2.Select(l => l.PullToBrepFace(shell.Faces[0], fileTol).First()).ToList();
+
             // Intersect with each stress line sets and retrieve polyline
             var segmentLines = new List<Curve>();
             var points1 = new Dictionary<int, List<double>>();
