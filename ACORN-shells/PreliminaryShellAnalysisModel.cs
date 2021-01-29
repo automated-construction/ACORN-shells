@@ -20,6 +20,7 @@ namespace ACORN_shells
         double G_3 = 12920000;
         double DENSITY = 25;
         double F_Y = 25000;
+        double F_C = -35000;
         double ALPHA_T = 0.00001;
 
         public PreliminaryShellAnalysisModel()
@@ -64,7 +65,7 @@ namespace ACORN_shells
             Karamba.Materials.FemMaterial k3dMaterial = null;
 
             if (ghMat == null)
-                k3dMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T);
+                k3dMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, F_C, Karamba.Materials.FemMaterial.FlowHypothesis.mises, ALPHA_T);
             else
                 k3dMaterial = ghMat.Value;
 
