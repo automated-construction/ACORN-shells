@@ -135,7 +135,7 @@ namespace ACORN_shells
         {
             get
             {
-                return null;
+                return ACORN_shells.Properties.Resources.ACORN_24;
             }
         }
 
