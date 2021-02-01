@@ -4,6 +4,8 @@ ACORN: Automating COncrete constRuctioN
 
 Design and optimisation of thin shells for building slabs
 
+**WORK IN PROGRESS** The code in this repository is still under development.
+
 **Installing and using the plugin**
 
 Copy plugin file above (ACORN-shells.gha) to the Grasshopper plugins folder.
