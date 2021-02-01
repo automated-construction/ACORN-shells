@@ -26,6 +26,7 @@ After installing the plugin, you should be able to run example files that can be
 
 * RhinoCommon: https://developer.rhino3d.com/6/guides/rhinocommon/
 * Karamba3D [1.3.3]: https://www.karamba3d.com/
+* Kiwi!3D [BETA 0.5.0]: https://www.kiwi3d.com/
 
 **Contact**
 
