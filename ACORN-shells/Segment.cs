@@ -41,8 +41,8 @@ namespace ACORN_shells
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
             // Pull stress lines to shell
-            stressLines1 = stressLines1.Select(l => l.PullToBrepFace(shell.Faces[0], fileTol).First()).ToList();
-            stressLines2 = stressLines2.Select(l => l.PullToBrepFace(shell.Faces[0], fileTol).First()).ToList();
+            stressLines1 = stressLines1.SelectMany(l => Curve.ProjectToBrep(l, shell, Vector3d.ZAxis, fileTol)).ToList();
+            stressLines2 = stressLines2.SelectMany(l => Curve.ProjectToBrep(l, shell, Vector3d.ZAxis, fileTol)).ToList();
 
             // Intersect with each stress line sets and retrieve polyline
             var segmentLines = new List<Curve>();
@@ -117,12 +117,15 @@ namespace ACORN_shells
             keystonePoints = sortIndex.Select(i => keystonePoints[i]).ToList();
 
             keystonePoints.Add(keystonePoints[0]);
-            segmentLines.Add(new PolylineCurve(keystonePoints));
+            segmentLines.AddRange(Curve.ProjectToBrep(new PolylineCurve(keystonePoints), shell, Vector3d.ZAxis, fileTol));
 
             // Segment
-            var segments = shell.Split(segmentLines, Vector3d.ZAxis, true, fileTol);
+            var segments = shell.Faces[0].Split(segmentLines, fileTol);
+            var segmentBreps = Enumerable.Range(0, segments.Faces.Count)
+                .Select(f => segments.Faces.ExtractFace(f))
+                .ToList();
 
-            DA.SetDataList(0, segments);
+            DA.SetDataList(0, segmentBreps);
         }
 
         protected override System.Drawing.Bitmap Icon
