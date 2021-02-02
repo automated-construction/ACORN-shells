@@ -68,8 +68,11 @@
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="FormFindKiwi.cs" />
+    <Compile Include="MakePinbedModules.cs" />
     <Compile Include="MakeShellPlan.cs" />
+    <Compile Include="MinimumBoundingBox.cs" />
     <Compile Include="Segment.cs" />
+    <Compile Include="SHELLScommon.cs" />
     <Compile Include="StressLines.cs" />
     <Compile Include="PreliminaryShellAnalysisModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
