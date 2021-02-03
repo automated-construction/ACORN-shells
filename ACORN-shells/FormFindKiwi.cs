@@ -31,7 +31,10 @@ namespace ACORN_shells
             pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.item);
             pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
+
+            pManager[3].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -45,12 +48,17 @@ namespace ACORN_shells
             Brep planShell = null;
             List<Curve> corners = new List<Curve>();
             double height = 0;
+            double subDiv = 0;
             bool run = false;
 
-            if (!DA.GetData(0, ref planShell)) return;
+            if (!DA.GetData(0, ref planShell)) return;  
             if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetData(2, ref height)) return;
-            if (!DA.GetData(3, ref run)) return;
+            DA.GetData(3, ref subDiv);
+            if (!DA.GetData(4, ref run)) return;
+
+            if (subDiv == 0)
+                subDiv = SURF_SUBDIV;
 
             if (run)
             {
@@ -67,10 +75,6 @@ namespace ACORN_shells
                     throw new Exception("Cannot find component: " + String.Join(", ", missingComponents));
                 }
 
-                //var componentFuncs = new Dictionary<string, dynamic>();
-                //foreach (var kvp in componentInfos)
-                //    componentFuncs[kvp.Key] = kvp.Value.Delegate as dynamic;
-
                 // Create temporary directory
                 var tmpDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 if (Directory.Exists(tmpDir))
@@ -82,7 +86,7 @@ namespace ACORN_shells
 
                 var kiwiMaterial = (CallComponent(componentInfos, "Kiwi3d.MaterialDefaults", new object[] { MAT_CONC })[0] as IList<object>)[0];
                 var kiwiRefinement = (CallComponent(componentInfos, "Kiwi3d.SurfaceRefinement", new object[] {SURF_DEGREE,
-                    SURF_DEGREE, SURF_SUBDIV, SURF_SUBDIV })[0] as IList<object>)[0];
+                    SURF_DEGREE, (int)subDiv, (int)subDiv })[0] as IList<object>)[0];
                 var kiwiShell = (CallComponent(componentInfos, "Kiwi3d.ShellElement", new object[] { planShell, kiwiMaterial,
                     thickness, kiwiRefinement, null, false })[0] as IList<object>)[0];
 
