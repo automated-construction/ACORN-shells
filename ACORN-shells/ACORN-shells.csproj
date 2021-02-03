@@ -71,6 +71,7 @@
     <Compile Include="MakePinbedModules.cs" />
     <Compile Include="MakeShellPlan.cs" />
     <Compile Include="MinimumBoundingBox.cs" />
+    <Compile Include="PsarrasBoundingBox.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SHELLScommon.cs" />
     <Compile Include="StressLines.cs" />

@@ -6,6 +6,7 @@ using Rhino.Geometry;
 using System.Linq;
 using Rhino.Geometry.Collections;
 using Rhino.Collections;
+using GH.MiscToolbox.Components.Utilities;
 
 namespace ACORN_shells
 {
@@ -21,6 +22,8 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("Segment", "S", "Shell segment. Must be Brep.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Allow 3D?", "3D", "Allow 3D rotation of Bounding Box", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Psarras algorithm?", "P", "Use Psarras?", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -36,8 +39,12 @@ namespace ACORN_shells
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Brep segment = null;
+            bool rot3D = false;
+            bool psarras = false;
 
             if (!DA.GetData(0, ref segment)) return;
+            if (!DA.GetData(1, ref rot3D)) return;
+            if (!DA.GetData(2, ref rot3D)) return;
 
             var modules = Rectangle3d.Unset;
             var efficiency = 0;
@@ -57,9 +64,20 @@ namespace ACORN_shells
             var meshedSegment = Mesh.CreateFromBrep(segment, MeshingParameters.QualityRenderMesh)[0];
 
             // Calculate minimum bounding box
+            // using RIL script
             System.Object minBBoxObj = null;
             MinimumBoundingBox.RunScript(segment, null, rotations, iterations, ref minBBoxObj);
-            Box minBBox = (Box)minBBoxObj;
+
+            // using psarras algorithm
+            List<GeometryBase> segmentList = new List<GeometryBase>() { segment };
+            System.Object minBBoxObj2;
+            //minBBoxObj2 = PsarrasBoundingBox.Solve(segmentList, 1, true, true, true);
+            if (rot3D) minBBoxObj2 = PsarrasBoundingBox.Solve(segmentList, 1, true, true, true);
+            else minBBoxObj2 = PsarrasBoundingBox.Solve(segmentList, 1, false, false, true);
+
+            Box minBBox;
+            if (psarras) minBBox = (Box)minBBoxObj2;
+            else minBBox = (Box)minBBoxObj;
 
 
             // --- Correct bounding box orientation
