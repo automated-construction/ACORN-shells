@@ -67,7 +67,7 @@ EL-PROP 1 : MEMBRANE_NURBS
 EL-PROP 2 : CORD_3D_NURBS
   MAT= EL-MAT 2
   AREA = 7.85398163397448E-05
-  PRESTRESS= 21645.0722604978
+  PRESTRESS= 1273.23954473516
   PRESTRESS_CURVE= 0
   INT_TYPE_CORD_3D_NURBS = FULL  !USER
   !GAUSS_U = 2
@@ -89,8 +89,8 @@ NURBS_PATCH  1 : NURBS_2D
   MCTRL =  1
   PDEG  =  1
   QDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
-  VKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  0, 0, 7.8, 7.8
+  VKNOT =  0, 0, 7.2, 7.2
   TRIMMING = B_REP 1
 !===================================================================
 CTRL_PTS_DEF  1
@@ -110,7 +110,7 @@ NURBS_PATCH_PAR  1001 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1001
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  0, 0, 7.8, 7.8
 !===================================================================
 CTRL_PTS_PAR  1001
 CTRLPT_PAR_ID 5
@@ -122,7 +122,7 @@ NURBS_PATCH_PAR  1002 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1002
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  0, 0, 7.2, 7.2
 !===================================================================
 CTRL_PTS_PAR  1002
 CTRLPT_PAR_ID 7
@@ -134,7 +134,7 @@ NURBS_PATCH_PAR  1003 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1003
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  0, 0, 7.8, 7.8
 !===================================================================
 CTRL_PTS_PAR  1003
 CTRLPT_PAR_ID 9
@@ -146,7 +146,7 @@ NURBS_PATCH_PAR  1004 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1004
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  0, 0, 7.2, 7.2
 !===================================================================
 CTRL_PTS_PAR  1004
 CTRLPT_PAR_ID 11
@@ -158,7 +158,7 @@ NURBS_PATCH_PAR  1005 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1005
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  0, 0, 7.8, 7.8
 !===================================================================
 CTRL_PTS_PAR  1005
 CTRLPT_PAR_ID 13
@@ -170,7 +170,7 @@ NURBS_PATCH_PAR  1006 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1006
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  0, 0, 7.2, 7.2
 !===================================================================
 CTRL_PTS_PAR  1006
 CTRLPT_PAR_ID 15
@@ -182,7 +182,7 @@ NURBS_PATCH_PAR  1007 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1007
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  -7.8, -7.8, 0, 0
 !===================================================================
 CTRL_PTS_PAR  1007
 CTRLPT_PAR_ID 17
@@ -194,29 +194,29 @@ NURBS_PATCH_PAR  1008 : NURBS_1D
   CTRL_PTS = CTRL_PTS_PAR  1008
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  -7.2, -7.2, 0, 0
 !===================================================================
 CTRL_PTS_PAR  1008
 CTRLPT_PAR_ID 19
 CTRLPT_PAR_ID 20
 !===================================================================
 CTRL_PTS_PAR_DEF
-  CTRLPT_PAR  5  -3.9  -3.6  0  1
-  CTRLPT_PAR  6  3.9  -3.6  0  1
-  CTRLPT_PAR  7  3.9  -3.6  0  1
-  CTRLPT_PAR  8  3.9  3.6  0  1
-  CTRLPT_PAR  9  3.9  3.6  0  1
-  CTRLPT_PAR  10  -3.9  3.6  0  1
-  CTRLPT_PAR  11  -3.9  3.6  0  1
-  CTRLPT_PAR  12  -3.9  -3.6  0  1
-  CTRLPT_PAR  13  -3.9  -3.6  0  1
-  CTRLPT_PAR  14  3.9  -3.6  0  1
-  CTRLPT_PAR  15  3.9  -3.6  0  1
-  CTRLPT_PAR  16  3.9  3.6  0  1
-  CTRLPT_PAR  17  3.9  3.6  0  1
-  CTRLPT_PAR  18  -3.9  3.6  0  1
-  CTRLPT_PAR  19  -3.9  3.6  0  1
-  CTRLPT_PAR  20  -3.9  -3.6  0  1
+  CTRLPT_PAR  5  0  0  0  1
+  CTRLPT_PAR  6  7.8  0  0  1
+  CTRLPT_PAR  7  7.8  0  0  1
+  CTRLPT_PAR  8  7.8  7.2  0  1
+  CTRLPT_PAR  9  7.8  7.2  0  1
+  CTRLPT_PAR  10  0  7.2  0  1
+  CTRLPT_PAR  11  0  7.2  0  1
+  CTRLPT_PAR  12  0  0  0  1
+  CTRLPT_PAR  13  0  0  0  1
+  CTRLPT_PAR  14  7.8  0  0  1
+  CTRLPT_PAR  15  7.8  0  0  1
+  CTRLPT_PAR  16  7.8  7.2  0  1
+  CTRLPT_PAR  17  7.8  7.2  0  1
+  CTRLPT_PAR  18  0  7.2  0  1
+  CTRLPT_PAR  19  0  7.2  0  1
+  CTRLPT_PAR  20  0  0  0  1
 !###################################################################
 !####                  NURBS-BLOCK-PARAMETER                    ####
 !###################################################################
@@ -224,7 +224,7 @@ NURBS_PATCH  2 : NURBS_1D
   CTRL_PTS = CTRL_PTS_DEF  2
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  0, 0, 7.8, 7.8
 !===================================================================
 CTRL_PTS_DEF  2
   CTRLPT  21  -3.9  -3.6  0  1
@@ -236,7 +236,7 @@ NURBS_PATCH  3 : NURBS_1D
   CTRL_PTS = CTRL_PTS_DEF  3
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  0, 0, 7.2, 7.2
 !===================================================================
 CTRL_PTS_DEF  3
   CTRLPT  23  3.9  -3.6  0  1
@@ -248,7 +248,7 @@ NURBS_PATCH  4 : NURBS_1D
   CTRL_PTS = CTRL_PTS_DEF  4
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.9, -3.9, 3.9, 3.9
+  UKNOT =  -7.8, -7.8, 0, 0
 !===================================================================
 CTRL_PTS_DEF  4
   CTRLPT  25  3.9  3.6  0  1
@@ -260,7 +260,7 @@ NURBS_PATCH  5 : NURBS_1D
   CTRL_PTS = CTRL_PTS_DEF  5
   NCTRL =  1
   PDEG  =  1
-  UKNOT =  -3.6, -3.6, 3.6, 3.6
+  UKNOT =  -7.2, -7.2, 0, 0
 !===================================================================
 CTRL_PTS_DEF  5
   CTRLPT  27  -3.9  3.6  0  1
@@ -282,14 +282,14 @@ EL-DOMAIN 1
 !===================================================================
 !                  ID  PART  PROP   NURBS_TOP
 DE-BREP-NURBS
-  DE-BREP-EL   1   1   4   PATCH_PAR 1005 OF DE-EL 1   DE-EL 2 TOL=0.01 [-3.9 3.9][-3.9 3.9]  !Coupling-2D: BRep|Crv
-  DE-BREP-EL   2   1   4   PATCH_PAR 1006 OF DE-EL 1   DE-EL 3 TOL=0.01 [-3.6 3.6][-3.6 3.6]  !Coupling-2D: BRep|Crv
-  DE-BREP-EL   3   1   4   PATCH_PAR 1007 OF DE-EL 1   DE-EL 4 TOL=0.01 [-3.9 3.9][-3.9 3.9]  !Coupling-2D: BRep|Crv
-  DE-BREP-EL   4   1   4   PATCH_PAR 1008 OF DE-EL 1   DE-EL 5 TOL=0.01 [-3.6 3.6][-3.6 3.6]  !Coupling-2D: BRep|Crv
-  DE-BREP-EL   5   1   5   DE-EL 2 DE-EL 3 TOL=0.01 [3.9][-3.6] !Coupling-1D: Crv|Crv
-  DE-BREP-EL   6   1   5   DE-EL 2 DE-EL 5 TOL=0.01 [-3.9][3.6] !Coupling-1D: Crv|Crv
-  DE-BREP-EL   7   1   5   DE-EL 3 DE-EL 4 TOL=0.01 [3.6][-3.9] !Coupling-1D: Crv|Crv
-  DE-BREP-EL   8   1   5   DE-EL 4 DE-EL 5 TOL=0.01 [3.9][-3.6] !Coupling-1D: Crv|Crv
+  DE-BREP-EL   1   1   4   PATCH_PAR 1005 OF DE-EL 1   DE-EL 2 TOL=0.01 [0 7.8][0 7.8]  !Coupling-2D: BRep|Crv
+  DE-BREP-EL   2   1   4   PATCH_PAR 1006 OF DE-EL 1   DE-EL 3 TOL=0.01 [0 7.2][0 7.2]  !Coupling-2D: BRep|Crv
+  DE-BREP-EL   3   1   4   PATCH_PAR 1007 OF DE-EL 1   DE-EL 4 TOL=0.01 [-7.8 0][-7.8 0]  !Coupling-2D: BRep|Crv
+  DE-BREP-EL   4   1   4   PATCH_PAR 1008 OF DE-EL 1   DE-EL 5 TOL=0.01 [-7.2 0][-7.2 0]  !Coupling-2D: BRep|Crv
+  DE-BREP-EL   5   1   5   DE-EL 2 DE-EL 3 TOL=0.01 [7.8][0] !Coupling-1D: Crv|Crv
+  DE-BREP-EL   6   1   5   DE-EL 2 DE-EL 5 TOL=0.01 [0][0] !Coupling-1D: Crv|Crv
+  DE-BREP-EL   7   1   5   DE-EL 3 DE-EL 4 TOL=0.01 [7.2][-7.8] !Coupling-1D: Crv|Crv
+  DE-BREP-EL   8   1   5   DE-EL 4 DE-EL 5 TOL=0.01 [0][-7.2] !Coupling-1D: Crv|Crv
 !===================================================================
 DE-REFINEMENT
  DE-EL   1   ep=3   eq=3    ru=5    rv=5
@@ -303,7 +303,7 @@ DE-REFINEMENT
  DE-BREP-EL   4   dp=auto    ru=auto 
 !===================================================================
 !        ID  DE-EL     LOC COORD  BC
-DE-LOAD  1   SNOW   1   D1=0 D2=0 D3=1  VAL=10
+DE-LOAD  1   DEAD   1   D1=0 D2=0 D3=1  VAL=0.015
 DE-SUP   2   2   u=0 DISP_X, DISP_Y, DISP_Z
 DE-SUP   3   2   u=1 DISP_X, DISP_Y, DISP_Z
 DE-SUP   4   3   u=1 DISP_X, DISP_Y, DISP_Z

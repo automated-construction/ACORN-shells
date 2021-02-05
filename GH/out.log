@@ -1,190 +1,185 @@
-14:39:16  
-14:39:16  
-14:39:16    ***********************************************
-14:39:16    *                 ===========                 *
-14:39:16    *                  CARAT 2.0                  *
-14:39:16    *                 ===========                 *
-14:39:16    *                                             *
-14:39:16    *                 SERIAL CODE!                *
-14:39:16    *                                             *
-14:39:16    *                Version 0.1.0                *
-14:39:16    *                                             *
-14:39:16    *  Computer Aided Research and Analysis Tool  *
-14:39:16    *          (object-oriented version)          *
-14:39:16    *        Chair of Structural Analysis,        *
-14:39:16    *   Prof. Dr. K.-U. Bletzinger, TU Muenchen   *
-14:39:16    ***********************************************
-14:39:16  
-14:39:16  
-14:39:16 Used logging system: RLOG
-14:39:16 
-14:39:16 This is a RELEASE version of Carat
-14:39:16 
-14:39:16 --------------------------------------
-14:39:16  ... starting Preprocessing
-14:39:16 --------------------------------------
-14:39:16  
-14:39:16 Reading input file: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH/FormFinding.txt
-14:39:16  
-14:39:16 Input file path detected: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH
-14:39:16 Reading of design nodes finished
-14:39:16 Reading of design evaluation points finished
-14:39:16 Reading of design elements finished
-14:39:16 Reading of design boundaries finished
-14:39:16 Reading of design optimization refinement finished
-14:39:16 Reading of design elements finished
-14:39:16 Reading of design joints finished
-14:39:16 Reading of design supports finished
-14:39:16 Reading of design loads finished
-14:39:16 Reading of design interfaces finished
-14:39:16 load design finished
-14:39:16 Starting to mesh design elements!
-14:39:16 
-14:39:16 Finish meshing design elements!
-14:39:16 
-14:39:16 Starting to mesh design boundary elements!
-14:39:16 
-14:39:16 Finish meshing design boundary elements!
-14:39:16 
-14:39:16 Starting to create the elements from DE elements!
-14:39:16 
-14:39:16 Creating elements from DE elements done!
-14:39:16 
-14:39:16 Starting to create elements from DE boundary elements!
-14:39:16 
-14:39:16 Creating elements from DE boundary elements done!
-14:39:16 
-14:39:16 complete preprocessing done in 0.046000 seconds.
-14:39:16  
-14:39:16 --------------------------------------
-14:39:16  ... starting Solution of problem 1:
-14:39:16 --------------------------------------
-14:39:16  
-14:39:16 Bandwidth reduction started!
-14:39:16 Original bandwith  : 107 
-14:39:16 Original profile   : 7358 
-14:39:16 Using 'CUTHILL_MCKEE' algorithm
-14:39:16 Optimized bandwidth  : 67
-14:39:16 Optimized profile    : 5152
-14:39:16 Bandwith reduction finished in 0.005000 seconds!
-14:39:16  
-14:39:16 GlobalSparseMatrix: starting dry run
-14:39:17 GlobalSparseMatrix: dry run done in 0.004000 seconds.
-14:39:17  
-14:39:17  
-14:39:17  
-14:39:17 =====================================================================
-14:39:17 F O R M F I N D I N G  - C A L C U L A T I O N
-14:39:17 =====================================================================
-14:39:17  
-14:39:17 ---------------------------------------------------------------------
-14:39:17 Formfinding Steps     :  5
-14:39:17 Equilibrium Accuracy  :   1.000000e-03
-14:39:17 Max Iter Equilibrium  :  5
-14:39:17 ---------------------------------------------------------------------
-14:39:17  
-14:39:17  
-14:39:17 Time Step No. 1
-14:39:17 ---------------------------------------------------------------------
-14:39:17 Equilibrium Accuracy     :   1.000000e-03
-14:39:17 Max Iter Equilibrium     :  5
-14:39:17 Actual Homotopy Factor   :   0.000000e+00
-14:39:17 ------------------------------------------------
-14:39:17   Iter  |          ||dU||      |     ||RHS||
-14:39:17 ------------------------------------------------
-14:39:17     1   |    1.369045e+03  |    8.431310e+01  
-14:39:17     2   |    1.726007e-06  |    1.048216e-06  
-14:39:17  
-14:39:17 Volume of Part 1: V =   4.586192e+00
-14:39:17 Actual volume: V = 4.5861920652846786e+00
-14:39:17  
-14:39:17 Iteration successful. ----------------------------------------------
-14:39:17  
-14:39:17  
-14:39:17 Time Step No. 2
-14:39:17 ---------------------------------------------------------------------
-14:39:17 Equilibrium Accuracy     :   1.000000e-03
-14:39:17 Max Iter Equilibrium     :  5
-14:39:17 Actual Homotopy Factor   :   0.000000e+00
-14:39:17 ------------------------------------------------
-14:39:17   Iter  |          ||dU||      |     ||RHS||
-14:39:17 ------------------------------------------------
-14:39:17     1   |    8.653628e+04  |    2.137324e+02  
-14:39:18     2   |    1.040178e-03  |    4.667109e-05  
-14:39:18  
-14:39:18 Volume of Part 1: V =   3.365365e+01
-14:39:18 Actual volume: V = 3.3653648767298876e+01
-14:39:18  
-14:39:18 Iteration successful. ----------------------------------------------
-14:39:18  
-14:39:18  
-14:39:18 Time Step No. 3
-14:39:18 ---------------------------------------------------------------------
-14:39:18 Equilibrium Accuracy     :   1.000000e-03
-14:39:18 Max Iter Equilibrium     :  5
-14:39:18 Actual Homotopy Factor   :   0.000000e+00
-14:39:18 ------------------------------------------------
-14:39:18   Iter  |          ||dU||      |     ||RHS||
-14:39:18 ------------------------------------------------
-14:39:18     1   |    8.485629e+06  |    1.395394e+03  
-14:39:18     2   |    1.499420e+01  |    4.624187e-03  
-14:39:19     3   |    2.237372e+01  |    3.363890e-03  
-14:39:19     4   |    9.204628e+00  |    2.592391e-03  
-14:39:19     5   |    2.218859e+01  |    3.492007e-03  
-14:39:19  
-14:39:19 Volume of Part 1: V =   2.376955e+03
-14:39:19 Actual volume: V = 2.3769548146608940e+03
-14:39:19  
-14:39:19 Iteration successful. ----------------------------------------------
-14:39:19  
-14:39:19  
-14:39:19 Time Step No. 4
-14:39:19 ---------------------------------------------------------------------
-14:39:19 Equilibrium Accuracy     :   1.000000e-03
-14:39:19 Max Iter Equilibrium     :  5
-14:39:19 Actual Homotopy Factor   :   0.000000e+00
-14:39:19 ------------------------------------------------
-14:39:19   Iter  |          ||dU||      |     ||RHS||
-14:39:19 ------------------------------------------------
-14:39:19     1   |    8.216925e+07  |    9.534101e+04  
-14:39:19     2   |    3.982647e+03  |    5.100889e-02  
-14:39:20     3   |    1.634409e+02  |    3.567084e-02  
-14:39:20     4   |    2.389994e+03  |    3.269250e-02  
-14:39:20     5   |    3.714720e+03  |    2.950441e-02  
-14:39:20  
-14:39:20 Volume of Part 1: V =   2.322581e+04
-14:39:20 Actual volume: V = 2.3225811500402036e+04
-14:39:20  
-14:39:20 Iteration successful. ----------------------------------------------
-14:39:20  
-14:39:20  
-14:39:20 Time Step No. 5
-14:39:20 ---------------------------------------------------------------------
-14:39:20 Equilibrium Accuracy     :   1.000000e-03
-14:39:20 Max Iter Equilibrium     :  5
-14:39:20 Actual Homotopy Factor   :   0.000000e+00
-14:39:20 ------------------------------------------------
-14:39:20   Iter  |          ||dU||      |     ||RHS||
-14:39:20 ------------------------------------------------
-14:39:20     1   |       -nan(ind)  |             nan  
-14:39:20  
-14:39:20 Volume of Part 1: V =   2.322486e+04
-14:39:20 Actual volume: V = 2.3224860778011265e+04
-14:39:20  
-14:39:20 Iteration terminated. ---------------------------------------------
-14:39:20  
-14:39:20  
-14:39:20 Time step procedure finished. Final Summary.
-14:39:21 -----------------------------------------------------------------
-14:39:21 Time Steps               :  5
-14:39:21 Equilibrium Accuracy     :   1.000000e-03
-14:39:21 Max Iter Equilibrium     :  5
-14:39:21 -----------------------------------------------------------------
-14:39:21  
-14:39:21  
-14:39:21  
-14:39:21 complete programm execution done in 0 hours, 0 minutes and  4.161000 seconds.
-14:39:21  
-14:39:21 finishing Carat++ successfully.
-14:39:21  
-14:39:21 ...Feierabend! 
+15:18:20  
+15:18:20  
+15:18:20    ***********************************************
+15:18:20    *                 ===========                 *
+15:18:20    *                  CARAT 2.0                  *
+15:18:20    *                 ===========                 *
+15:18:20    *                                             *
+15:18:20    *                 SERIAL CODE!                *
+15:18:20    *                                             *
+15:18:20    *                Version 0.1.0                *
+15:18:20    *                                             *
+15:18:20    *  Computer Aided Research and Analysis Tool  *
+15:18:20    *          (object-oriented version)          *
+15:18:20    *        Chair of Structural Analysis,        *
+15:18:20    *   Prof. Dr. K.-U. Bletzinger, TU Muenchen   *
+15:18:20    ***********************************************
+15:18:20  
+15:18:20  
+15:18:20 Used logging system: RLOG
+15:18:20 
+15:18:20 This is a RELEASE version of Carat
+15:18:20 
+15:18:20 --------------------------------------
+15:18:20  ... starting Preprocessing
+15:18:20 --------------------------------------
+15:18:20  
+15:18:20 Reading input file: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH/FormFinding.txt
+15:18:20  
+15:18:20 Input file path detected: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH
+15:18:20 Reading of design nodes finished
+15:18:20 Reading of design evaluation points finished
+15:18:20 Reading of design elements finished
+15:18:20 Reading of design boundaries finished
+15:18:20 Reading of design optimization refinement finished
+15:18:20 Reading of design elements finished
+15:18:20 Reading of design joints finished
+15:18:20 Reading of design supports finished
+15:18:20 Reading of design loads finished
+15:18:20 Reading of design interfaces finished
+15:18:20 load design finished
+15:18:20 Starting to mesh design elements!
+15:18:20 
+15:18:20 Finish meshing design elements!
+15:18:20 
+15:18:20 Starting to mesh design boundary elements!
+15:18:20 
+15:18:20 Finish meshing design boundary elements!
+15:18:20 
+15:18:20 Starting to create the elements from DE elements!
+15:18:20 
+15:18:20 Creating elements from DE elements done!
+15:18:20 
+15:18:20 Starting to create elements from DE boundary elements!
+15:18:20 
+15:18:20 Creating elements from DE boundary elements done!
+15:18:20 
+15:18:20 complete preprocessing done in 0.044000 seconds.
+15:18:20  
+15:18:20 --------------------------------------
+15:18:20  ... starting Solution of problem 1:
+15:18:20 --------------------------------------
+15:18:20  
+15:18:20 Bandwidth reduction started!
+15:18:20 Original bandwith  : 107 
+15:18:20 Original profile   : 7358 
+15:18:20 Using 'CUTHILL_MCKEE' algorithm
+15:18:20 Optimized bandwidth  : 67
+15:18:20 Optimized profile    : 5152
+15:18:20 Bandwith reduction finished in 0.008000 seconds!
+15:18:20  
+15:18:20 GlobalSparseMatrix: starting dry run
+15:18:20 GlobalSparseMatrix: dry run done in 0.004000 seconds.
+15:18:20  
+15:18:20  
+15:18:20  
+15:18:20 =====================================================================
+15:18:20 F O R M F I N D I N G  - C A L C U L A T I O N
+15:18:20 =====================================================================
+15:18:20  
+15:18:20 ---------------------------------------------------------------------
+15:18:20 Formfinding Steps     :  5
+15:18:20 Equilibrium Accuracy  :   1.000000e-03
+15:18:20 Max Iter Equilibrium  :  5
+15:18:20 ---------------------------------------------------------------------
+15:18:20  
+15:18:20  
+15:18:20 Time Step No. 1
+15:18:20 ---------------------------------------------------------------------
+15:18:20 Equilibrium Accuracy     :   1.000000e-03
+15:18:20 Max Iter Equilibrium     :  5
+15:18:20 Actual Homotopy Factor   :   0.000000e+00
+15:18:20 ------------------------------------------------
+15:18:20   Iter  |          ||dU||      |     ||RHS||
+15:18:20 ------------------------------------------------
+15:18:21     1   |    1.825005e+01  |    9.036354e-01  
+15:18:21     2   |    3.790246e-07  |    2.727883e-08  
+15:18:21  
+15:18:21 Volume of Part 1: V =   1.546821e-02
+15:18:21 Actual volume: V = 1.5468209849618862e-02
+15:18:21  
+15:18:21 Iteration successful. ----------------------------------------------
+15:18:21  
+15:18:21  
+15:18:21 Time Step No. 2
+15:18:21 ---------------------------------------------------------------------
+15:18:21 Equilibrium Accuracy     :   1.000000e-03
+15:18:21 Max Iter Equilibrium     :  5
+15:18:21 Actual Homotopy Factor   :   0.000000e+00
+15:18:21 ------------------------------------------------
+15:18:21   Iter  |          ||dU||      |     ||RHS||
+15:18:21 ------------------------------------------------
+15:18:21     1   |    1.429638e+01  |    9.366048e-01  
+15:18:21     2   |    7.736238e-07  |    2.894116e-08  
+15:18:21  
+15:18:21 Volume of Part 1: V =   3.477620e-03
+15:18:21 Actual volume: V = 3.4776201705671870e-03
+15:18:21  
+15:18:21 Iteration successful. ----------------------------------------------
+15:18:21  
+15:18:21  
+15:18:21 Time Step No. 3
+15:18:21 ---------------------------------------------------------------------
+15:18:21 Equilibrium Accuracy     :   1.000000e-03
+15:18:21 Max Iter Equilibrium     :  5
+15:18:21 Actual Homotopy Factor   :   0.000000e+00
+15:18:21 ------------------------------------------------
+15:18:21   Iter  |          ||dU||      |     ||RHS||
+15:18:21 ------------------------------------------------
+15:18:21     1   |    1.471014e+01  |    9.992317e-01  
+15:18:21     2   |    1.455458e-06  |    3.738641e-08  
+15:18:21  
+15:18:21 Volume of Part 1: V =   1.516795e-03
+15:18:21 Actual volume: V = 1.5167954623639846e-03
+15:18:21  
+15:18:21 Iteration successful. ----------------------------------------------
+15:18:22  
+15:18:22  
+15:18:22 Time Step No. 4
+15:18:22 ---------------------------------------------------------------------
+15:18:22 Equilibrium Accuracy     :   1.000000e-03
+15:18:22 Max Iter Equilibrium     :  5
+15:18:22 Actual Homotopy Factor   :   0.000000e+00
+15:18:22 ------------------------------------------------
+15:18:22   Iter  |          ||dU||      |     ||RHS||
+15:18:22 ------------------------------------------------
+15:18:22     1   |    1.086837e+01  |    4.706968e-01  
+15:18:22     2   |    1.358382e-06  |    4.086420e-08  
+15:18:22  
+15:18:22 Volume of Part 1: V =   1.577175e-03
+15:18:22 Actual volume: V = 1.5771752651723950e-03
+15:18:22  
+15:18:22 Iteration successful. ----------------------------------------------
+15:18:22  
+15:18:22  
+15:18:22 Time Step No. 5
+15:18:22 ---------------------------------------------------------------------
+15:18:22 Equilibrium Accuracy     :   1.000000e-03
+15:18:22 Max Iter Equilibrium     :  5
+15:18:22 Actual Homotopy Factor   :   0.000000e+00
+15:18:22 ------------------------------------------------
+15:18:22   Iter  |          ||dU||      |     ||RHS||
+15:18:22 ------------------------------------------------
+15:18:22     1   |    7.576994e+00  |    2.598025e-01  
+15:18:22     2   |    1.992987e-06  |    5.395748e-08  
+15:18:22  
+15:18:22 Volume of Part 1: V =   1.641053e-03
+15:18:22 Actual volume: V = 1.6410531654009203e-03
+15:18:22  
+15:18:22 Iteration successful. ----------------------------------------------
+15:18:22  
+15:18:22  
+15:18:22 Time step procedure finished. Final Summary.
+15:18:22 -----------------------------------------------------------------
+15:18:22 Time Steps               :  5
+15:18:22 Equilibrium Accuracy     :   1.000000e-03
+15:18:22 Max Iter Equilibrium     :  5
+15:18:22 -----------------------------------------------------------------
+15:18:22  
+15:18:22  
+15:18:22  
+15:18:22 complete programm execution done in 0 hours, 0 minutes and  2.166000 seconds.
+15:18:22  
+15:18:22 finishing Carat++ successfully.
+15:18:22  
+15:18:22 ...Feierabend! 
