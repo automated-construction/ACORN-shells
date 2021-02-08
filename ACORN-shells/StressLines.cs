@@ -12,7 +12,7 @@ namespace ACORN_shells
     public class StressLines : GH_Component
     {
         // Karamba defaults for stress line extraction
-        double A_TOL = 5 / 180 * Math.PI;
+        double A_TOL = ((double) 5) / 180 * Math.PI;
         int MAX_ITER = 500;
 
         public StressLines()
