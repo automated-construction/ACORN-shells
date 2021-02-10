@@ -37,9 +37,12 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Thickness", "T", "Thickness of shell.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Loads", "L", "Loads. Default is gravity (no safety factor).", GH_ParamAccess.list);
+            pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item);
+
 
             pManager[3].Optional = true;
             pManager[4].Optional = true;
+            pManager[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -54,12 +57,14 @@ namespace ACORN_shells
             double thickness = 0;
             Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
             List <Karamba.GHopper.Loads.GH_Load> ghLoads = new List<Karamba.GHopper.Loads.GH_Load>();
+            bool fixedSupport = false;
 
             if (!DA.GetData(0, ref mesh)) return;
             if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetData(2, ref thickness)) return;
             DA.GetData(3, ref ghMat);
             DA.GetDataList(4, ghLoads);
+            DA.GetData(5, ref fixedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             var logger = new Karamba.Utilities.MessageLogger();
@@ -92,7 +97,11 @@ namespace ACORN_shells
                     var test = c.ClosestPoint(v, out _, fileTol);
                     if (test)
                     {
-                        k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, true, true, true }));
+                        if (fixedSupport)
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, true, true, true }));
+                        else
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, false, false, false }));
+
                         break;
                     }
                 }
