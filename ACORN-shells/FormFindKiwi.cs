@@ -33,6 +33,7 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
             pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("CurveSupports", "CS", "Use Corner curves as supports", GH_ParamAccess.item); // test
 
             pManager[3].Optional = true;
         }
@@ -50,12 +51,14 @@ namespace ACORN_shells
             double height = 0;
             double subDiv = 0;
             bool run = false;
+            bool curveSupports = false;
 
             if (!DA.GetData(0, ref planShell)) return;  
             if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetData(2, ref height)) return;
             DA.GetData(3, ref subDiv);
             if (!DA.GetData(4, ref run)) return;
+            if (!DA.GetData(5, ref curveSupports)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
@@ -64,7 +67,7 @@ namespace ACORN_shells
             {
                 // Get all Kiwi3d components
                 var componentNames = new List<string>() { "Kiwi3d.MaterialDefaults", "Kiwi3d.SurfaceRefinement", "Kiwi3d.ShellElement",
-                    "Kiwi3d.SupportPoint", "Kiwi3d.SurfaceLoad", "Kiwi3d.LinearAnalysis", "Kiwi3d.AnalysisModel",
+                    "Kiwi3d.SupportPoint", "Kiwi3d.SupportCurve", "Kiwi3d.SurfaceLoad", "Kiwi3d.LinearAnalysis", "Kiwi3d.AnalysisModel",
                     "Kiwi3d.IGASolver", "Kiwi3d.DeformedModel" };
 
                 var componentInfos = componentNames.ToDictionary(x => x, x => Rhino.NodeInCode.Components.FindComponent(x));
@@ -101,6 +104,18 @@ namespace ACORN_shells
                     foreach (var p in points)
                         kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportPoint", new object[] { p, true,
                             true, true, false, false })[0] as IList<object>)[0]);
+                }
+
+                // TESTING
+                // with curve supports, to confirm same Karamba analysis results in LoR report
+                if (curveSupports)
+                {
+                    kiwiSupports = new List<object>(); // clears previous kiwiSupports, using points
+                    foreach (var c in corners)
+                    {
+                        kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportCurve", new object[] { c, true,
+                            true, true, false })[0] as IList<object>)[0]);
+                    }
                 }
 
                 // Uniform load pushing upwards
