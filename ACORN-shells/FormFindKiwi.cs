@@ -34,6 +34,8 @@ namespace ACORN_shells
             pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("CurveSupports", "CS", "Use Corner curves as supports", GH_ParamAccess.item); // test
+            pManager.AddBooleanParameter("ScaleDeform", "SD", "Use DefMod to scale, otherwise, uses Geomtry Scaling.", GH_ParamAccess.item); // test
+            pManager.AddNumberParameter("ThicknessFactor", "TF", "Thickness = Shell Height * TF", GH_ParamAccess.item);
 
             pManager[3].Optional = true;
         }
@@ -51,7 +53,9 @@ namespace ACORN_shells
             double height = 0;
             double subDiv = 0;
             bool run = false;
-            bool curveSupports = false;
+            bool curveSupports = false; // test
+            bool scaleDeform = false; // test
+            double thickFact = 1.0; // test
 
             if (!DA.GetData(0, ref planShell)) return;  
             if (!DA.GetDataList(1, corners)) return;
@@ -59,6 +63,8 @@ namespace ACORN_shells
             DA.GetData(3, ref subDiv);
             if (!DA.GetData(4, ref run)) return;
             if (!DA.GetData(5, ref curveSupports)) return; // test
+            if (!DA.GetData(6, ref scaleDeform)) return; // test
+            if (!DA.GetData(7, ref thickFact)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
@@ -85,7 +91,8 @@ namespace ACORN_shells
                 Directory.CreateDirectory(tmpDir);
 
                 // Define model
-                var thickness = height * 0.1; // Use 10% of target height
+                //var thickness = height * 0.1; // Use 10% of target height
+                var thickness = height * thickFact; // default thickness value in Kiwi component, used for LoR = 0.1 (absolute, not factor)
 
                 var kiwiMaterial = (CallComponent(componentInfos, "Kiwi3d.MaterialDefaults", new object[] { MAT_CONC })[0] as IList<object>)[0];
                 var kiwiRefinement = (CallComponent(componentInfos, "Kiwi3d.SurfaceRefinement", new object[] {SURF_DEGREE,
@@ -136,8 +143,17 @@ namespace ACORN_shells
                 {
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
-                    FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
+
+                    // TESTING
+                    if (scaleDeform)
+                        FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    else  
+                        // ORIGINAL by Mish
+                        FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
                 }
+
+                
+
             }
             
             DA.SetData(0, FormFoundShell);
