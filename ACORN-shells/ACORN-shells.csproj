@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="FormFindMembrane.cs" />
     <Compile Include="GetAreaEfficiency.cs" />
     <Compile Include="FitModules.cs" />
     <Compile Include="FormFindKiwi.cs" />

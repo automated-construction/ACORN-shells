@@ -103,6 +103,21 @@ namespace ACORN_shells
                 // Pinned support at corners
                 // Divide the curves into points since the support curve seems to not work as expected
                 var kiwiSupports = new List<object>();
+
+                // TESTING
+                // with curve supports, to confirm same Karamba analysis results in LoR report
+                
+                if (curveSupports)
+
+                //kiwiSupports = new List<object>(); // clears previous kiwiSupports, using points
+                foreach (var c in corners)
+                {
+                    kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportCurve", new object[] { c, true,
+                        true, true, false })[0] as IList<object>)[0]);
+                }
+
+                else          
+                    
                 foreach (var c in corners)
                 {
                     Point3d[] points = new Point3d[0];
@@ -111,18 +126,6 @@ namespace ACORN_shells
                     foreach (var p in points)
                         kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportPoint", new object[] { p, true,
                             true, true, false, false })[0] as IList<object>)[0]);
-                }
-
-                // TESTING
-                // with curve supports, to confirm same Karamba analysis results in LoR report
-                if (curveSupports)
-                {
-                    kiwiSupports = new List<object>(); // clears previous kiwiSupports, using points
-                    foreach (var c in corners)
-                    {
-                        kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportCurve", new object[] { c, true,
-                            true, true, false })[0] as IList<object>)[0]);
-                    }
                 }
 
                 // Uniform load pushing upwards
@@ -150,9 +153,8 @@ namespace ACORN_shells
                     else  
                         // ORIGINAL by Mish
                         FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
+                    
                 }
-
-                
 
             }
             
