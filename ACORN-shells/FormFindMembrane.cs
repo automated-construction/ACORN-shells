@@ -5,6 +5,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Linq;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace ACORN_shells
 {
@@ -224,22 +225,27 @@ namespace ACORN_shells
 
                 // Scale deformed shell to target height
                 FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
+                //var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>);
+                //FormFoundShell = FormFoundGeo[0] as Brep;
                 if (FormFoundShell != null)
                 {
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
 
-                    // TESTING
-                    if (scaleDeform)
-                        FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
-                    else  
-                        // ORIGINAL by Mish
-                        FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
-                    
+                    //FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
+                    FormFoundShell = FormFoundGeo [0] as Brep;
+
+                    // get edges from deformed geometry, add them to FormFoundEdges
+                    var FFedges = FormFoundGeo;
+                    FFedges.RemoveAt(0);
+                    foreach (var e in FFedges) FormFoundEdges.Add(e as Curve);
+
                 }
 
-                // get edges from deformed geometry
                 // project corners onto deformed surface
+                var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+                foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
 
             }
             

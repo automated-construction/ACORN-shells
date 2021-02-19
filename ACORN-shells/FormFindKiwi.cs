@@ -17,6 +17,8 @@ namespace ACORN_shells
         int[] ANAL_OUTPUT = new int[] { 1, 2, 3 };
 
         Brep FormFoundShell = null;
+        List<Curve> FormFoundCorners = new List<Curve>();
+        List<Curve> FormFoundEdges = new List<Curve>();
         string KiwiErrors = "";
 
         public FormFindKiwi()
@@ -30,6 +32,7 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.item);
             pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Edges", "E", "Surface edge curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
             pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
@@ -37,19 +40,22 @@ namespace ACORN_shells
             pManager.AddBooleanParameter("ScaleDeform", "SD", "Use DefMod to scale, otherwise, uses Geomtry Scaling.", GH_ParamAccess.item); // test
             pManager.AddNumberParameter("ThicknessFactor", "TF", "Thickness = Shell Height * TF", GH_ParamAccess.item);
 
-            pManager[3].Optional = true;
+            pManager[4].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddTextParameter("KiwiErrors", "O", "Errors from Kiwi3D.", GH_ParamAccess.item);
             pManager.AddBrepParameter("FormFoundShell", "S", "Form found shell.", GH_ParamAccess.item);
-            pManager.AddTextParameter("KiwiErrors", "E", "Errors from Kiwi3D.", GH_ParamAccess.item);
+            pManager.AddCurveParameter("FormFoundCorners", "C", "Form found shell corners.", GH_ParamAccess.list);
+            pManager.AddCurveParameter("FormFoundEdges", "E", "Form found shell edges.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Brep planShell = null;
             List<Curve> corners = new List<Curve>();
+            List<Curve> edges = new List<Curve>();
             double height = 0;
             double subDiv = 0;
             bool run = false;
@@ -57,14 +63,15 @@ namespace ACORN_shells
             bool scaleDeform = false; // test
             double thickFact = 1.0; // test
 
-            if (!DA.GetData(0, ref planShell)) return;  
+            if (!DA.GetData(0, ref planShell)) return;
             if (!DA.GetDataList(1, corners)) return;
-            if (!DA.GetData(2, ref height)) return;
-            DA.GetData(3, ref subDiv);
-            if (!DA.GetData(4, ref run)) return;
-            if (!DA.GetData(5, ref curveSupports)) return; // test
-            if (!DA.GetData(6, ref scaleDeform)) return; // test
-            if (!DA.GetData(7, ref thickFact)) return; // test
+            if (!DA.GetDataList(2, edges)) return;
+            if (!DA.GetData(3, ref height)) return;
+            DA.GetData(4, ref subDiv);
+            if (!DA.GetData(5, ref run)) return;
+            if (!DA.GetData(6, ref curveSupports)) return; // test
+            if (!DA.GetData(7, ref scaleDeform)) return; // test
+            if (!DA.GetData(8, ref thickFact)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
@@ -156,10 +163,17 @@ namespace ACORN_shells
                     
                 }
 
+                // project edges and corners onto deformed surface
+                var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+                foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
+                foreach (var e in edges) FormFoundEdges.Add(Curve.ProjectToBrep(e, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
+
             }
-            
-            DA.SetData(0, FormFoundShell);
-            DA.SetData(1, KiwiErrors);
+
+            DA.SetData(0, KiwiErrors);
+            DA.SetData(1, FormFoundShell);
+            DA.SetDataList(2, FormFoundCorners);
+            DA.SetDataList(3, FormFoundEdges);
         }
 
         private object[] CallComponent(Dictionary<string, Rhino.NodeInCode.ComponentFunctionInfo> components, string componentName, object[] args)
