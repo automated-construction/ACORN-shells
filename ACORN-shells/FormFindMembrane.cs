@@ -28,6 +28,8 @@ namespace ACORN_shells
         List<Curve> FormFoundEdges = new List<Curve>();
         string KiwiErrors = "";
 
+        // bool SOLUTION_CHANGED = true; // for event handling fantasy
+
         // change name if it becomes only formfinding component
         public FormFindMembrane()
           : base("FormFindMembrane", "A:FormFindMembrane",
@@ -38,7 +40,7 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.item);
+            pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.list);
             pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
             pManager.AddCurveParameter("Edges", "E", "Edge curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
@@ -52,6 +54,7 @@ namespace ACORN_shells
             pManager.AddNumberParameter("CablePrestressV", "CP", "Cable prestress force [kN]", GH_ParamAccess.item);
             pManager.AddNumberParameter("Load", "L", "Load [kN]", GH_ParamAccess.item);
             pManager.AddBooleanParameter("planarEdges", "PE", "Force edges to remain in their vertical plane.", GH_ParamAccess.item); // test
+            pManager.AddBooleanParameter("updateOnChange", "U", "Run IGA Solver on [parameter change]", GH_ParamAccess.item); // test
 
             // TODO: add optionals
             pManager[4].Optional = true;
@@ -67,7 +70,8 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Brep planShell = null;
+
+            List<Brep> planShell = new List<Brep>();
             List<Curve> corners = new List<Curve>();
             List<Curve> edges = new List<Curve>();
             double height = 0;
@@ -82,9 +86,10 @@ namespace ACORN_shells
             var cablePrestress = 0.1;
             var srfLoad = 0.010;
             bool planarEdges = false; // test
+            bool updateOnChange = false; // test
 
 
-            if (!DA.GetData(0, ref planShell)) return;
+            if (!DA.GetDataList(0, planShell)) return;
             if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetDataList(2, edges)) return;
             if (!DA.GetData(3, ref height)) return;
@@ -98,12 +103,30 @@ namespace ACORN_shells
             if (!DA.GetData(11, ref cablePrestress)) return; // test
             if (!DA.GetData(12, ref srfLoad)) return; // test
             if (!DA.GetData(13, ref planarEdges)) return; // test
+            if (!DA.GetData(14, ref updateOnChange)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
 
-            if (run)
+            /*
+            // set event handlers here?
+            // trigger run on solutionStart, for animate purposes
+            // there might be a better, more elegant solution! see DSE, and every optimizer...
+            if (updateOnChange)
             {
+                GH_Document GHdoc = new GH_Document();
+                GHdoc.SolutionStart -= OnSolutionStart;
+                GHdoc.SolutionStart += OnSolutionStart; // sets SOLUTION_CHANGED to true
+            }
+            */
+
+            bool calculate = updateOnChange | run; // runs Kiwi analysis if run button or input change
+
+            //if (run | SOLUTION_CHANGED)
+            if (calculate)
+                {
+                    var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+
                 // Get all Kiwi3d components
                 // TODO: Delete unused components: LinearAnalysis, ShellElement?
                 var componentNames = new List<string>() { "Kiwi3d.MaterialDefaults", "Kiwi3d.CurveRefinement", "Kiwi3d.SurfaceRefinement", "Kiwi3d.ShellElement", "Kiwi3d.MembraneElement", "Kiwi3d.CableElement",
@@ -138,23 +161,19 @@ namespace ACORN_shells
                 var kiwiCableRefinement = (CallComponent(componentInfos, "Kiwi3d.CurveRefinement", new object[] {
                     CRV_DEGREE, CRV_SUBDIV })[0] as IList<object>)[0];
 
-                //var kiwiShell = (CallComponent(componentInfos, "Kiwi3d.ShellElement", new object[] { 
-                //    planShell, kiwiMaterial, thickness, kiwiRefinement, null, false })[0] as IList<object>)[0];
 
-                var kiwiMembrane = (CallComponent(componentInfos, "Kiwi3d.MembraneElement", new object[] {
-                    planShell, kiwiMembraneMaterial, thickness, membPrestress1, membPrestress2, kiwiMembraneRefinement, null, true, null })[0] as IList<object>)[0];               
+                var kiwiElements = new List<object>();
 
-                var kiwiCables = new List<object>();
+                // Define membrane patches
+                foreach (var m in planShell)
+                    kiwiElements.Add ((CallComponent(componentInfos, "Kiwi3d.MembraneElement", new object[] {
+                        m, kiwiMembraneMaterial, thickness, membPrestress1, membPrestress2, kiwiMembraneRefinement, null, true, null })[0] as IList<object>)[0]);
+
+                // Define edge cables
                 double cableDiameter = 0.01; // default value, move to FIELD?
-
                 foreach (var e in edges)
-                {
-                    kiwiCables.Add((CallComponent(componentInfos, "Kiwi3d.CableElement", new object[] { 
+                    kiwiElements.Add((CallComponent(componentInfos, "Kiwi3d.CableElement", new object[] { 
                         e, kiwiCableMaterial, cableDiameter, cablePrestress, false, kiwiCableRefinement, null, true })[0] as IList<object>)[0]);
-                }
-
-                var kiwiElements = new List<object>() { kiwiMembrane };
-                kiwiElements.AddRange(kiwiCables);
 
                 // Pinned support at corners
                 // Divide the curves into points since the support curve seems to not work as expected
@@ -203,15 +222,18 @@ namespace ACORN_shells
                         foreach (var p in points)
                             kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportPoint", new object[] { 
                             p, DX, DY, DZ, false, false })[0] as IList<object>)[0]);
-
                     }
 
                 }
 
 
-                // Uniform load pushing upwards
-                var kiwiLoads = (CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] { planShell, "1",
-                    Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0];
+                // Uniform load pushing upwards - supporting multiple membrane patches
+                //var kiwiLoads = (CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
+                //  planShell, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0];
+                var kiwiLoads = new List<object>();
+                foreach (var m in planShell)
+                    kiwiLoads.Add((CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
+                        m, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0]);
 
                 // Run Kiwi analysis
                 //var kiwiAnalOptions = (CallComponent(componentInfos, "Kiwi3d.LinearAnalysis", new object[] { ANAL_OUTPUT })[0] as IList<object>)[0];
@@ -224,29 +246,47 @@ namespace ACORN_shells
                 var kiwiModelRes = (kiwiResult[0] as IList<object>)[0];
 
                 // Scale deformed shell to target height
-                FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
-                //var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>);
-                //FormFoundShell = FormFoundGeo[0] as Brep;
+                if (planShell.Count == 1)
+                    FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
+                else //multiple membrane patches
+                {
+                    var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>);                    
+                    List<Brep> FormFoundSrfs = new List<Brep>();
+                    for (int i = 0; i < planShell.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                    FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
+                }
+
+
                 if (FormFoundShell != null)
                 {
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
 
-                    //FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
-                    var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
-                    FormFoundShell = FormFoundGeo [0] as Brep;
+                    if (planShell.Count == 1)
+                        FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    else //multiple membrane patches
+                    {
+                        var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
+                        List<Brep> FormFoundSrfs = new List<Brep>();
+                        for (int i = 0; i < planShell.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                        FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
+                    }
 
                     // get edges from deformed geometry, add them to FormFoundEdges
-                    var FFedges = FormFoundGeo;
-                    FFedges.RemoveAt(0);
-                    foreach (var e in FFedges) FormFoundEdges.Add(e as Curve);
+                    FormFoundEdges = new List<Curve>(); // reset FIELD
+                    var FFgeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
+                    List<Brep> FFedges = new List<Brep>();
+                    for (int i = planShell.Count; i < FFgeo.Count; i++) FormFoundEdges.Add(FFgeo[i] as Curve);
+
+                    FormFoundCorners = new List<Curve>(); // reset FIELD
+                    // project corners onto deformed surface
+                    foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
 
                 }
 
-                // project corners onto deformed surface
-                var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
-                foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
-
+                // reset run = false; needed?
+                //run = false;
+                //SOLUTION_CHANGED = false; // event hndling
             }
             
             DA.SetData(0, KiwiErrors);
@@ -260,6 +300,20 @@ namespace ACORN_shells
             var tmpOut = new string[0];
             return components[componentName].Evaluate(args.ToList(), false, out tmpOut);
         }
+
+        /*
+        // This method will be subscribed to the SolutionStart event.
+        private void OnSolutionStart(object sender, GH_SolutionEventArgs e)
+        {
+            SOLUTION_CHANGED = true;
+
+            // testing event firing
+            GH_ActiveObject GHobj = this; // this component
+            GHobj.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Solution change detected!");
+            //RhinoApp.WriteLine(args.TheObject.ObjectType + ": " + args.ObjectId);
+        }
+        */
+
 
         protected override System.Drawing.Bitmap Icon
         {
