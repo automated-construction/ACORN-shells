@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 using System.Linq;
 using Rhino.Geometry.Collections;
 using Rhino.Collections;
 using GH.MiscToolbox.Components.Utilities;
+using Grasshopper;
 
 namespace ACORN_shells
 {
     /// <summary>
-    /// Fits a bounding box to a shell segment, minimizing volume.
+    /// Simulates the pinbed mould.
     /// </summary>
     public class SimulatePinbed : GH_Component
     {
@@ -24,59 +27,59 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBoxParameter("Box", "B", "Shell segment bounding box.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Width", "W", "Module width [m]", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Depth", "D", "Module depth [m]", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Tolerance Level", "T", "Tolerance = 1e-(tolLevel)", GH_ParamAccess.item);
+            pManager.AddSurfaceParameter("Shell", "S", "Shell.", GH_ParamAccess.item);
+            pManager.AddRectangleParameter("Modules", "M", "Rectangles corresponding to modules", GH_ParamAccess.tree);
 
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddRectangleParameter("Module rectangles", "M", "Set of pinbed module rectangles.", GH_ParamAccess.list);
+            pManager.AddBrepParameter("Extended segments", "ES", "Extended segments", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Box box = Box.Unset;
-            double moduleWidth = 1;
-            double moduleDepth = 1;
-            double tolLevel = 3;
+            Surface shell = null;
+            GH_Structure<GH_Rectangle> ghModuleTree = new GH_Structure<GH_Rectangle>();
 
-            if (!DA.GetData(0, ref box)) return;
-            if (!DA.GetData(1, ref moduleWidth)) return;
-            if (!DA.GetData(2, ref moduleDepth)) return;
-            if (!DA.GetData(3, ref tolLevel)) return;
+            if (!DA.GetData(0, ref shell)) return;
+            if (!DA.GetDataTree<GH_Rectangle>(1, out ghModuleTree)) return;
 
-            // calculate number of modules in both width and depth
-            //double tol = DocumentTolerance(); // in case segment size is exact multiple of module size (e.g. keystone)
-            double tol = Math.Exp(-tolLevel); // in case segment size is exact multiple of module size (e.g. keystone)
 
-            double boxWidth = box.X.Max - box.X.Min - tol;
-            double boxDepth = box.Y.Max - box.Y.Min - tol;
-            int modulesInWidth = (int)Math.Ceiling(boxWidth / moduleWidth);
-            int modulesInDepth = (int)Math.Ceiling(boxDepth / moduleDepth);
-
-            // find bottom plane
-            Plane bottomPlane = new Plane(box.Plane);
-            bottomPlane.Origin = box.PointAt(0.5, 0.5, 0);
-            // move bottom plane origin in order to match rects union center with initial bottomplane origin
-            bottomPlane.Origin = bottomPlane.PointAt(- modulesInWidth * moduleWidth / 2, - modulesInDepth * moduleDepth / 2);
-
-            // draw rectangles
-            List<Rectangle3d> rects = new List<Rectangle3d>();
-            for (int w = 0; w < modulesInWidth; w++)
+            // convert moduleTree: GH_Structure (Grasshopper) to DataTree (RhinoCommon)
+            // repeated, move to COMMON
+            DataTree<Rectangle3d> rcModuleTree = new DataTree<Rectangle3d>();
+            foreach (GH_Path path in ghModuleTree.Paths)
             {
-                for (int d = 0; d < modulesInDepth; d++) 
-                {
-                    Interval domainWidth = new Interval(w * moduleWidth, (w + 1) * moduleWidth);
-                    Interval domainDepth = new Interval(d * moduleDepth, (d + 1) * moduleDepth);
-                    Rectangle3d module = new Rectangle3d(bottomPlane, domainWidth, domainDepth);
-                    rects.Add(module);
-                }                    
+                GH_Rectangle ghModule = ghModuleTree.get_Branch(path)[0] as GH_Rectangle;
+                Rectangle3d rcModule = new Rectangle3d();
+                GH_Convert.ToRectangle3d(ghModule, ref rcModule, GH_Conversion.Both);
+                rcModuleTree.Add(rcModule, path);
             }
 
-            DA.SetDataList(0, rects);
+            // segments are extended for covering whole pinbed module, for shape continuity
+            DataTree<Brep> extendedSegments = new DataTree<Brep>();
+            foreach (GH_Path path in rcModuleTree.Paths)
+            {
+                Rectangle3d currModule = rcModuleTree.Branch(path)[0];
+                //project module onto surface
+                Curve projectedModule = 
+                    Curve.JoinCurves(
+                        Curve.ProjectToBrep(currModule.ToNurbsCurve(), shell.ToBrep(), currModule.Plane.ZAxis, DocumentTolerance())
+                    )[0];
+
+                //split shell using module projection - SLOW!!!
+                Brep[] shellSplinters = shell.ToBrep().Split(new List<Curve> { projectedModule }, DocumentTolerance());
+                // determine correct split result: sort by area
+                Brep currExtendedSegment = shellSplinters.ToList<Brep>().OrderBy(o => o.GetArea()).ToList()[0];
+
+                extendedSegments.Add(currExtendedSegment, path);
+            }
+
+            // adjust module heights
+
+
+            DA.SetDataTree(0, extendedSegments);
         }
 
         protected override System.Drawing.Bitmap Icon
