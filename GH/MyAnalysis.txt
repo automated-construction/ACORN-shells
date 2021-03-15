@@ -60,8 +60,9 @@ EL-PROP 2 : SHELL_NURBS_KL
   INT_TYPE_SHELL_NURBS_KL = FULL
 !==================================================================
 EL-PROP 3 : NURBS_BREP_EDGE_COUPLING
-  BREP_TYPE = COUPLING_DISP
-  BL_FACTOR_DISP = 1e7
+  BREP_TYPE = COUPLING_DISP_ROT
+  BL_FACTOR_DISP = 10000000
+  BL_FACTOR_ROT = 10000000
   INT_TYPE_NURBS_BREP_EDGE_COUPLING = FULL
 !###################################################################
 !####                        NURBS-BLOCK                        ####
@@ -308,8 +309,12 @@ DE-REFINEMENT
 !        ID  DE-EL     LOC COORD  BC
 DE-LOAD  1   DEAD   1   D1=0 D2=0 D3=1  VAL=100
 DE-SUP   2   1   DE-BREP  1     DISP_X, DISP_Y, DISP_Z
-DE-SUP   3   1   DE-BREP  2     DISP_X, DISP_Y, DISP_Z
-DE-SUP   4   1   DE-BREP  3     DISP_X, DISP_Y, DISP_Z
-DE-SUP   5   1   DE-BREP  4     DISP_X, DISP_Y, DISP_Z
+DE-SUP   3   1   DE-BREP  1     CLAMPED
+DE-SUP   4   1   DE-BREP  2     DISP_X, DISP_Y, DISP_Z
+DE-SUP   5   1   DE-BREP  2     CLAMPED
+DE-SUP   6   1   DE-BREP  3     DISP_X, DISP_Y, DISP_Z
+DE-SUP   7   1   DE-BREP  3     CLAMPED
+DE-SUP   8   1   DE-BREP  4     DISP_X, DISP_Y, DISP_Z
+DE-SUP   9   1   DE-BREP  4     CLAMPED
 LD-COM 1
   TYPE=LD-NODE   1   FAC= 1.0

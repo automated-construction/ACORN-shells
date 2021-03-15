@@ -156,8 +156,7 @@ namespace ACORN_shells
                 var kiwiCableMaterial = (CallComponent(componentInfos, "Kiwi3d.MaterialDefaults", new object[] { MAT_STEEL })[0] as IList<object>)[0];
 
                 var kiwiMembraneRefinement = (CallComponent(componentInfos, "Kiwi3d.SurfaceRefinement", new object[] {
-                //    SURF_DEGREE, SURF_DEGREE, (int)subDiv, (int)subDiv })[0] as IList<object>)[0];
-                    SURF_DEGREE, SURF_DEGREE, null, null })[0] as IList<object>)[0];
+                    SURF_DEGREE, SURF_DEGREE, (int)subDiv, (int)subDiv })[0] as IList<object>)[0];
                 var kiwiCableRefinement = (CallComponent(componentInfos, "Kiwi3d.CurveRefinement", new object[] {
                     CRV_DEGREE, CRV_SUBDIV })[0] as IList<object>)[0];
 
@@ -196,7 +195,7 @@ namespace ACORN_shells
                 foreach (var c in corners)
                 {
                     Point3d[] points = new Point3d[0];
-                    c.DivideByCount(100, true, out points);
+                    c.DivideByCount(CRV_SUBDIV, true, out points);
 
                     foreach (var p in points)
                         kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportPoint", new object[] { p, true,
@@ -280,8 +279,12 @@ namespace ACORN_shells
 
                     FormFoundCorners = new List<Curve>(); // reset FIELD
                     // project corners onto deformed surface
-                    foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
-
+                    foreach (var c in corners)
+                    {
+                        Curve[] projCorner = Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol);
+                        if (projCorner == null || projCorner.Length == 0) FormFoundCorners.Add(c); // case of straight corners?
+                        else FormFoundCorners.Add(projCorner[0]);
+                    }
                 }
 
                 // reset run = false; needed?
