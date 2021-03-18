@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="ShellLoads.cs" />
     <Compile Include="SimulatePinbed.cs" />
     <Compile Include="FormFindMembrane.cs" />
     <Compile Include="GetAreaEfficiency.cs" />
@@ -85,6 +86,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="AnalysisResults.cs" />
     <Compile Include="VisualiseBuilding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
