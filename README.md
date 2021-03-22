@@ -4,7 +4,9 @@ ACORN: Automating COncrete constRuctioN
 
 Design and optimisation of thin shells for building slabs
 
-**WORK IN PROGRESS** The code in this repository is still under development.
+**WORK IN PROGRESS** The code in this repository is still under development. Find below a visual for development road map (orange is under development).
+
+![roadmap_210322](https://user-images.githubusercontent.com/5091001/111985154-2c0b4c00-8b04-11eb-95d8-29b294e862fb.jpg)
 
 **Installing and using the plugin**
 
