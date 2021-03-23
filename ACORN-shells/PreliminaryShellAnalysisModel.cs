@@ -5,6 +5,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Karamba.GHopper.Geometry;
 using Karamba.Geometry;
+using Karamba.GHopper.Loads;
 
 namespace ACORN_shells
 {
@@ -35,8 +36,13 @@ namespace ACORN_shells
             pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Thickness", "T", "Thickness of shell.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Loads", "L", "Loads. Default is gravity (no safety factor).", GH_ParamAccess.list);
+            pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item);
+
 
             pManager[3].Optional = true;
+            pManager[4].Optional = true;
+            pManager[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -50,11 +56,15 @@ namespace ACORN_shells
             List<Curve> corners = new List<Curve>();
             double thickness = 0;
             Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
+            List <Karamba.GHopper.Loads.GH_Load> ghLoads = new List<Karamba.GHopper.Loads.GH_Load>();
+            bool fixedSupport = false;
 
             if (!DA.GetData(0, ref mesh)) return;
             if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetData(2, ref thickness)) return;
             DA.GetData(3, ref ghMat);
+            DA.GetDataList(4, ghLoads);
+            DA.GetData(5, ref fixedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             var logger = new Karamba.Utilities.MessageLogger();
@@ -87,20 +97,33 @@ namespace ACORN_shells
                     var test = c.ClosestPoint(v, out _, fileTol);
                     if (test)
                     {
-                        k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, true, true, true }));
+                        if (fixedSupport)
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, true, true, true }));
+                        else
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, false, false, false }));
+
                         break;
                     }
                 }
             }
 
-            // Gravitational load
+            // Create loads
+            List<Karamba.Loads.Load> k3dLoads = new List<Karamba.Loads.Load>();
+
+            // Default gravitational load
             var k3dLoad = new Karamba.Loads.GravityLoad(new Vector3(0, 0, -1));
+
+            if (ghLoads.Count == 0)
+                k3dLoads.Add (k3dLoad);
+            else
+                foreach (GH_Load ghLoad in ghLoads)
+                    k3dLoads.Add(ghLoad.Value);
 
             // Assemble model
             var k3dModel = k3dKit.Model.AssembleModel(
                 k3dShell,
                 k3dSupports,
-                new List<Karamba.Loads.Load>() { k3dLoad },
+                k3dLoads,
                 out _, out _, out _, out _, out _);
 
             DA.SetData(0, new Karamba.GHopper.Models.GH_Model(k3dModel));

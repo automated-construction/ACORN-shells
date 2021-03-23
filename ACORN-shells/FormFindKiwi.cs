@@ -17,6 +17,8 @@ namespace ACORN_shells
         int[] ANAL_OUTPUT = new int[] { 1, 2, 3 };
 
         Brep FormFoundShell = null;
+        List<Curve> FormFoundCorners = new List<Curve>();
+        List<Curve> FormFoundEdges = new List<Curve>();
         string KiwiErrors = "";
 
         public FormFindKiwi()
@@ -30,32 +32,46 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.item);
             pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Edges", "E", "Surface edge curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
             pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("CurveSupports", "CS", "Use Corner curves as supports", GH_ParamAccess.item); // test
+            pManager.AddBooleanParameter("ScaleDeform", "SD", "Use DefMod to scale, otherwise, uses Geomtry Scaling.", GH_ParamAccess.item); // test
+            pManager.AddNumberParameter("ThicknessFactor", "TF", "Thickness = Shell Height * TF", GH_ParamAccess.item);
 
-            pManager[3].Optional = true;
+            pManager[4].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddTextParameter("KiwiErrors", "O", "Errors from Kiwi3D.", GH_ParamAccess.item);
             pManager.AddBrepParameter("FormFoundShell", "S", "Form found shell.", GH_ParamAccess.item);
-            pManager.AddTextParameter("KiwiErrors", "E", "Errors from Kiwi3D.", GH_ParamAccess.item);
+            pManager.AddCurveParameter("FormFoundCorners", "C", "Form found shell corners.", GH_ParamAccess.list);
+            pManager.AddCurveParameter("FormFoundEdges", "E", "Form found shell edges.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Brep planShell = null;
             List<Curve> corners = new List<Curve>();
+            List<Curve> edges = new List<Curve>();
             double height = 0;
             double subDiv = 0;
             bool run = false;
+            bool curveSupports = false; // test
+            bool scaleDeform = false; // test
+            double thickFact = 1.0; // test
 
-            if (!DA.GetData(0, ref planShell)) return;  
+            if (!DA.GetData(0, ref planShell)) return;
             if (!DA.GetDataList(1, corners)) return;
-            if (!DA.GetData(2, ref height)) return;
-            DA.GetData(3, ref subDiv);
-            if (!DA.GetData(4, ref run)) return;
+            if (!DA.GetDataList(2, edges)) return;
+            if (!DA.GetData(3, ref height)) return;
+            DA.GetData(4, ref subDiv);
+            if (!DA.GetData(5, ref run)) return;
+            if (!DA.GetData(6, ref curveSupports)) return; // test
+            if (!DA.GetData(7, ref scaleDeform)) return; // test
+            if (!DA.GetData(8, ref thickFact)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
@@ -64,7 +80,7 @@ namespace ACORN_shells
             {
                 // Get all Kiwi3d components
                 var componentNames = new List<string>() { "Kiwi3d.MaterialDefaults", "Kiwi3d.SurfaceRefinement", "Kiwi3d.ShellElement",
-                    "Kiwi3d.SupportPoint", "Kiwi3d.SurfaceLoad", "Kiwi3d.LinearAnalysis", "Kiwi3d.AnalysisModel",
+                    "Kiwi3d.SupportPoint", "Kiwi3d.SupportCurve", "Kiwi3d.SurfaceLoad", "Kiwi3d.LinearAnalysis", "Kiwi3d.AnalysisModel",
                     "Kiwi3d.IGASolver", "Kiwi3d.DeformedModel" };
 
                 var componentInfos = componentNames.ToDictionary(x => x, x => Rhino.NodeInCode.Components.FindComponent(x));
@@ -82,7 +98,8 @@ namespace ACORN_shells
                 Directory.CreateDirectory(tmpDir);
 
                 // Define model
-                var thickness = height * 0.1; // Use 10% of target height
+                //var thickness = height * 0.1; // Use 10% of target height
+                var thickness = height * thickFact; // default thickness value in Kiwi component, used for LoR = 0.1 (absolute, not factor)
 
                 var kiwiMaterial = (CallComponent(componentInfos, "Kiwi3d.MaterialDefaults", new object[] { MAT_CONC })[0] as IList<object>)[0];
                 var kiwiRefinement = (CallComponent(componentInfos, "Kiwi3d.SurfaceRefinement", new object[] {SURF_DEGREE,
@@ -93,6 +110,21 @@ namespace ACORN_shells
                 // Pinned support at corners
                 // Divide the curves into points since the support curve seems to not work as expected
                 var kiwiSupports = new List<object>();
+
+                // TESTING
+                // with curve supports, to confirm same Karamba analysis results in LoR report
+                
+                if (curveSupports)
+
+                //kiwiSupports = new List<object>(); // clears previous kiwiSupports, using points
+                foreach (var c in corners)
+                {
+                    kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportCurve", new object[] { c, true,
+                        true, true, false })[0] as IList<object>)[0]);
+                }
+
+                else          
+                    
                 foreach (var c in corners)
                 {
                     Point3d[] points = new Point3d[0];
@@ -121,12 +153,27 @@ namespace ACORN_shells
                 {
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
-                    FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
+
+                    // TESTING
+                    if (scaleDeform)
+                        FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    else  
+                        // ORIGINAL by Mish
+                        FormFoundShell.Transform(Transform.Scale(new Plane(bounds.Min, Vector3d.ZAxis), 1, 1, scale));
+                    
                 }
+
+                // project edges and corners onto deformed surface
+                var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+                foreach (var c in corners) FormFoundCorners.Add(Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
+                foreach (var e in edges) FormFoundEdges.Add(Curve.ProjectToBrep(e, FormFoundShell, Vector3d.ZAxis, fileTol)[0]);
+
             }
-            
-            DA.SetData(0, FormFoundShell);
-            DA.SetData(1, KiwiErrors);
+
+            DA.SetData(0, KiwiErrors);
+            DA.SetData(1, FormFoundShell);
+            DA.SetDataList(2, FormFoundCorners);
+            DA.SetDataList(3, FormFoundEdges);
         }
 
         private object[] CallComponent(Dictionary<string, Rhino.NodeInCode.ComponentFunctionInfo> components, string componentName, object[] args)

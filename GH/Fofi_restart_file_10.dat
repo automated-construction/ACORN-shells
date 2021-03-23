@@ -1,0 +1,601 @@
+!###################################################################
+!####                          PC-BLOCK                         ####
+!###################################################################
+!===================================================================
+PC-PROBLEM
+  MASTERJOB = PC-ANALYSIS 1
+!===================================================================
+!===================================================================
+PC-ANALYSIS 1: STA_GEO_NONLIN
+  PATHCONTROL = FORCE      !Options: FORCE or DISPLACEMENT or ARCLENGTH
+  SOLVER = PC-SOLVER 1
+  OUTPUT = PC-OUT 1
+  COMPCASE = LD-COM 1
+  DOMAIN = EL-DOMAIN 1
+  NUM_STEP = 1 
+  MAX_ITER_EQUILIBRIUM = 15
+  EQUILIBRIUM_ACCURACY = 0.001
+  CURVE = LD-CURVE 1
+  !TRACED_NODE = 10
+  !TRACED_NODAL_DOF=DISP_Z
+!===================================================================
+!===================================================================
+LD-CURVE 1 TYPE=DISCRETE
+  TIME = 0  VAL = 0
+  TIME = 1  VAL = 1
+!===================================================================
+!===================================================================
+PC-SOLVER 1: MKL_PARDISO
+  BANDWITH = CUTHILL_MCKEE
+PC-SOLVER 2: CROUT_SKYLINE
+!===================================================================
+!===================================================================
+PC-OUT 1 : RHINO
+  GEOM = 1
+  DISP = 1
+  !STRESS = 1
+  !NODAL_STRESS = 1
+  !STRESS_LINES = 1
+  !GAUSS_POINTS = 1
+  !GAUSS_POINTS_GEO = 1
+  !COUPLING_POINTS = 1
+  !PAR_LINES = 1
+  !PAR_TRIM = 1
+  PREC= 14
+  !FPN = 0
+  !SUPPORT_POS = 1
+  !LOAD_POS= 1
+  !RESTART_FILE = 1
+  CROSS_SECTION = 1
+  !ELE_PROPS = 1
+  OUTPUT_FILE_NAME = FormFinding_1
+!===================================================================
+!###################################################################
+!####                          EL-BLOCK                         ####
+!###################################################################
+!===================================================================
+EL-DOMAIN 1
+ ELEMENTS = EL-TOP 1
+!===================================================================
+EL-MAT 1 : LIN_ELAST_ISOTROPIC
+  EMOD = 1e+06
+  DENS= 20
+  ALPHAT= 0
+  NUE= 0
+!=============================================================================
+EL-MAT 2 : LIN_ELAST_ISOTROPIC
+  EMOD = 2.1e+08
+  DENS= 78.5
+  ALPHAT= 0
+  NUE= 0
+!=============================================================================
+!=============================================================================
+EL-PROP  1 : MEMBRANE_NURBS
+ MAT = EL-MAT 1
+ THICKNESS = 0.001
+ INT_TYPE_MEMBRANE_NURBS = FULL
+ PROJECTED_PRESTRESS=1 SIG11=1000 SIG22=1000 SIG12=0
+ A_X= 1 A_Y= 0 A_Z= 0
+ B_X= 0 B_Y= 1 B_Z= 0
+
+!=============================================================================
+EL-PROP  2 : CORD_3D_NURBS
+ MAT = EL-MAT 2
+ AREA = 7.85398163397448e-05
+ PRESTRESS =2.16450722604978e+04
+ PRESTRESS_CURVE = 0 
+ BEND_STAB = 0
+ INT_TYPE_CORD_3D_NURBS = FULL
+!=============================================================================
+EL-PROP  4 : NURBS_BREP_EDGE_COUPLING
+ BL_FACTOR_DISP = 1e+07
+ BREP_TYPE = COUPLING_DISP
+ INT_TYPE_NURBS_BREP_EDGE_COUPLING = FULL
+!=============================================================================
+EL-PROP  5 : NURBS_BREP_POINT
+BREP_TYPE = COUPLING_DISP
+ BL_FACTOR_DISP = 1e+07
+ BL_FACTOR_ROT = 0
+!###################################################################
+!####                        NURBS-BLOCK                        ####
+!###################################################################
+NURBS_PATCH 1 : NURBS_2D
+ CTRL_PTS = CTRL_PTS_DEF 1
+ NCTRL =  12
+ MCTRL =  12
+ PDEG =   3
+ QDEG =   3
+ UKNOT =  -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -3.1200000000e+00, -2.3400000000e+00, -1.5600000000e+00, -7.8000000000e-01, 0.0000000000e+00, 7.8000000000e-01, 1.5600000000e+00, 2.3400000000e+00, 3.1200000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+ VKNOT =  -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -2.8800000000e+00, -2.1600000000e+00, -1.4400000000e+00, -7.2000000000e-01, 0.0000000000e+00, 7.2000000000e-01, 1.4400000000e+00, 2.1600000000e+00, 2.8800000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+ TRIMMING = B_REP 1
+!===================================================================
+CTRL_PTS_DEF    1
+ CTRLPT   1  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   2  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   3  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   4  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   5  nan  nan  nan  1.0000000000e+00
+ CTRLPT   6  nan  nan  nan  1.0000000000e+00
+ CTRLPT   7  nan  nan  nan  1.0000000000e+00
+ CTRLPT   8  nan  nan  nan  1.0000000000e+00
+ CTRLPT   9  nan  nan  nan  1.0000000000e+00
+ CTRLPT   10  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   11  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   12  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   13  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   14  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   15  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   16  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   17  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   18  nan  nan  nan  1.0000000000e+00
+ CTRLPT   19  nan  nan  nan  1.0000000000e+00
+ CTRLPT   20  nan  nan  nan  1.0000000000e+00
+ CTRLPT   21  nan  -nan(ind)  nan  1.0000000000e+00
+ CTRLPT   22  nan  nan  nan  1.0000000000e+00
+ CTRLPT   23  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   24  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   25  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   26  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   27  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   28  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   29  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   30  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   31  nan  nan  nan  1.0000000000e+00
+ CTRLPT   32  nan  nan  nan  1.0000000000e+00
+ CTRLPT   33  -nan(ind)  nan  nan  1.0000000000e+00
+ CTRLPT   34  nan  nan  nan  1.0000000000e+00
+ CTRLPT   35  nan  nan  nan  1.0000000000e+00
+ CTRLPT   36  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   37  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   38  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   39  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   40  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   41  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   42  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   43  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   44  nan  nan  nan  1.0000000000e+00
+ CTRLPT   45  nan  nan  nan  1.0000000000e+00
+ CTRLPT   46  nan  nan  nan  1.0000000000e+00
+ CTRLPT   47  nan  nan  nan  1.0000000000e+00
+ CTRLPT   48  nan  nan  nan  1.0000000000e+00
+ CTRLPT   49  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   50  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   51  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   52  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   53  nan  nan  nan  1.0000000000e+00
+ CTRLPT   54  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   55  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   56  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   57  nan  nan  nan  1.0000000000e+00
+ CTRLPT   58  nan  nan  nan  1.0000000000e+00
+ CTRLPT   59  -nan(ind)  nan  nan  1.0000000000e+00
+ CTRLPT   60  nan  nan  nan  1.0000000000e+00
+ CTRLPT   61  nan  nan  nan  1.0000000000e+00
+ CTRLPT   62  nan  nan  nan  1.0000000000e+00
+ CTRLPT   63  nan  nan  nan  1.0000000000e+00
+ CTRLPT   64  nan  nan  nan  1.0000000000e+00
+ CTRLPT   65  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   66  nan  nan  nan  1.0000000000e+00
+ CTRLPT   67  nan  nan  nan  1.0000000000e+00
+ CTRLPT   68  nan  nan  nan  1.0000000000e+00
+ CTRLPT   69  nan  nan  nan  1.0000000000e+00
+ CTRLPT   70  nan  nan  nan  1.0000000000e+00
+ CTRLPT   71  nan  nan  nan  1.0000000000e+00
+ CTRLPT   72  nan  nan  nan  1.0000000000e+00
+ CTRLPT   73  nan  nan  nan  1.0000000000e+00
+ CTRLPT   74  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   75  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   76  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   77  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   78  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   79  nan  nan  nan  1.0000000000e+00
+ CTRLPT   80  nan  nan  nan  1.0000000000e+00
+ CTRLPT   81  nan  nan  nan  1.0000000000e+00
+ CTRLPT   82  nan  nan  nan  1.0000000000e+00
+ CTRLPT   83  nan  nan  nan  1.0000000000e+00
+ CTRLPT   84  nan  nan  nan  1.0000000000e+00
+ CTRLPT   85  nan  nan  nan  1.0000000000e+00
+ CTRLPT   86  -nan(ind)  nan  nan  1.0000000000e+00
+ CTRLPT   87  nan  nan  nan  1.0000000000e+00
+ CTRLPT   88  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   89  nan  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   90  nan  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   91  nan  nan  nan  1.0000000000e+00
+ CTRLPT   92  nan  nan  nan  1.0000000000e+00
+ CTRLPT   93  nan  nan  nan  1.0000000000e+00
+ CTRLPT   94  nan  nan  nan  1.0000000000e+00
+ CTRLPT   95  nan  nan  nan  1.0000000000e+00
+ CTRLPT   96  nan  nan  nan  1.0000000000e+00
+ CTRLPT   97  nan  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   98  nan  nan  nan  1.0000000000e+00
+ CTRLPT   99  nan  nan  nan  1.0000000000e+00
+ CTRLPT   100  nan  nan  nan  1.0000000000e+00
+ CTRLPT   101  nan  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   102  nan  nan  nan  1.0000000000e+00
+ CTRLPT   103  nan  nan  nan  1.0000000000e+00
+ CTRLPT   104  nan  nan  nan  1.0000000000e+00
+ CTRLPT   105  nan  nan  nan  1.0000000000e+00
+ CTRLPT   106  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   107  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   108  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   109  nan  nan  nan  1.0000000000e+00
+ CTRLPT   110  nan  nan  nan  1.0000000000e+00
+ CTRLPT   111  nan  nan  nan  1.0000000000e+00
+ CTRLPT   112  nan  nan  nan  1.0000000000e+00
+ CTRLPT   113  nan  nan  nan  1.0000000000e+00
+ CTRLPT   114  nan  nan  nan  1.0000000000e+00
+ CTRLPT   115  nan  nan  nan  1.0000000000e+00
+ CTRLPT   116  nan  nan  nan  1.0000000000e+00
+ CTRLPT   117  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   118  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   119  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   120  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   121  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   122  nan  nan  nan  1.0000000000e+00
+ CTRLPT   123  nan  nan  nan  1.0000000000e+00
+ CTRLPT   124  nan  nan  nan  1.0000000000e+00
+ CTRLPT   125  nan  nan  nan  1.0000000000e+00
+ CTRLPT   126  nan  nan  nan  1.0000000000e+00
+ CTRLPT   127  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   128  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   129  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   130  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   131  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   132  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   133  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   134  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   135  nan  nan  nan  1.0000000000e+00
+ CTRLPT   136  nan  nan  nan  1.0000000000e+00
+ CTRLPT   137  nan  nan  nan  1.0000000000e+00
+ CTRLPT   138  nan  nan  nan  1.0000000000e+00
+ CTRLPT   139  nan  nan  nan  1.0000000000e+00
+ CTRLPT   140  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   141  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   142  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   143  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   144  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   145  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   146  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   147  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   148  nan  nan  nan  1.0000000000e+00
+ CTRLPT   149  nan  nan  nan  1.0000000000e+00
+ CTRLPT   150  nan  nan  nan  1.0000000000e+00
+ CTRLPT   151  nan  nan  nan  1.0000000000e+00
+ CTRLPT   152  nan  nan  nan  1.0000000000e+00
+ CTRLPT   153  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   154  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   155  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   156  -nan(ind)  nan  -nan(ind)  1.0000000000e+00
+ CTRLPT   157  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   158  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   159  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   160  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   161  nan  nan  nan  1.0000000000e+00
+ CTRLPT   162  nan  nan  nan  1.0000000000e+00
+ CTRLPT   163  nan  nan  nan  1.0000000000e+00
+ CTRLPT   164  nan  nan  nan  1.0000000000e+00
+ CTRLPT   165  nan  nan  nan  1.0000000000e+00
+ CTRLPT   166  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   167  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   168  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+ CTRLPT   169  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00
+!===================================================================
+!###################################################################
+!####                        TRIMMING                           ####
+!###################################################################
+B_REP 1
+ B_REP_LOOP   1         0   1001   TRUE   1002   TRUE   1003   TRUE   1004   TRUE
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1001 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1001
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.9000000000e+00, -3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1001
+  CTRLPT_PAR_ID  5  
+  CTRLPT_PAR_ID  6  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1002 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1002
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.6000000000e+00, -3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1002
+  CTRLPT_PAR_ID  7  
+  CTRLPT_PAR_ID  8  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1003 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1003
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.9000000000e+00, -3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1003
+  CTRLPT_PAR_ID  9  
+  CTRLPT_PAR_ID  10  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1004 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1004
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.6000000000e+00, -3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1004
+  CTRLPT_PAR_ID  11  
+  CTRLPT_PAR_ID  12  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1005 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1005
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.9000000000e+00, -3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1005
+  CTRLPT_PAR_ID  13  
+  CTRLPT_PAR_ID  14  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1006 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1006
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.6000000000e+00, -3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1006
+  CTRLPT_PAR_ID  15  
+  CTRLPT_PAR_ID  16  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1007 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1007
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.9000000000e+00, -3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1007
+  CTRLPT_PAR_ID  17  
+  CTRLPT_PAR_ID  18  
+!===================================================================
+!###################################################################
+!####                  NURBS-BLOCK-PARAMETER                    ####
+!###################################################################
+NURBS_PATCH_PAR  1008 : NURBS_1D
+  CTRL_PTS = CTRL_PTS_PAR  1008
+  NCTRL =  1
+  PDEG  =  1
+  UKNOT =  -3.6000000000e+00, -3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_PAR  1008
+  CTRLPT_PAR_ID  19  
+  CTRLPT_PAR_ID  20  
+!===================================================================
+!###################################################################
+!####                        NURBS-BLOCK                        ####
+!###################################################################
+NURBS_PATCH 2 : NURBS_1D
+ CTRL_PTS = CTRL_PTS_DEF 2
+ NCTRL =  10
+ PDEG =   3
+ UKNOT =  -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -2.9250000000e+00, -1.9500000000e+00, -9.7500000000e-01, 0.0000000000e+00, 9.7500000000e-01, 1.9500000000e+00, 2.9250000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_DEF    2
+ CTRLPT   1  -3.9000000000e+00  -3.6000000000e+00  0.0000000000e+00  1.0000000000e+00  
+ CTRLPT   2  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   3  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   4  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   5  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   6  nan  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   7  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   8  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   9  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   10  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   11  3.9000000000e+00  -3.6000000000e+00  0.0000000000e+00  1.0000000000e+00  
+!===================================================================
+!###################################################################
+!####                        NURBS-BLOCK                        ####
+!###################################################################
+NURBS_PATCH 3 : NURBS_1D
+ CTRL_PTS = CTRL_PTS_DEF 3
+ NCTRL =  10
+ PDEG =   3
+ UKNOT =  -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -2.7000000000e+00, -1.8000000000e+00, -9.0000000000e-01, 0.0000000000e+00, 9.0000000000e-01, 1.8000000000e+00, 2.7000000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_DEF    3
+ CTRLPT   1  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   2  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   3  -nan(ind)  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   4  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   5  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   6  nan  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   7  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   8  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   9  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   10  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   11  3.9000000000e+00  3.6000000000e+00  0.0000000000e+00  1.0000000000e+00  
+!===================================================================
+!###################################################################
+!####                        NURBS-BLOCK                        ####
+!###################################################################
+NURBS_PATCH 4 : NURBS_1D
+ CTRL_PTS = CTRL_PTS_DEF 4
+ NCTRL =  10
+ PDEG =   3
+ UKNOT =  -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -3.9000000000e+00, -2.9250000000e+00, -1.9500000000e+00, -9.7500000000e-01, 0.0000000000e+00, 9.7500000000e-01, 1.9500000000e+00, 2.9250000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00, 3.9000000000e+00
+!===================================================================
+CTRL_PTS_DEF    4
+ CTRLPT   1  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   2  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   3  -nan(ind)  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   4  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   5  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   6  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   7  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   8  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   9  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   10  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   11  -3.9000000000e+00  3.6000000000e+00  0.0000000000e+00  1.0000000000e+00  
+!===================================================================
+!###################################################################
+!####                        NURBS-BLOCK                        ####
+!###################################################################
+NURBS_PATCH 5 : NURBS_1D
+ CTRL_PTS = CTRL_PTS_DEF 5
+ NCTRL =  10
+ PDEG =   3
+ UKNOT =  -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -3.6000000000e+00, -2.7000000000e+00, -1.8000000000e+00, -9.0000000000e-01, 0.0000000000e+00, 9.0000000000e-01, 1.8000000000e+00, 2.7000000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00, 3.6000000000e+00
+!===================================================================
+CTRL_PTS_DEF    5
+ CTRLPT   1  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   2  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   3  -nan(ind)  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   4  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   5  nan  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   6  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   7  nan  nan  nan  1.0000000000e+00  
+ CTRLPT   8  -nan(ind)  -nan(ind)  -nan(ind)  1.0000000000e+00  
+ CTRLPT   9  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+ CTRLPT   10  -nan(ind)  -nan(ind)  nan  1.0000000000e+00  
+ CTRLPT   11  -nan(ind)  nan  -nan(ind)  1.0000000000e+00  
+!===================================================================
+!===================================================================
+CTRL_PTS_PAR_DEF 
+ CTRLPT_PAR   5  	-3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   6  	3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   7  	3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   8  	3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   9  	3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   10  	-3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   11  	-3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   12  	-3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   13  	-3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   14  	3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   15  	3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   16  	3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   17  	3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   18  	-3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   19  	-3.9000000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   20  	-3.9000000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   320  	-3.6400000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   321  	-3.1200000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   322  	-2.3400000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   323  	-1.5600000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   324  	-7.8000000000e-01  	-3.6000000000e+00
+ CTRLPT_PAR   325  	3.3306690739e-16  	-3.6000000000e+00
+ CTRLPT_PAR   326  	7.8000000000e-01  	-3.6000000000e+00
+ CTRLPT_PAR   327  	1.5600000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   328  	2.3400000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   329  	3.1200000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   330  	3.6400000000e+00  	-3.6000000000e+00
+ CTRLPT_PAR   333  	3.9000000000e+00  	-3.3600000000e+00
+ CTRLPT_PAR   334  	3.9000000000e+00  	-2.8800000000e+00
+ CTRLPT_PAR   335  	3.9000000000e+00  	-2.1600000000e+00
+ CTRLPT_PAR   336  	3.9000000000e+00  	-1.4400000000e+00
+ CTRLPT_PAR   337  	3.9000000000e+00  	-7.2000000000e-01
+ CTRLPT_PAR   338  	3.9000000000e+00  	5.5511151231e-17
+ CTRLPT_PAR   339  	3.9000000000e+00  	7.2000000000e-01
+ CTRLPT_PAR   340  	3.9000000000e+00  	1.4400000000e+00
+ CTRLPT_PAR   341  	3.9000000000e+00  	2.1600000000e+00
+ CTRLPT_PAR   342  	3.9000000000e+00  	2.8800000000e+00
+ CTRLPT_PAR   343  	3.9000000000e+00  	3.3600000000e+00
+ CTRLPT_PAR   346  	3.6400000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   347  	3.1200000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   348  	2.3400000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   349  	1.5600000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   350  	7.8000000000e-01  	3.6000000000e+00
+ CTRLPT_PAR   351  	-3.3306690739e-16  	3.6000000000e+00
+ CTRLPT_PAR   352  	-7.8000000000e-01  	3.6000000000e+00
+ CTRLPT_PAR   353  	-1.5600000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   354  	-2.3400000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   355  	-3.1200000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   356  	-3.6400000000e+00  	3.6000000000e+00
+ CTRLPT_PAR   359  	-3.9000000000e+00  	3.3600000000e+00
+ CTRLPT_PAR   360  	-3.9000000000e+00  	2.8800000000e+00
+ CTRLPT_PAR   361  	-3.9000000000e+00  	2.1600000000e+00
+ CTRLPT_PAR   362  	-3.9000000000e+00  	1.4400000000e+00
+ CTRLPT_PAR   363  	-3.9000000000e+00  	7.2000000000e-01
+ CTRLPT_PAR   364  	-3.9000000000e+00  	-5.5511151231e-17
+ CTRLPT_PAR   365  	-3.9000000000e+00  	-7.2000000000e-01
+ CTRLPT_PAR   366  	-3.9000000000e+00  	-1.4400000000e+00
+ CTRLPT_PAR   367  	-3.9000000000e+00  	-2.1600000000e+00
+ CTRLPT_PAR   368  	-3.9000000000e+00  	-2.8800000000e+00
+ CTRLPT_PAR   369  	-3.9000000000e+00  	-3.3600000000e+00
+
+!###################################################################
+!####                        DESIGN-BLOCK                       ####
+!###################################################################
+!         ID  PART  PROP   NURBS_TOP                                
+DE-ELTOP-NURBS
+  DE-EL   1  1   1   1
+  DE-EL   2  1   2   2
+  DE-EL   3  1   2   3
+  DE-EL   4  1   2   4
+  DE-EL   5  1   2   5
+!===================================================================
+!      DE-EL-ID   dp=     dq=    ru=<>     rv=<>
+DE-REFINEMENT
+ DE-EL    1       dp=0    dq=0   ru=1      rv=1
+ DE-EL    2       dp=0       ru=1      
+ DE-EL    3       dp=0       ru=1      
+ DE-EL    4       dp=0       ru=1      
+ DE-EL    5       dp=0       ru=1      
+!===================================================================
+!                  ID  PART  PROP   NURBS_TOP
+DE-BREP-NURBS
+DE-BREP-EL   1   1     4    PATCH_PAR  1005  OF   DE-EL  1 DE-EL  2 TOL = 1.0000000000e-02  [ -3.9000000000e+00 3.9000000000e+00 ][ -3.9000000000e+00 3.9000000000e+00 ] 
+DE-BREP-EL   2   1     4    PATCH_PAR  1006  OF   DE-EL  1 DE-EL  3 TOL = 1.0000000000e-02  [ -3.6000000000e+00 3.6000000000e+00 ][ -3.6000000000e+00 3.6000000000e+00 ] 
+DE-BREP-EL   3   1     4    PATCH_PAR  1007  OF   DE-EL  1 DE-EL  4 TOL = 1.0000000000e-02  [ -3.9000000000e+00 3.9000000000e+00 ][ -3.9000000000e+00 3.9000000000e+00 ] 
+DE-BREP-EL   4   1     4    PATCH_PAR  1008  OF   DE-EL  1 DE-EL  5 TOL = 1.0000000000e-02  [ -3.6000000000e+00 3.6000000000e+00 ][ -3.6000000000e+00 3.6000000000e+00 ] 
+DE-BREP-EL   5   1     5 DE-EL  2 DE-EL  3 TOL = 1.0000000000e-02 [ 3.9000000000e+00 ][ -3.6000000000e+00 ] 
+DE-BREP-EL   6   1     5 DE-EL  2 DE-EL  5 TOL = 1.0000000000e-02 [ -3.9000000000e+00 ][ 3.6000000000e+00 ] 
+DE-BREP-EL   7   1     5 DE-EL  3 DE-EL  4 TOL = 1.0000000000e-02 [ 3.6000000000e+00 ][ -3.9000000000e+00 ] 
+DE-BREP-EL   8   1     5 DE-EL  4 DE-EL  5 TOL = 1.0000000000e-02 [ 3.9000000000e+00 ][ -3.6000000000e+00 ] 
+!===================================================================
+DE-REFINEMENT
+ DE-BREP-EL   1    dp=auto    ru=auto
+ DE-BREP-EL   2    dp=auto    ru=auto
+ DE-BREP-EL   3    dp=auto    ru=auto
+ DE-BREP-EL   4    dp=auto    ru=auto
+!===================================================================
+!        ID  DE-EL     LOC COORD  BC
+DE-SUP    2    2 u=0 	DISP_X, DISP_Y, DISP_Z
+DE-SUP    3    2 u=1 	DISP_X, DISP_Y, DISP_Z
+DE-SUP    4    3 u=1 	DISP_X, DISP_Y, DISP_Z
+DE-SUP    5    4 u=1 	DISP_X, DISP_Y, DISP_Z
+!===================================================================
+!         ID  TYPE    DE-EL     LOC COOR        D1   D2   D3     VAL
+DE-LOAD    1    DEAD	1	D1=0	D2=0	D3=-1	VAL = 10
+!===================================================================
+
+!===================================================================
+EL-PART  1 
+  NAME = Support
+!=============================================================================
+
+!===================================================================
+!===================================================================
+LD-COM 1
+ TYPE = LD-NODE 1  FAC = 1
+ TYPE=BC-DIRICHLET   2
+ TYPE=BC-DIRICHLET   3
+ TYPE=BC-DIRICHLET   4
+ TYPE=BC-DIRICHLET   5

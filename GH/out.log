@@ -1,97 +1,185 @@
-18:19:44  
-18:19:44  
-18:19:44    ***********************************************
-18:19:44    *                 ===========                 *
-18:19:44    *                  CARAT 2.0                  *
-18:19:44    *                 ===========                 *
-18:19:44    *                                             *
-18:19:44    *                 SERIAL CODE!                *
-18:19:44    *                                             *
-18:19:44    *                Version 0.1.0                *
-18:19:44    *                                             *
-18:19:44    *  Computer Aided Research and Analysis Tool  *
-18:19:44    *          (object-oriented version)          *
-18:19:44    *        Chair of Structural Analysis,        *
-18:19:44    *   Prof. Dr. K.-U. Bletzinger, TU Muenchen   *
-18:19:44    ***********************************************
-18:19:44  
-18:19:44  
-18:19:44 Used logging system: RLOG
-18:19:44 
-18:19:44 This is a RELEASE version of Carat
-18:19:44 
-18:19:44 --------------------------------------
-18:19:44  ... starting Preprocessing
-18:19:44 --------------------------------------
-18:19:44  
-18:19:44 Reading input file: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH/MyAnalysis.txt
-18:19:44  
-18:19:44 Input file path detected: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH
-18:19:44 Reading of design nodes finished
-18:19:44 Reading of design evaluation points finished
-18:19:44 Reading of design elements finished
-18:19:44 Reading of design boundaries finished
-18:19:44 Reading of design optimization refinement finished
-18:19:44 Reading of design elements finished
-18:19:44 Reading of design joints finished
-18:19:44 Reading of design supports finished
-18:19:44 Reading of design loads finished
-18:19:44 Reading of design interfaces finished
-18:19:44 load design finished
-18:19:44 Starting to mesh design elements!
-18:19:44 
-18:19:44 Finish meshing design elements!
-18:19:44 
-18:19:44 Starting to mesh design boundary elements!
-18:19:44 
-18:19:44 Finish meshing design boundary elements!
-18:19:44 
-18:19:44 Starting to create the elements from DE elements!
-18:19:44 
-18:19:44 Creating elements from DE elements done!
-18:19:44 
-18:19:44 Starting to create elements from DE boundary elements!
-18:19:44 
-18:19:44 Creating elements from DE boundary elements done!
-18:19:44 
-18:19:44 complete preprocessing done in 0.065000 seconds.
-18:19:44  
-18:19:44 --------------------------------------
-18:19:44  ... starting Solution of problem 1:
-18:19:44 --------------------------------------
-18:19:44  
-18:19:44 AnalysisStaGeoLin: starting static linear analysis.
-18:19:44  
-18:19:45 Bandwidth reduction started!
-18:19:45 Original bandwith  : 42 
-18:19:45 Original profile   : 7231 
-18:19:45 Using 'CUTHILL_MCKEE' algorithm
-18:19:45 Original ordering better than new one!
-18:19:45 Bandwith reduction finished in 0.005000 seconds!
-18:19:45  
-18:19:45 GlobalSparseMatrix: starting dry run
-18:19:45 GlobalSparseMatrix: dry run done in 0.006000 seconds.
-18:19:45  
-18:19:45 AnalysisStaGeoLin: starting assembly stiffness matrix (507 DOF).
-18:19:45 AnalysisStaGeoLin: ... assembling done in 0.045000 seconds.
-18:19:45  
-18:19:45 AnalysisStaGeoLin: solution startet!
-18:19:45 AnalysisStaGeoLin: ... equation solving in 0.106000 seconds.
-18:19:45 AnalysisStaGeoLin: solution finished!
-18:19:45 
-18:19:45 AnalysisStaGeoLin: starting postprocessing!
-18:19:45  
-18:19:45 Summation of Support Forces
-18:19:45 -----------------------------------------------------------
-18:19:45       F_x          |      F_y         |        F_z
-18:19:45 -----------------------------------------------------------
-18:19:45     0.000000e+00   |    0.000000e+00  |    0.000000e+00  |
-18:19:45  
-18:19:45 AnalysisStaGeoLin: ...postprocessing done in 0.243000 seconds.
-18:19:45 AnalysisStaGeoLin: static linear analysis finished!
-18:19:45  
-18:19:45 complete programm execution done in 0 hours, 0 minutes and  0.527000 seconds.
-18:19:45  
-18:19:45 finishing Carat++ successfully.
-18:19:45  
-18:19:45 ...Feierabend! 
+11:03:34  
+11:03:34  
+11:03:34    ***********************************************
+11:03:34    *                 ===========                 *
+11:03:34    *                  CARAT 2.0                  *
+11:03:34    *                 ===========                 *
+11:03:34    *                                             *
+11:03:34    *                 SERIAL CODE!                *
+11:03:34    *                                             *
+11:03:34    *                Version 0.1.0                *
+11:03:34    *                                             *
+11:03:34    *  Computer Aided Research and Analysis Tool  *
+11:03:34    *          (object-oriented version)          *
+11:03:34    *        Chair of Structural Analysis,        *
+11:03:34    *   Prof. Dr. K.-U. Bletzinger, TU Muenchen   *
+11:03:34    ***********************************************
+11:03:34  
+11:03:34  
+11:03:34 Used logging system: RLOG
+11:03:34 
+11:03:34 This is a RELEASE version of Carat
+11:03:34 
+11:03:34 --------------------------------------
+11:03:34  ... starting Preprocessing
+11:03:34 --------------------------------------
+11:03:34  
+11:03:34 Reading input file: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH/FormFinding.txt
+11:03:34  
+11:03:34 Input file path detected: C:/Users/ec977/Documents/GitHub/ACORN-shells/GH
+11:03:34 Reading of design nodes finished
+11:03:34 Reading of design evaluation points finished
+11:03:34 Reading of design elements finished
+11:03:34 Reading of design boundaries finished
+11:03:34 Reading of design optimization refinement finished
+11:03:34 Reading of design elements finished
+11:03:34 Reading of design joints finished
+11:03:34 Reading of design supports finished
+11:03:34 Reading of design loads finished
+11:03:34 Reading of design interfaces finished
+11:03:34 load design finished
+11:03:34 Starting to mesh design elements!
+11:03:34 
+11:03:34 Finish meshing design elements!
+11:03:34 
+11:03:34 Starting to mesh design boundary elements!
+11:03:34 
+11:03:34 Finish meshing design boundary elements!
+11:03:34 
+11:03:34 Starting to create the elements from DE elements!
+11:03:34 
+11:03:34 Creating elements from DE elements done!
+11:03:34 
+11:03:34 Starting to create elements from DE boundary elements!
+11:03:34 
+11:03:34 Creating elements from DE boundary elements done!
+11:03:34 
+11:03:34 complete preprocessing done in 0.129000 seconds.
+11:03:34  
+11:03:34 --------------------------------------
+11:03:34  ... starting Solution of problem 1:
+11:03:34 --------------------------------------
+11:03:34  
+11:03:34 Bandwidth reduction started!
+11:03:34 Original bandwith  : 107 
+11:03:34 Original profile   : 7358 
+11:03:34 Using 'CUTHILL_MCKEE' algorithm
+11:03:34 Optimized bandwidth  : 67
+11:03:34 Optimized profile    : 5152
+11:03:34 Bandwith reduction finished in 0.014000 seconds!
+11:03:34  
+11:03:34 GlobalSparseMatrix: starting dry run
+11:03:34 GlobalSparseMatrix: dry run done in 0.014000 seconds.
+11:03:34  
+11:03:35  
+11:03:35  
+11:03:35 =====================================================================
+11:03:35 F O R M F I N D I N G  - C A L C U L A T I O N
+11:03:35 =====================================================================
+11:03:35  
+11:03:35 ---------------------------------------------------------------------
+11:03:35 Formfinding Steps     :  5
+11:03:35 Equilibrium Accuracy  :   1.000000e-03
+11:03:35 Max Iter Equilibrium  :  5
+11:03:35 ---------------------------------------------------------------------
+11:03:35  
+11:03:35  
+11:03:35 Time Step No. 1
+11:03:35 ---------------------------------------------------------------------
+11:03:35 Equilibrium Accuracy     :   1.000000e-03
+11:03:35 Max Iter Equilibrium     :  5
+11:03:35 Actual Homotopy Factor   :   0.000000e+00
+11:03:35 ------------------------------------------------
+11:03:35   Iter  |          ||dU||      |     ||RHS||
+11:03:35 ------------------------------------------------
+11:03:35     1   |    1.825005e+01  |    9.036354e-01  
+11:03:36     2   |    5.939070e-07  |    3.070184e-08  
+11:03:36  
+11:03:36 Volume of Part 1: V =   1.546821e-02
+11:03:36 Actual volume: V = 1.5468210142679196e-02
+11:03:36  
+11:03:36 Iteration successful. ----------------------------------------------
+11:03:36  
+11:03:36  
+11:03:36 Time Step No. 2
+11:03:36 ---------------------------------------------------------------------
+11:03:36 Equilibrium Accuracy     :   1.000000e-03
+11:03:36 Max Iter Equilibrium     :  5
+11:03:36 Actual Homotopy Factor   :   0.000000e+00
+11:03:36 ------------------------------------------------
+11:03:36   Iter  |          ||dU||      |     ||RHS||
+11:03:36 ------------------------------------------------
+11:03:36     1   |    1.429638e+01  |    9.366048e-01  
+11:03:37     2   |    4.861951e-07  |    3.041059e-08  
+11:03:37  
+11:03:37 Volume of Part 1: V =   3.477620e-03
+11:03:37 Actual volume: V = 3.4776203115006029e-03
+11:03:37  
+11:03:37 Iteration successful. ----------------------------------------------
+11:03:37  
+11:03:37  
+11:03:37 Time Step No. 3
+11:03:37 ---------------------------------------------------------------------
+11:03:37 Equilibrium Accuracy     :   1.000000e-03
+11:03:37 Max Iter Equilibrium     :  5
+11:03:37 Actual Homotopy Factor   :   0.000000e+00
+11:03:37 ------------------------------------------------
+11:03:37   Iter  |          ||dU||      |     ||RHS||
+11:03:37 ------------------------------------------------
+11:03:37     1   |    1.471014e+01  |    9.992317e-01  
+11:03:38     2   |    2.331075e-06  |    5.299992e-08  
+11:03:38  
+11:03:38 Volume of Part 1: V =   1.516795e-03
+11:03:38 Actual volume: V = 1.5167954302625943e-03
+11:03:38  
+11:03:38 Iteration successful. ----------------------------------------------
+11:03:38  
+11:03:38  
+11:03:38 Time Step No. 4
+11:03:38 ---------------------------------------------------------------------
+11:03:38 Equilibrium Accuracy     :   1.000000e-03
+11:03:38 Max Iter Equilibrium     :  5
+11:03:38 Actual Homotopy Factor   :   0.000000e+00
+11:03:38 ------------------------------------------------
+11:03:38   Iter  |          ||dU||      |     ||RHS||
+11:03:38 ------------------------------------------------
+11:03:38     1   |    1.086836e+01  |    4.706968e-01  
+11:03:39     2   |    1.913514e-06  |    5.209666e-08  
+11:03:39  
+11:03:39 Volume of Part 1: V =   1.577175e-03
+11:03:39 Actual volume: V = 1.5771752248807803e-03
+11:03:39  
+11:03:39 Iteration successful. ----------------------------------------------
+11:03:39  
+11:03:39  
+11:03:39 Time Step No. 5
+11:03:39 ---------------------------------------------------------------------
+11:03:39 Equilibrium Accuracy     :   1.000000e-03
+11:03:39 Max Iter Equilibrium     :  5
+11:03:39 Actual Homotopy Factor   :   0.000000e+00
+11:03:39 ------------------------------------------------
+11:03:39   Iter  |          ||dU||      |     ||RHS||
+11:03:39 ------------------------------------------------
+11:03:39     1   |    7.576995e+00  |    2.598024e-01  
+11:03:39     2   |    2.593027e-06  |    6.606002e-08  
+11:03:39  
+11:03:39 Volume of Part 1: V =   1.641053e-03
+11:03:39 Actual volume: V = 1.6410531414131483e-03
+11:03:39  
+11:03:39 Iteration successful. ----------------------------------------------
+11:03:40  
+11:03:40  
+11:03:40 Time step procedure finished. Final Summary.
+11:03:40 -----------------------------------------------------------------
+11:03:40 Time Steps               :  5
+11:03:40 Equilibrium Accuracy     :   1.000000e-03
+11:03:40 Max Iter Equilibrium     :  5
+11:03:40 -----------------------------------------------------------------
+11:03:40  
+11:03:40  
+11:03:40  
+11:03:40 complete programm execution done in 0 hours, 0 minutes and  5.572000 seconds.
+11:03:40  
+11:03:40 finishing Carat++ successfully.
+11:03:40  
+11:03:40 ...Feierabend! 
