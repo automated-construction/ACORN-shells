@@ -26,12 +26,12 @@ namespace ACORN_shells
         {
             pManager.AddGenericParameter("Model", "M", "Analysed Karamba model.", GH_ParamAccess.item);
             pManager.AddBrepParameter("Shell", "S", "Shell Brep.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("Corners", "C", "Corner curves of shell.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("Edges", "E", "Edge curves of shell.", GH_ParamAccess.list);
             pManager.AddNumberParameter("KeystoneWidth", "KW", "Width of keystone.", GH_ParamAccess.item);
             pManager.AddNumberParameter("CornerstoneWidth", "CW", "Width of cornerstone.", GH_ParamAccess.item);
             pManager.AddNumberParameter("LengthParam1", "L1", "Distance between stress lines 1.", GH_ParamAccess.item);
             pManager.AddGenericParameter("LengthParam2", "L2", "Distance between stress lines 2.", GH_ParamAccess.item);
+            //pManager.AddCurveParameter("Corners", "C", "Corner curves of shell.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Edges", "E", "Edge curves of shell.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -40,14 +40,16 @@ namespace ACORN_shells
             pManager.AddCurveParameter("StressLines2", "SL2", "Stress lines related to compression.", GH_ParamAccess.list);
             pManager.AddCurveParameter("CableProfiles1", "CP1", "Cable profiles related to tension.", GH_ParamAccess.list);
             pManager.AddCurveParameter("CableProfiles2", "CP2", "Cable profiles related to compression.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Extracted corners", "EC", "Extracted corners (for testing).", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Extracted edges", "EE", "Extracted edges (for testing).", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Karamba.GHopper.Models.GH_Model ghModel = null;
             Brep shell = null;
-            List<Curve> corners = new List<Curve>();
-            List<Curve> edges = new List<Curve>();
+            //List<Curve> corners = new List<Curve>();
+            //List<Curve> edges = new List<Curve>();
             double keystoneWidth = 0;
             double cornerstoneWidth = 0;
             double lengthParam1 = 0;
@@ -55,12 +57,12 @@ namespace ACORN_shells
 
             if (!DA.GetData(0, ref ghModel)) return;
             if (!DA.GetData(1, ref shell)) return;
-            if (!DA.GetDataList(2, corners)) return;
-            if (!DA.GetDataList(3, edges)) return;
-            if (!DA.GetData(4, ref keystoneWidth)) return;
-            if (!DA.GetData(5, ref cornerstoneWidth)) return;
-            if (!DA.GetData(6, ref lengthParam1)) return;
-            if (!DA.GetData(7, ref lengthParam2)) return;
+            if (!DA.GetData(2, ref keystoneWidth)) return;
+            if (!DA.GetData(3, ref cornerstoneWidth)) return;
+            if (!DA.GetData(4, ref lengthParam1)) return;
+            if (!DA.GetData(5, ref lengthParam2)) return;
+            //if (!DA.GetDataList(6, corners)) return;
+            //if (!DA.GetDataList(7, edges)) return;
 
             var model = ghModel.Value;
 
@@ -70,9 +72,21 @@ namespace ACORN_shells
             var areaMassProp = AreaMassProperties.Compute(shell);
             var centroid = areaMassProp.Centroid;
 
+            // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
+            // should go to SHELLScommon, if it ever exists
+            var shellAllEdges = shell.Edges;
+            // sort edges by length
+            List<BrepEdge> sortedAllEdges = shellAllEdges.OrderBy(s => s.GetLength()).ToList();
+            // get 50% shortest edges
+            var cornersE = new List<Curve>(); // removeE
+            var edgesE = new List<Curve>(); // removeE
+            int numAllEdges = sortedAllEdges.Count;
+            for (int i = 0;               i < numAllEdges / 2; i++) cornersE.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
+            for (int i = numAllEdges / 2; i < numAllEdges;    i++) edgesE.Add(sortedAllEdges[i].EdgeCurve);
+
             // Calculate points to analyse stress lines at
-            var edgeMidpoints = edges.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
-            var cornerMidpoints = corners.Select(c => c.PointAtNormalizedLength(0.5)).ToList();
+            var edgeMidpoints = edgesE.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
+            var cornerMidpoints = cornersE.Select(c => c.PointAtNormalizedLength(0.5)).ToList();
             var wires = shell.GetWireframe(-1);
             var wirePoints = new PointCloud(wires.Select(w => w.PointAtNormalizedLength(0.5)));
             edgeMidpoints = edgeMidpoints.Select(e => wirePoints[wirePoints.ClosestPoint(e)].Location).ToList();
@@ -97,6 +111,25 @@ namespace ACORN_shells
             }
 
             // Get keystone polylinecurve to trim corner generating lines
+
+            // because corners are extracted from surface, sort keystonePoints by polar coordinates (rho angle)
+            // detemine shell center for relative polar coordinates of keystone points - move to SHELLScommon
+            Point3d shellCenter = shell.GetBoundingBox(false).Center;
+            List<PointAndAngle> keystonePointsToOrder = new List<PointAndAngle>();
+
+            foreach (Point3d point in keystonePoints)
+            {
+                // get face center polar coordinate - move to SHELLScommon?
+                Vector3d orientation = new Vector3d(point) - new Vector3d(shellCenter);
+                double angle = Math.Atan2(orientation.Y, orientation.X);
+                //if (angle < 0) angle += Math.PI * 2; // ensures angle always positive, [0, 2Pi] 
+                keystonePointsToOrder.Add(new PointAndAngle { Point = point, Angle = angle });
+            }
+
+            // sort by angle
+            keystonePointsToOrder = keystonePointsToOrder.OrderBy(k => k.Angle).ToList();
+            keystonePoints = keystonePointsToOrder.Select(k => k.Point).ToList();
+
             keystonePoints.Add(keystonePoints[0]);
             Curve keystonePoly = new PolylineCurve(keystonePoints);
             keystonePoly = Curve.ProjectToBrep(keystonePoly, shell, Vector3d.ZAxis, fileTol)[0];
@@ -156,7 +189,7 @@ namespace ACORN_shells
             }
 
             // Add edges to compression stress lines set
-            foreach (var e in edges)
+            foreach (var e in edgesE)
             {
                 var pMid = e.PointAtNormalizedLength(0.5);
                 var idx = wirePoints.ClosestPoint(pMid);
@@ -167,6 +200,8 @@ namespace ACORN_shells
             DA.SetDataList(1, stressLines2);
             DA.SetDataList(2, cableProfiles1);
             DA.SetDataList(3, cableProfiles2);
+            //DA.SetDataList(4, cornersE);
+            //DA.SetDataList(5, edgesE);
         }
 
         private Tuple<List<Curve>, List<Curve>> PrincipalStressLines(Karamba.Models.Model model, List<Point3d> points)
@@ -218,6 +253,12 @@ namespace ACORN_shells
             }
 
             return Tuple.Create(stressLines1, stressLines2);
+        }
+
+        public class PointAndAngle
+        {
+            public Point3d Point { get; set; }
+            public double Angle { get; set; }
         }
 
         protected override System.Drawing.Bitmap Icon

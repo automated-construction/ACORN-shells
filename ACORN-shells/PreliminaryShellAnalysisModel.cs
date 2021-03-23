@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Grasshopper.Kernel;
 using Rhino.Geometry;
@@ -31,8 +32,9 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
             pManager.AddMeshParameter("Mesh", "M", "Meshed shell.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Thickness", "T", "Thickness of shell.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
 
@@ -46,13 +48,15 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            Brep shell = null;
             Mesh mesh = null;
-            List<Curve> corners = new List<Curve>();
+            //List<Curve> corners = new List<Curve>();
             double thickness = 0;
             Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
 
-            if (!DA.GetData(0, ref mesh)) return;
-            if (!DA.GetDataList(1, corners)) return;
+            if (!DA.GetData(0, ref shell)) return;
+            if (!DA.GetData(1, ref mesh)) return;
+            //if (!DA.GetDataList(1, corners)) return;
             if (!DA.GetData(2, ref thickness)) return;
             DA.GetData(3, ref ghMat);
 
@@ -77,6 +81,18 @@ namespace ACORN_shells
                 new List<string>() { "ACORNSHELL" },
                 new List<Karamba.CrossSections.CroSec>() { k3dSection },
                 logger, out k3dNodes);
+
+            // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
+            // should go to SHELLScommon, if it ever exists
+            var shellAllEdges = shell.Edges;
+            // sort edges by length
+            List<BrepEdge> sortedAllEdges = shellAllEdges.OrderBy(s => s.GetLength()).ToList();
+            // get 4 shortest edges
+            //var corners = shellAllEdges.GetRange(0, 4); BrepEdgeList does not work with GetRange...
+            List<Curve> corners = new List<Curve>();
+            int numAllEdges = sortedAllEdges.Count;
+            for (int i = 0; i < numAllEdges / 2; i++) corners.Add (sortedAllEdges[i]);
+
 
             // Fixed support
             var k3dSupports = new List<Karamba.Supports.Support>();
