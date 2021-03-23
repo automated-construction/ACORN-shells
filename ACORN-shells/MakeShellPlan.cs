@@ -20,6 +20,7 @@ namespace ACORN_shells
         {
             pManager.AddCurveParameter("Outline", "O", "Outline curve. Should be a PolyLine.", GH_ParamAccess.item);
             pManager.AddNumberParameter("CornerRadius", "R", "Radius to bevel corners by.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("CurvedCorner", "C", "If True, corner is circular; else, corner is straight", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -33,9 +34,11 @@ namespace ACORN_shells
         {
             Curve outline = null;
             double cornerRadius = 0;
+            bool curvedCorner = false;
 
             if (!DA.GetData(0, ref outline)) return;
             if (!DA.GetData(1, ref cornerRadius)) return;
+            if (!DA.GetData(2, ref curvedCorner)) return;
 
             // Project onto XY plane
             outline = Curve.ProjectToPlane(outline, Plane.WorldXY);
@@ -52,18 +55,26 @@ namespace ACORN_shells
 
             // Create corners
             List<Curve> corners = new List<Curve>();
-
+          
             for (int i = 0; i < edges.Count; i++)
             {
                 var cornerPoint = explodedOutline[i].PointAtStart;
                 var arcStart = explodedOutline[i].PointAtLength(cornerRadius);
                 var prevIndex = i == 0 ? edges.Count - 1 : i - 1;
                 var arcEnd = explodedOutline[prevIndex].PointAtLength(explodedOutline[prevIndex].GetLength() - cornerRadius);
-                var toCentroid = new Vector3d(centroid - cornerPoint);
-                toCentroid.Unitize();
-                var arcInterior = cornerPoint + toCentroid * cornerRadius;
-                var arc = new Arc(arcStart, arcInterior, arcEnd);
-                corners.Add(new ArcCurve(arc));
+                if (curvedCorner) 
+                { 
+                    var toCentroid = new Vector3d(centroid - cornerPoint);
+                    toCentroid.Unitize();
+                    var arcInterior = cornerPoint + toCentroid * cornerRadius;
+                    var arc = new Arc(arcStart, arcInterior, arcEnd);
+                    corners.Add(new ArcCurve(arc));
+                }
+                else // straight corner
+                {
+                    var line = new Line(arcStart, arcEnd);
+                    corners.Add(new LineCurve(line));
+                }
             }
 
             // Join edges and corners

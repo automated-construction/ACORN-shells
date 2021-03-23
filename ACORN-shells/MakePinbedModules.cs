@@ -10,6 +10,9 @@ using GH.MiscToolbox.Components.Utilities;
 
 namespace ACORN_shells
 {
+    /// <summary>
+    ///  OBSOLETE
+    /// </summary>
     public class MakePinbedModules : GH_Component
     {
         public MakePinbedModules()
