@@ -28,8 +28,6 @@ namespace ACORN_shells
         List<Curve> FormFoundEdges = new List<Curve>();
         string KiwiErrors = "";
 
-        // bool SOLUTION_CHANGED = true; // for event handling fantasy
-
         // change name if it becomes only formfinding component
         public FormFindMembrane()
           : base("FormFindMembrane", "A:FormFindMembrane",
@@ -40,9 +38,8 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBrepParameter("PlanShell", "P", "Flat brep to brep to be form found.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("Edges", "E", "Edge curves.", GH_ParamAccess.list);
+            pManager.AddBrepParameter("PlanShell", "PS", "Flat brep to brep to be form found.", GH_ParamAccess.item);
+            pManager.AddBrepParameter("MultiplePatches", "MP", "Multiple patches (testing)", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
             pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
@@ -57,25 +54,23 @@ namespace ACORN_shells
             pManager.AddBooleanParameter("updateOnChange", "U", "Run IGA Solver on [parameter change]", GH_ParamAccess.item); // test
 
             // TODO: add optionals
-            pManager[4].Optional = true;
+            pManager[1].Optional = true; //multiple patches
+            pManager[3].Optional = true; //subdiv
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("KiwiErrors", "O", "Errors from Kiwi3D.", GH_ParamAccess.item);
             pManager.AddBrepParameter("FormFoundShell", "S", "Form found shell.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("FormFoundCorners", "C", "Form found shell corners.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("FormFoundEdges", "E", "Form found shell edges.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
-            List<Brep> planShell = new List<Brep>();
-            List<Curve> corners = new List<Curve>();
-            List<Curve> edges = new List<Curve>();
+            Brep planShell = null;
+            List<Brep> multiPatches = new List<Brep>();
             double height = 0;
-            double subDiv = 0;
+            double subDiv = 10; //default?
             bool run = false;
             bool curveSupports = false; // test
             bool scaleDeform = false; // test
@@ -89,44 +84,40 @@ namespace ACORN_shells
             bool updateOnChange = false; // test
 
 
-            if (!DA.GetDataList(0, planShell)) return;
-            if (!DA.GetDataList(1, corners)) return;
-            if (!DA.GetDataList(2, edges)) return;
-            if (!DA.GetData(3, ref height)) return;
-            DA.GetData(4, ref subDiv);
-            if (!DA.GetData(5, ref run)) return;
-            if (!DA.GetData(6, ref curveSupports)) return; // test
-            if (!DA.GetData(7, ref scaleDeform)) return; // test
-            if (!DA.GetData(8, ref thickFact)) return; // test
-            if (!DA.GetData(9, ref membPrestress1)) return; // test
-            if (!DA.GetData(10, ref membPrestress2)) return; // test
-            if (!DA.GetData(11, ref cablePrestress)) return; // test
-            if (!DA.GetData(12, ref srfLoad)) return; // test
-            if (!DA.GetData(13, ref planarEdges)) return; // test
-            if (!DA.GetData(14, ref updateOnChange)) return; // test
+            if (!DA.GetData(0, ref planShell)) return;
+            DA.GetDataList(1, multiPatches);
+            if (!DA.GetData(2, ref height)) return;
+            DA.GetData(3, ref subDiv);
+            if (!DA.GetData(4, ref run)) return;
+            if (!DA.GetData(5, ref curveSupports)) return; // test
+            if (!DA.GetData(6, ref scaleDeform)) return; // test
+            if (!DA.GetData(7, ref thickFact)) return; // test
+            if (!DA.GetData(8, ref membPrestress1)) return; // test
+            if (!DA.GetData(9, ref membPrestress2)) return; // test
+            if (!DA.GetData(10, ref cablePrestress)) return; // test
+            if (!DA.GetData(11, ref srfLoad)) return; // test
+            if (!DA.GetData(12, ref planarEdges)) return; // test
+            if (!DA.GetData(13, ref updateOnChange)) return; // test
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
 
-            /*
-            // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
-            // should go to SHELLScommon, if it ever exists
-            var planAllEdges = planShell[0].Edges; // this only works if planShell is single item
-            // sort edges by length
-            List<BrepEdge> sortedAllEdges = planAllEdges.OrderBy(s => s.GetLength()).ToList();
-            // get 50% shortest edges
-            corners = new List<Curve>(); // removeE
-            edges = new List<Curve>(); // removeE
-            int numAllEdges = sortedAllEdges.Count;
-            for (int i = 0; i < numAllEdges / 2; i++) corners.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
-            for (int i = numAllEdges / 2; i < numAllEdges; i++) edges.Add(sortedAllEdges[i].EdgeCurve);
-            */
+
+            // extract shell corners and edges
+            SHELLScommon.GetShellEdges(planShell, out List<Curve> corners, out List<Curve> edges);
+
+            // single Brep vs. Multiple
+            List<Brep> shellPatches = new List<Brep>();
+            if (!multiPatches.Any()) // multiPatches is empty
+                shellPatches.Add(planShell);
+            else
+                shellPatches.AddRange(multiPatches);
 
             bool calculate = updateOnChange | run; // runs Kiwi analysis if run button or input change
 
             //if (run | SOLUTION_CHANGED)
             if (calculate)
-                {
+            {
                     var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
                 // Get all Kiwi3d components
@@ -166,7 +157,7 @@ namespace ACORN_shells
                 var kiwiElements = new List<object>();
 
                 // Define membrane patches
-                foreach (var m in planShell)
+                foreach (var m in shellPatches)
                     kiwiElements.Add ((CallComponent(componentInfos, "Kiwi3d.MembraneElement", new object[] {
                         m, kiwiMembraneMaterial, thickness, membPrestress1, membPrestress2, kiwiMembraneRefinement, null, true, null })[0] as IList<object>)[0]);
 
@@ -231,7 +222,7 @@ namespace ACORN_shells
                 //var kiwiLoads = (CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
                 //  planShell, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0];
                 var kiwiLoads = new List<object>();
-                foreach (var m in planShell)
+                foreach (var m in shellPatches)
                     kiwiLoads.Add((CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
                         m, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0]);
 
@@ -246,13 +237,13 @@ namespace ACORN_shells
                 var kiwiModelRes = (kiwiResult[0] as IList<object>)[0];
 
                 // Scale deformed shell to target height
-                if (planShell.Count == 1)
+                if (shellPatches.Count == 1)
                     FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
                 else //multiple membrane patches
                 {
                     var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>);                    
                     List<Brep> FormFoundSrfs = new List<Brep>();
-                    for (int i = 0; i < planShell.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                    for (int i = 0; i < shellPatches.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
                     FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
                 }
 
@@ -262,41 +253,22 @@ namespace ACORN_shells
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
 
-                    if (planShell.Count == 1)
+                    if (shellPatches.Count == 1)
                         FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
                     else //multiple membrane patches
                     {
                         var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
                         List<Brep> FormFoundSrfs = new List<Brep>();
-                        for (int i = 0; i < planShell.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                        for (int i = 0; i < shellPatches.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
                         FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
                     }
 
-                    // get edges from deformed geometry, add them to FormFoundEdges
-                    FormFoundEdges = new List<Curve>(); // reset FIELD
-                    var FFgeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
-                    List<Brep> FFedges = new List<Brep>();
-                    for (int i = planShell.Count; i < FFgeo.Count; i++) FormFoundEdges.Add(FFgeo[i] as Curve);
-
-                    FormFoundCorners = new List<Curve>(); // reset FIELD
-                    // project corners onto deformed surface
-                    foreach (var c in corners)
-                    {
-                        Curve[] projCorner = Curve.ProjectToBrep(c, FormFoundShell, Vector3d.ZAxis, fileTol);
-                        if (projCorner == null || projCorner.Length == 0) FormFoundCorners.Add(c); // case of straight corners?
-                        else FormFoundCorners.Add(projCorner[0]);
-                    }
                 }
 
-                // reset run = false; needed?
-                //run = false;
-                //SOLUTION_CHANGED = false; // event hndling
             }
             
             DA.SetData(0, KiwiErrors);
             DA.SetData(1, FormFoundShell);
-            DA.SetDataList(2, FormFoundCorners);
-            DA.SetDataList(3, FormFoundEdges);
         }
 
         private object[] CallComponent(Dictionary<string, Rhino.NodeInCode.ComponentFunctionInfo> components, string componentName, object[] args)
@@ -304,20 +276,6 @@ namespace ACORN_shells
             var tmpOut = new string[0];
             return components[componentName].Evaluate(args.ToList(), false, out tmpOut);
         }
-
-        /*
-        // This method will be subscribed to the SolutionStart event.
-        private void OnSolutionStart(object sender, GH_SolutionEventArgs e)
-        {
-            SOLUTION_CHANGED = true;
-
-            // testing event firing
-            GH_ActiveObject GHobj = this; // this component
-            GHobj.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Solution change detected!");
-            //RhinoApp.WriteLine(args.TheObject.ObjectType + ": " + args.ObjectId);
-        }
-        */
-
 
         protected override System.Drawing.Bitmap Icon
         {
