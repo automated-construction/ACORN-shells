@@ -30,10 +30,10 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddSurfaceParameter("Shell", "S", "Shell", GH_ParamAccess.item);
+            pManager.AddBrepParameter("Shell segments", "SS", "Shell segments", GH_ParamAccess.tree);
             pManager.AddRectangleParameter("Modules", "M", "Rectangles corresponding to modules", GH_ParamAccess.tree);
             pManager.AddBooleanParameter("Variable height", "VH", "Enables variable module height within same segment. Optional, default is false", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Selected segments", "S", "Operate on selected segments [optional, for testing]", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Selected segments", "S", "Operate on selected segments [optional, for testing; if no input, computes all segments]", GH_ParamAccess.list);
             pManager.AddNumberParameter("Maximum pin length", "ML", "Maximum pin length", GH_ParamAccess.item);
 
             pManager[2].Optional = true;
@@ -43,6 +43,7 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddBrepParameter("Shell segments", "SS", "Shell segments (selected is S is True)", GH_ParamAccess.tree); // test
             pManager.AddBrepParameter("Extended segments", "ES", "Extended segments", GH_ParamAccess.tree); // test
             pManager.AddRectangleParameter("Modules", "M", "Modules", GH_ParamAccess.tree); // test main
             pManager.AddBoxParameter("Boxes", "B", "Boxes", GH_ParamAccess.tree); // test
@@ -53,17 +54,21 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Surface shell = null;
+            //Surface shell = null;
+            GH_Structure<GH_Brep> ghSegmentTree = new GH_Structure<GH_Brep>();
             GH_Structure<GH_Rectangle> ghModuleTree = new GH_Structure<GH_Rectangle>();
             bool variableHeights = false;
             List<int> selectedSegmentIndexes = new List<int>();
             double maxPinLength = 0;
 
-            if (!DA.GetData(0, ref shell)) return;
+            //if (!DA.GetData(0, ref shell)) return;
+            if (!DA.GetDataTree<GH_Brep>(0, out ghSegmentTree)) return;
             if (!DA.GetDataTree<GH_Rectangle>(1, out ghModuleTree)) return;
             DA.GetData(2, ref variableHeights);
             DA.GetDataList(3, selectedSegmentIndexes);
             if (!DA.GetData(4, ref maxPinLength)) return;
+
+
 
             // convert moduleTree: GH_Structure (Grasshopper) to DataTree (RhinoCommon)
             // separate convert from trim tree D=2
@@ -93,7 +98,40 @@ namespace ACORN_shells
 
 
 
+            // convert segmentTree: GH_Structure (Grasshopper) to DataTree (RhinoCommon)
+            // separate convert from trim tree D=2
+            // repeated, move to COMMON
+            DataTree<Brep> segments = new DataTree<Brep>();
+            foreach (GH_Path path in ghSegmentTree.Paths)
+            {
+                GH_Brep ghSegment = ghSegmentTree.get_Branch(path)[0] as GH_Brep;
+                Brep segment = new Brep();
+                GH_Convert.ToBrep(ghSegment, ref segment, GH_Conversion.Both);
+                segments.Add(segment, path);
+            }
+
+            // extract only selected modules and segments - tree branch, sort of // ALSO repeated, ALSO move to common: problem with generic types?
+            if (selectedSegmentIndexes.Count > 0)
+            {
+                DataTree<Brep> selectedSegments = new DataTree<Brep>();
+                foreach (GH_Path path in segments.Paths)
+                {
+                    int currSegmentIndex = path.Indices[0];
+                    if (selectedSegmentIndexes.Contains(currSegmentIndex))
+                        selectedSegments.Add(segments.Branch(path)[0], path);
+                }
+                // replaces original lists
+                segments = selectedSegments;
+            }
+
+
+
             // ------------ extend segments --------------
+
+            // extract original surface by untrimming one segment
+            Brep singleSegment = segments.Branch(0)[0];
+            Surface shell = singleSegment.Faces[0].UnderlyingSurface();
+
             // segments are extended for covering whole pinbed module, for shape continuity
             DataTree<Brep> extendedSegments = new DataTree<Brep>();
             foreach (GH_Path path in modules.Paths)
@@ -310,12 +348,13 @@ namespace ACORN_shells
                 }
             }
 
-            DA.SetDataTree(0, extendedSegments);
-            DA.SetDataTree(1, adjustedModules);
-            DA.SetDataTree(2, segmentBoxes);
-            DA.SetDataTree(3, pinAxes);
-            DA.SetDataTree(4, pinLengths);
-            DA.SetDataTree(5, pinColors);
+            DA.SetDataTree(0, segments);
+            DA.SetDataTree(1, extendedSegments);
+            DA.SetDataTree(2, adjustedModules);
+            DA.SetDataTree(3, segmentBoxes);
+            DA.SetDataTree(4, pinAxes);
+            DA.SetDataTree(5, pinLengths);
+            DA.SetDataTree(6, pinColors);
 
 
         }

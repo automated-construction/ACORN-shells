@@ -78,15 +78,15 @@ namespace ACORN_shells
             // sort edges by length
             List<BrepEdge> sortedAllEdges = shellAllEdges.OrderBy(s => s.GetLength()).ToList();
             // get 50% shortest edges
-            var cornersE = new List<Curve>(); // removeE
-            var edgesE = new List<Curve>(); // removeE
+            var corners = new List<Curve>(); // removeE
+            var edges = new List<Curve>(); // removeE
             int numAllEdges = sortedAllEdges.Count;
-            for (int i = 0;               i < numAllEdges / 2; i++) cornersE.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
-            for (int i = numAllEdges / 2; i < numAllEdges;    i++) edgesE.Add(sortedAllEdges[i].EdgeCurve);
+            for (int i = 0;               i < numAllEdges / 2; i++) corners.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
+            for (int i = numAllEdges / 2; i < numAllEdges;    i++) edges.Add(sortedAllEdges[i].EdgeCurve);
 
             // Calculate points to analyse stress lines at
-            var edgeMidpoints = edgesE.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
-            var cornerMidpoints = cornersE.Select(c => c.PointAtNormalizedLength(0.5)).ToList();
+            var edgeMidpoints = edges.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
+            var cornerMidpoints = corners.Select(c => c.PointAtNormalizedLength(0.5)).ToList();
             var wires = shell.GetWireframe(-1);
             var wirePoints = new PointCloud(wires.Select(w => w.PointAtNormalizedLength(0.5)));
             edgeMidpoints = edgeMidpoints.Select(e => wirePoints[wirePoints.ClosestPoint(e)].Location).ToList();
@@ -189,7 +189,7 @@ namespace ACORN_shells
             }
 
             // Add edges to compression stress lines set
-            foreach (var e in edgesE)
+            foreach (var e in edges)
             {
                 var pMid = e.PointAtNormalizedLength(0.5);
                 var idx = wirePoints.ClosestPoint(pMid);

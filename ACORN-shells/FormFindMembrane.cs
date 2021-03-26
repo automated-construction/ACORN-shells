@@ -109,15 +109,17 @@ namespace ACORN_shells
                 subDiv = SURF_SUBDIV;
 
             /*
-            // set event handlers here?
-            // trigger run on solutionStart, for animate purposes
-            // there might be a better, more elegant solution! see DSE, and every optimizer...
-            if (updateOnChange)
-            {
-                GH_Document GHdoc = new GH_Document();
-                GHdoc.SolutionStart -= OnSolutionStart;
-                GHdoc.SolutionStart += OnSolutionStart; // sets SOLUTION_CHANGED to true
-            }
+            // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
+            // should go to SHELLScommon, if it ever exists
+            var planAllEdges = planShell[0].Edges; // this only works if planShell is single item
+            // sort edges by length
+            List<BrepEdge> sortedAllEdges = planAllEdges.OrderBy(s => s.GetLength()).ToList();
+            // get 50% shortest edges
+            corners = new List<Curve>(); // removeE
+            edges = new List<Curve>(); // removeE
+            int numAllEdges = sortedAllEdges.Count;
+            for (int i = 0; i < numAllEdges / 2; i++) corners.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
+            for (int i = numAllEdges / 2; i < numAllEdges; i++) edges.Add(sortedAllEdges[i].EdgeCurve);
             */
 
             bool calculate = updateOnChange | run; // runs Kiwi analysis if run button or input change
@@ -222,7 +224,6 @@ namespace ACORN_shells
                             kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportPoint", new object[] { 
                             p, DX, DY, DZ, false, false })[0] as IList<object>)[0]);
                     }
-
                 }
 
 
