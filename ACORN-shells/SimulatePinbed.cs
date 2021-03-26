@@ -194,6 +194,8 @@ namespace ACORN_shells
                     Brep extendedSegment = extendedSegments.Branch(path)[0] as Brep;
                     flatExtendedSegments.Add(extendedSegment, flatPath);
                 }
+                
+                //flatExtendedSegments = SHELLScommon.TrimTreeD2 (extendedSegments);
 
                 // trim tree D=2 to modules, to get all modules per pour
                 // same as previous block, suggests refactoring in SHELLScommon, but was having trouble with generic types

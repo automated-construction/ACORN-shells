@@ -92,16 +92,9 @@ namespace ACORN_shells
                 new List<Karamba.CrossSections.CroSec>() { k3dSection },
                 logger, out k3dNodes);
 
-            // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
-            // should go to SHELLScommon, if it ever exists
-            var shellAllEdges = shell.Edges;
-            // sort edges by length
-            List<BrepEdge> sortedAllEdges = shellAllEdges.OrderBy(s => s.GetLength()).ToList();
-            // get 4 shortest edges
-            //var corners = shellAllEdges.GetRange(0, 4); BrepEdgeList does not work with GetRange...
-            List<Curve> corners = new List<Curve>();
-            int numAllEdges = sortedAllEdges.Count;
-            for (int i = 0; i < numAllEdges / 2; i++) corners.Add (sortedAllEdges[i]);
+            // extract shell corners
+            SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); // discarding shell edges
+
 
 
             // Fixed support

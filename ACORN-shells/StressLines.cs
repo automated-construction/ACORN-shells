@@ -72,6 +72,8 @@ namespace ACORN_shells
             var areaMassProp = AreaMassProperties.Compute(shell);
             var centroid = areaMassProp.Centroid;
 
+
+            /*
             // extract corners from surface, corners being the 4 shortest boundary edges, instead of being an input
             // should go to SHELLScommon, if it ever exists
             var shellAllEdges = shell.Edges;
@@ -83,6 +85,11 @@ namespace ACORN_shells
             int numAllEdges = sortedAllEdges.Count;
             for (int i = 0;               i < numAllEdges / 2; i++) corners.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,4)
             for (int i = numAllEdges / 2; i < numAllEdges;    i++) edges.Add(sortedAllEdges[i].EdgeCurve);
+            */
+
+            SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out List<Curve> edges);
+
+
 
             // Calculate points to analyse stress lines at
             var edgeMidpoints = edges.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
