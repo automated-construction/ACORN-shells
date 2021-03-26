@@ -21,13 +21,16 @@ namespace ACORN_shells
             pManager.AddCurveParameter("Outline", "O", "Outline curve. Should be a PolyLine.", GH_ParamAccess.item);
             pManager.AddNumberParameter("CornerRadius", "R", "Radius to bevel corners by.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("CurvedCorner", "C", "If True, corner is circular; else, corner is straight", GH_ParamAccess.item);
+            pManager.AddNumberParameter("TargetArea", "TA", "Target area for scaling outline (optional).", GH_ParamAccess.item);
+
+            pManager[3].Optional = true; // target area
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddCurveParameter("Plan", "P", "Outline curve of generated plan.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("Corners", "C", "Curves of plan corners.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("Edges", "E", "Curves of plan Edges.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Corners", "C", "Curves of plan corners.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("Edges", "E", "Curves of plan Edges.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -35,13 +38,23 @@ namespace ACORN_shells
             Curve outline = null;
             double cornerRadius = 0;
             bool curvedCorner = false;
+            double targetArea = 0;
 
             if (!DA.GetData(0, ref outline)) return;
             if (!DA.GetData(1, ref cornerRadius)) return;
             if (!DA.GetData(2, ref curvedCorner)) return;
+            DA.GetData(3, ref targetArea);
 
             // Project onto XY plane
             outline = Curve.ProjectToPlane(outline, Plane.WorldXY);
+
+            // scale to target area (optional)
+            if (targetArea != 0)
+            {
+                AreaMassProperties outlineProp = AreaMassProperties.Compute(outline);
+                double scaleFactor = Math.Sqrt(targetArea / outlineProp.Area);
+                outline.Transform(Transform.Scale(outlineProp.Centroid, scaleFactor));
+            }
 
             // Explode to lines
             var explodedOutline = outline.DuplicateSegments();
@@ -82,8 +95,8 @@ namespace ACORN_shells
             var plan = Curve.JoinCurves(zippedCurves).FirstOrDefault();
 
             DA.SetData(0, plan);
-            DA.SetDataList(1, corners);
-            DA.SetDataList(2, edges);
+            //DA.SetDataList(1, corners);
+            //DA.SetDataList(2, edges);
         }
 
         protected override System.Drawing.Bitmap Icon
