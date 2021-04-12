@@ -36,6 +36,9 @@ namespace ACORN
         {
             pManager.AddGenericParameter("Karamba model", "M", "Karamba model for whole shell (pre-Analyze)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Percentile", "P", "Percentage of non-extreme stress elements (0-100)", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("First Principal Stress only?", "1", "If True, considers First Principal Stress only", GH_ParamAccess.item);
+
+            pManager[2].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -56,8 +59,11 @@ namespace ACORN
         {
             GH_Model ghModel = new GH_Model();
             double percentile = 100;
+            bool firstPS = false; //default
+
             if (!DA.GetData(0, ref ghModel)) return;
             if (!DA.GetData(1, ref percentile)) return;
+            DA.GetData(2, ref firstPS);
 
             // convert GH_Model to Model
             Model k3dModel = ghModel.Value;
@@ -82,7 +88,11 @@ namespace ACORN
                 out List<double> topPS1s, out List<double> topPS2s);
 
             // merge all stresses - create stressValue lists before? yes if we need them separately
-            List<List<double>> PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
+            List<List<double>> PSlists = new List<List<double>>();
+            if (firstPS)
+                PSlists = new List<List<double>> { bottomPS1s, topPS1s };
+            else
+                PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
             List<double> allPSs = PSlists.SelectMany(e => e).ToList();
 
             // create list of stressValue objects, pairing stress values and element indexes,  to sort "asynchronously" as in GH sort component
