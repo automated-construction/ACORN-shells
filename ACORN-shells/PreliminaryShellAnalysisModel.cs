@@ -36,7 +36,7 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
             pManager.AddMeshParameter("Mesh", "M", "Meshed shell.", GH_ParamAccess.item);
             //pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Thickness", "T", "Thickness of shell.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Loads", "L", "Loads. Default is gravity (no safety factor).", GH_ParamAccess.list);
             pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item);
@@ -57,7 +57,8 @@ namespace ACORN_shells
             Brep shell = null;
             Mesh mesh = null;
             //List<Curve> corners = new List<Curve>();
-            double thickness = 0;
+            List<double> thicknesses = new List<double>();
+            //double thickness = 0;
             Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
             List <Karamba.GHopper.Loads.GH_Load> ghLoads = new List<Karamba.GHopper.Loads.GH_Load>();
             bool fixedSupport = false;
@@ -65,7 +66,8 @@ namespace ACORN_shells
             if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetData(1, ref mesh)) return;
             //if (!DA.GetDataList(1, corners)) return;
-            if (!DA.GetData(2, ref thickness)) return;
+            //if (!DA.GetData(2, ref thickness)) return;
+            if (!DA.GetDataList(2, thicknesses)) return;
             DA.GetData(3, ref ghMat);
             DA.GetDataList(4, ghLoads);
             DA.GetData(5, ref fixedSupport);
@@ -83,7 +85,12 @@ namespace ACORN_shells
                 k3dMaterial = ghMat.Value;
 
             // Cross section
-            var k3dSection = k3dKit.CroSec.ShellConst(thickness, 0, k3dMaterial, "SHELL", "SHELL", "");
+            Karamba.CrossSections.CroSec_Shell k3dSection = null;
+            if (thicknesses.Count == 1)
+                k3dSection = k3dKit.CroSec.ShellConst(thicknesses[0], 0, k3dMaterial, "SHELL", "SHELL", "");
+            else
+                k3dSection = new Karamba.CrossSections.CroSec_Shell
+                    ("", "", "", null, new List<Karamba.Materials.FemMaterial> { k3dMaterial }, new List<double>() { 0 }, thicknesses);
 
             // Create shell element
             var k3dNodes = new List<Point3>();
