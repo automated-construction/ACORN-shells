@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="ShellLoads.cs" />
+    <Compile Include="MakeSprings.cs" />
     <Compile Include="SimulatePinbed.cs" />
     <Compile Include="FormFindMembrane.cs" />
     <Compile Include="GetAreaEfficiency.cs" />
