@@ -18,7 +18,11 @@ Unblock plugin: right-click plugin file, select Properties > click Unblock.
 
 Restart Rhino.
 
-After installing the plugin, you should be able to run example files that can be found in the Grasshopper folder.
+**File structure**
+
+After installing the plugin, you should be able to run example files that can be found in the Examples folder.
+
+Files with prefix WIP in examples folder are ongoing experiments.
 
 **Publications**
 
