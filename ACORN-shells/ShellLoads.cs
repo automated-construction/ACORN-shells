@@ -27,8 +27,8 @@ namespace ACORN_shells
         double F_Y = 25000;
         double ALPHA_T = 0.00001;
 
-        double DL_FACTOR = 1.35; // deal load design safety factor        
-        double LL_FACTOR = 1.50; // deal load design safety factor
+        double DL_FACTOR = 1.35; // dead load design safety factor        
+        double LL_FACTOR = 1.50; // live load design safety factor
 
         public ShellLoads()
           : base("ShellLoads", "A:ShellLoads",
@@ -39,7 +39,7 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddMeshParameter("Shell mesh", "SM", "Meshed shell.", GH_ParamAccess.item);
+            pManager.AddMeshParameter("Shell mesh", "SM", "Meshed shell.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Dead Load value", "DLV", "Dead Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddNumberParameter("Live Load value", "LLV", "Live Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Live Load pattern", "LLP", "Load pattern.", GH_ParamAccess.item);
@@ -56,26 +56,15 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Mesh shellMesh = null;
+            List<Mesh> shellMeshes = new List<Mesh>();
             double deadLoadValue = 0;
             double liveLoadValue = 0;
             int loadPattern = 0;
 
-            if (!DA.GetData(0, ref shellMesh)) return;
+            if (!DA.GetDataList(0, shellMeshes)) return;
             if (!DA.GetData(1, ref deadLoadValue)) return;
             if (!DA.GetData(2, ref liveLoadValue)) return;
             if (!DA.GetData(3, ref loadPattern)) return;
-
-            //var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
-            //var logger = new Karamba.Utilities.MessageLogger();
-            //Toolkit k3dKit = new KarambaCommon.Toolkit();
-            var k3dFL = new KarambaCommon.Factories.FactoryLoad();
-
-            // convert Rhino.Geometry.Mesh to Karamba.IMesh + stuff
-            Mesh3 k3dMesh = shellMesh.Convert();
-            UnitsConversionFactory ucf = UnitsConversionFactories.Conv();
-            UnitConversion m = ucf.m();
-            Mesh3 baseMesh = m.toBaseMesh(k3dMesh);
 
             // Create Karamba loads
             List<Load> k3dLoads = new List<Karamba.Loads.Load>();
@@ -84,48 +73,61 @@ namespace ACORN_shells
             Load gravity = new GravityLoad(new Vector3(0, 0, -1 * DL_FACTOR));
             k3dLoads.Add(gravity);
 
-            // Dead load mesh load
-            // same as Loads component > MeshLoad Const            
-            //MeshLoad deadLoad = k3dKit.Load.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh); // missing LoadOrientation.proj
-            MeshLoad deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
-            k3dLoads.Add(deadLoad);
+            var k3dFL = new KarambaCommon.Factories.FactoryLoad();
+            UnitsConversionFactory ucf = UnitsConversionFactories.Conv();
+            UnitConversion m = ucf.m();
 
-            // Live load mesh load, based on asymmetrical load pattern
+            // determine shell center for relative polar coordinates of face centers FOR LIVELOAD
+            // must work for multiple shells - testing with just first
 
-            // get angles included in pattern
-            // get shell center for plar coordinates
+            BoundingBox shellBox = BoundingBox.Unset;
+            foreach (Mesh shellMesh in shellMeshes)
+                shellBox = BoundingBox.Union (shellBox, shellMesh.GetBoundingBox(false));
 
-            // add active stresses per face
-            List<Vector3> liveLoadVectors = new List<Vector3>();
-            MeshFaceList k3dMeshFaces = shellMesh.Faces;
+            Point3d shellCenter = shellBox.Center;
 
-            // detemine shell center for relative polar coordinates of face centers
-            Point3d shellCenter = shellMesh.GetBoundingBox(false).Center;
+            List<Point3d> checkPoints = new List<Point3d>(); // for testing loadPatterns FOR LIVELOAD
 
-            // for testing loadPatterns
-            List<Point3d> checkPoints = new List<Point3d>();
-
-            for (int faceIndex = 0; faceIndex < shellMesh.Faces.Count; faceIndex ++)
+            foreach (Mesh shellMesh in shellMeshes)
             {
-                // get face center polar coordinate
-                Point3d faceCenter = k3dMeshFaces.GetFaceCenter(faceIndex);
-                Vector3d faceCenterOrientation = new Vector3d(faceCenter) - new Vector3d(shellCenter);
-                double faceAngle = Math.Atan2(faceCenterOrientation.Y, faceCenterOrientation.X);
-                if (faceAngle < 0) faceAngle += Math.PI * 2; // ensures angle always positive, [0, 2Pi] 
+                Mesh3 baseMesh = m.toBaseMesh(shellMesh.Convert());
 
-                // check if polar coordinate of face center is within load patterndomain,                
-                if (AngleInPattern (faceAngle, loadPattern))
+                //----------- Dead load mesh load - same as Loads component > MeshLoad Const   
+                MeshLoad deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
+                k3dLoads.Add(deadLoad);
+
+                //----------- Live load mesh load, based on asymmetrical load pattern
+
+              
+                // get angles included in pattern
+                List<Vector3> liveLoadVectors = new List<Vector3>();
+                MeshFaceList k3dMeshFaces = shellMesh.Faces;
+
+                for (int faceIndex = 0; faceIndex < shellMesh.Faces.Count; faceIndex ++)
                 {
-                    liveLoadVectors.Add(new Vector3(0, 0, -(liveLoadValue * LL_FACTOR)));
-                    checkPoints.Add(faceCenter); // for testing - remove in the end
-                }
+                    // get face center polar coordinate
+                    Point3d faceCenter = k3dMeshFaces.GetFaceCenter(faceIndex);
+                    Vector3d faceCenterOrientation = new Vector3d(faceCenter) - new Vector3d(shellCenter);
+                    double faceAngle = Math.Atan2(faceCenterOrientation.Y, faceCenterOrientation.X);
+                    if (faceAngle < 0) faceAngle += Math.PI * 2; // ensures angle always positive, [0, 2Pi] 
+
+                    // check if polar coordinate of face center is within load patterndomain,                
+                    if (AngleInPattern (faceAngle, loadPattern))
+                    {
+                        liveLoadVectors.Add(new Vector3(0, 0, -(liveLoadValue * LL_FACTOR)));
+                        checkPoints.Add(faceCenter); // for testing - remove in the end
+                    }
                     
-                else
-                    liveLoadVectors.Add(Vector3.Zero);
+                    else
+                        liveLoadVectors.Add(Vector3.Zero);
+                }
+
+                MeshLoad liveLoad = k3dFL.MeshLoad(liveLoadVectors, baseMesh, LoadOrientation.proj);
+                k3dLoads.Add(liveLoad);
+
             }
 
-            MeshLoad liveLoad = k3dFL.MeshLoad(liveLoadVectors, baseMesh, LoadOrientation.proj);
-            k3dLoads.Add(liveLoad);
+            
 
             // convert from Karamba Loads to Karamba.GHopper Loads
             // might convert when created...
