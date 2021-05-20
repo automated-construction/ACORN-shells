@@ -43,6 +43,7 @@ namespace ACORN_shells
             pManager.AddPointParameter("Segment spring locations", "SL", "Segment spring locations", GH_ParamAccess.tree);
             pManager.AddPointParameter("Edge spring locations", "EL", "Edge spring locations", GH_ParamAccess.tree);
             pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -212,6 +213,7 @@ namespace ACORN_shells
             DA.SetDataTree(1, segmentSpringLocations);
             DA.SetDataTree(2, edgeSpringLocations);
             DA.SetDataTree(3, edgeSpringLines);
+            DA.SetData(4, gapSize);
 
         }
 
