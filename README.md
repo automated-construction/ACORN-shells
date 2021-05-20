@@ -18,6 +18,8 @@ Unblock plugin: right-click plugin file, select Properties > click Unblock.
 
 Restart Rhino.
 
+**File structure**
+
 After installing the plugin, you should be able to run example files that can be found in the Examples folder.
 
 Files in GH folder are ongoing experiments.
