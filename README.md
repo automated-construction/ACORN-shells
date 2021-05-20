@@ -22,7 +22,7 @@ Restart Rhino.
 
 After installing the plugin, you should be able to run example files that can be found in the Examples folder.
 
-Files in GH folder are ongoing experiments.
+Files with prefix WIP in examples folder are ongoing experiments.
 
 **Publications**
 
