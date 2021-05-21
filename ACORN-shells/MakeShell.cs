@@ -6,11 +6,14 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Karamba.GHopper.Geometry;
 using Karamba.Geometry;
-using Karamba.GHopper.Loads;
+using Karamba.Elements;
+using Karamba.Supports;
+using Karamba.GHopper.Elements;
+using Karamba.GHopper.Supports;
 
 namespace ACORN_shells
 {
-    public class PreliminaryShellAnalysisModel : GH_Component
+    public class MakeShell : GH_Component
     {
         // BUG: Analysing in this file causes a crash. Output unanalysed model instead.
 
@@ -24,9 +27,9 @@ namespace ACORN_shells
         double F_Y = 25000;
         double ALPHA_T = 0.00001;
 
-        public PreliminaryShellAnalysisModel()
-          : base("PreliminaryShellAnalysisModel", "A:PreliminaryShellAnalysisModel",
-              "Create preliminary shell analysis Karamba3D model with gravitational loads.",
+        public MakeShell()
+          : base("Make Karamba Shell Element", "A:MakeShell",
+              "Create Karamba Shell element for analysis.",
               "ACORN", "Shells")
         {
         }
@@ -34,43 +37,36 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
-            pManager.AddMeshParameter("Mesh", "M", "Meshed shell.", GH_ParamAccess.item);
-            //pManager.AddCurveParameter("Corners", "C", "Support curves.", GH_ParamAccess.list);
+            pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.list);
             pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Loads", "L", "Loads. Default is gravity (no safety factor).", GH_ParamAccess.list);
             pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item);
-
 
             pManager[3].Optional = true;
             pManager[4].Optional = true;
-            pManager[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Model", "M", "Analysed Karamba3D model.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Shell Elements", "E", "Shell elements for Karamba", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Shell Supports", "S", "Shell supports for Karamba", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Brep shell = null;
-            Mesh mesh = null;
+            List<Mesh> meshes = new List<Mesh>();
             //List<Curve> corners = new List<Curve>();
             List<double> thicknesses = new List<double>();
             //double thickness = 0;
             Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
-            List <Karamba.GHopper.Loads.GH_Load> ghLoads = new List<Karamba.GHopper.Loads.GH_Load>();
             bool fixedSupport = false;
 
             if (!DA.GetData(0, ref shell)) return;
-            if (!DA.GetData(1, ref mesh)) return;
-            //if (!DA.GetDataList(1, corners)) return;
-            //if (!DA.GetData(2, ref thickness)) return;
+            if (!DA.GetDataList(1, meshes)) return;
             if (!DA.GetDataList(2, thicknesses)) return;
             DA.GetData(3, ref ghMat);
-            DA.GetDataList(4, ghLoads);
-            DA.GetData(5, ref fixedSupport);
+            DA.GetData(4, ref fixedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             var logger = new Karamba.Utilities.MessageLogger();
@@ -93,22 +89,50 @@ namespace ACORN_shells
                     ("", "", "", null, new List<Karamba.Materials.FemMaterial> { k3dMaterial }, new List<double>() { 0 }, thicknesses);
 
             // Create shell element
-            var k3dNodes = new List<Point3>();
-            var k3dShell = k3dKit.Part.MeshToShell(new List<Mesh3>() { mesh.Convert() },
-                new List<string>() { "ACORNSHELL" },
-                new List<Karamba.CrossSections.CroSec>() { k3dSection },
-                logger, out k3dNodes);
+            //var k3dNodes = new List<Point3>();
+            List<BuilderShell> k3dShells = new List<BuilderShell>();
+            foreach (Mesh shellMesh in meshes)
+            {
+                var k3dShell = k3dKit.Part.MeshToShell(new List<Mesh3>() { shellMesh.Convert() },
+                    new List<string>() { "ACORNSHELL" },
+                    new List<Karamba.CrossSections.CroSec>() { k3dSection },
+                    logger, out _);
+
+                k3dShells.AddRange(k3dShell);
+            }
+
+
+
 
             // extract shell corners
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); // discarding shell edges
 
 
-
             // Fixed support
-            var k3dSupports = new List<Karamba.Supports.Support>();
-            foreach (var v in mesh.Vertices)
+            List<Support> k3dSupports = new List<Support>();
+            foreach (var c in corners) 
             {
-                foreach (var c in corners)
+                // find mesh that is closest to corner
+
+                Point3d cornerCenter = c.PointAtNormalizedLength(0.5);
+                Mesh cornerMesh;
+                //int meshIndex;
+                //bool found = c.ClosestPoints(meshes, out _, out _, out meshIndex, 0.05);
+                //cornerMesh = meshes[meshIndex];
+
+                cornerMesh = meshes[0];
+                double bestDistance = 10000000;
+                foreach (Mesh currMesh in meshes)
+                {
+                    double currDistance = cornerCenter.DistanceTo(currMesh.GetBoundingBox(false).Center);
+                    if (currDistance < bestDistance)
+                    {
+                        cornerMesh = currMesh;
+                        bestDistance = currDistance;
+                    }
+                }
+
+                foreach (var v in cornerMesh.Vertices)
                 {
                     var test = c.ClosestPoint(v, out _, fileTol);
                     if (test)
@@ -118,31 +142,25 @@ namespace ACORN_shells
                         else
                             k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, false, false, false }));
 
-                        break;
+                        //break;
                     }
                 }
             }
 
-            // Create loads
-            List<Karamba.Loads.Load> k3dLoads = new List<Karamba.Loads.Load>();
+            // convert from Karamba Loads to Karamba.GHopper Loads
+            // might convert when created...
+            // do this at creation?
 
-            // Default gravitational load
-            var k3dLoad = new Karamba.Loads.GravityLoad(new Vector3(0, 0, -1));
+            List<GH_Element> ghElements = new List<GH_Element>();
+            foreach (BuilderShell k3dShell in k3dShells)
+                ghElements.Add(new GH_Element(k3dShell));
 
-            if (ghLoads.Count == 0)
-                k3dLoads.Add (k3dLoad);
-            else
-                foreach (GH_Load ghLoad in ghLoads)
-                    k3dLoads.Add(ghLoad.Value);
+            List<GH_Support> ghSupports = new List<GH_Support>();
+            foreach (Support k3dSupport in k3dSupports)
+                ghSupports.Add(new GH_Support(k3dSupport));
 
-            // Assemble model
-            var k3dModel = k3dKit.Model.AssembleModel(
-                k3dShell,
-                k3dSupports,
-                k3dLoads,
-                out _, out _, out _, out _, out _);
-
-            DA.SetData(0, new Karamba.GHopper.Models.GH_Model(k3dModel));
+            DA.SetDataList(0, ghElements);
+            DA.SetDataList(1, ghSupports);
         }
 
         protected override System.Drawing.Bitmap Icon
@@ -155,7 +173,7 @@ namespace ACORN_shells
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("f4902d41-66de-4c47-9779-e254936d6320"); }
+            get { return new Guid("4fdecd89-c357-457e-ae71-e1100fd9660d"); }
         }
     }
 }

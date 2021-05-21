@@ -78,12 +78,9 @@ namespace ACORN_shells
             UnitConversion m = ucf.m();
 
             // determine shell center for relative polar coordinates of face centers FOR LIVELOAD
-            // must work for multiple shells - testing with just first
-
             BoundingBox shellBox = BoundingBox.Unset;
             foreach (Mesh shellMesh in shellMeshes)
                 shellBox = BoundingBox.Union (shellBox, shellMesh.GetBoundingBox(false));
-
             Point3d shellCenter = shellBox.Center;
 
             List<Point3d> checkPoints = new List<Point3d>(); // for testing loadPatterns FOR LIVELOAD

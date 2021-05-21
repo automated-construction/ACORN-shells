@@ -48,7 +48,7 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance / 10; //smaller tollerance works!
+            double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; //smaller tollerance works!
 
             List<Brep> segments = new List<Brep>();
             double approxSpringDist = 0;
@@ -99,27 +99,37 @@ namespace ACORN_shells
                 List<Curve> offsetSurfEdges = new List<Curve>();
                 BrepFace segmentFace = segment.Faces[0]; //offsetOnCurve only works on Surfaces and BrepFaces
 
-                foreach (Curve edge in segment.Edges)
+                // get topology-aware edges from segmentedShell
+                int[] edgeIndexes = segmentedShell.Faces[faceIndex].AdjacentEdges();
+                foreach (int edgeIndex in edgeIndexes)
+                //foreach (BrepEdge brepEdge in segment.Edges)
                 {
-                    Curve offsetEdge = null;
-                    Curve[] offsetEdgeArray = edge.OffsetOnSurface(segmentFace, gapSize / 2, tol);
-                    if (offsetEdgeArray != null)
+                    BrepEdge brepEdge = segmentedShell.Edges[edgeIndex];
+                    int[] adjFcs = brepEdge.AdjacentFaces(); //TEST
+                    if (brepEdge.AdjacentFaces().Length > 1) // eliminates outside edges 
                     {
-                        offsetEdge = offsetEdgeArray[0];
-                    }
-                    else
-                    {
-                        offsetEdgeArray = edge.OffsetOnSurface(segmentFace, -gapSize / 2, tol);
+                        Curve edge = brepEdge;
+                        Curve offsetEdge = null;
+                        Curve[] offsetEdgeArray = edge.OffsetOnSurface(segmentFace, gapSize / 2, tol);
                         if (offsetEdgeArray != null)
                         {
                             offsetEdge = offsetEdgeArray[0];
                         }
                         else
                         {
-                            offsetEdge = edge;
+                            offsetEdgeArray = edge.OffsetOnSurface(segmentFace, -gapSize / 2, tol);
+                            if (offsetEdgeArray != null)
+                            {
+                                offsetEdge = offsetEdgeArray[0];
+                            }
+                            else
+                            {
+                                offsetEdge = edge;
+                                //this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Not offsetting!");
+                            }
                         }
+                        offsetSurfEdges.Add(offsetEdge);
                     }
-                    offsetSurfEdges.Add(offsetEdge);
                 }
 
                 // split segmentFace with offset curves (using BrepFace.Split)
@@ -153,10 +163,10 @@ namespace ACORN_shells
                 foreach (Point3d faceSpring in faceSprings)
                 {
                     Point3d offsetFaceSpring;
-                    ComponentIndex ci; // for out in ClosestPoint; remove in VisualStudio
-                    double s, t; // for out in ClosestPoint; remove in VisualStudio
-                    Vector3d normal; // for out in ClosestPoint; remove in VisualStudio
-                    offsetSegment.ClosestPoint(faceSpring, out offsetFaceSpring, out ci, out s, out t, gapSize * 2, out normal);
+                    //ComponentIndex ci; // for out in ClosestPoint; remove in VisualStudio
+                    //double s, t; // for out in ClosestPoint; remove in VisualStudio
+                    //Vector3d normal; // for out in ClosestPoint; remove in VisualStudio
+                    offsetSegment.ClosestPoint(faceSpring, out offsetFaceSpring, out _, out _, out _, gapSize * 2, out _);
                     offsetFaceSprings.Add(offsetFaceSpring);
                 }
 
