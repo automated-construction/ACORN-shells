@@ -7,12 +7,18 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino.Display;
 using Rhino.Geometry;
-using Rhino.Geometry.Intersect;
 using System.Linq;
 using Rhino.Geometry.Collections;
 using Rhino.Collections;
 using GH.MiscToolbox.Components.Utilities;
 using Grasshopper;
+
+using Karamba.Geometry;
+using Karamba.Elements;
+using Karamba.CrossSections;
+using Karamba.GHopper.Geometry;
+using Karamba.GHopper.Elements;
+using Karamba.GHopper.CrossSections;
 
 namespace ACORN_shells
 {
@@ -33,6 +39,7 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Shell segments", "SS", "Shell segments", GH_ParamAccess.list);
             pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs", GH_ParamAccess.item);
             pManager.AddNumberParameter("Gap size", "G", "Distance between segments (optional, for visualisation)", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Springs Cross Section", "CS", "Karamba spring cross section", GH_ParamAccess.item);
 
             pManager[2].Optional = true;
         }
@@ -41,8 +48,9 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("Offset segments", "OS", "Shell segments (selected is S is True)", GH_ParamAccess.tree);
             pManager.AddPointParameter("Segment spring locations", "SL", "Segment spring locations", GH_ParamAccess.tree);
-            pManager.AddPointParameter("Edge spring locations", "EL", "Edge spring locations", GH_ParamAccess.tree);
-            pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree);
+            pManager.AddPointParameter("Edge spring locations", "EL", "Edge spring locations", GH_ParamAccess.tree); //VIZ
+            pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree); //VIZ
+            pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
         }
 
@@ -53,16 +61,28 @@ namespace ACORN_shells
             List<Brep> segments = new List<Brep>();
             double approxSpringDist = 0;
             double gapSize = 0.005; // optional, for viz
+            GH_CrossSection ghSection = null;
+            
 
             if (!DA.GetDataList<Brep>(0, segments)) return;
             if (!DA.GetData(1, ref approxSpringDist)) return;
             DA.GetData(2, ref gapSize);
+            if (!DA.GetData(3, ref ghSection)) return;
+
+            var logger = new Karamba.Utilities.MessageLogger();
+            var k3dKit = new KarambaCommon.Toolkit(); // for Builders
+
+
+            CroSec_Spring k3dSection = (CroSec_Spring) ghSection.Value;
+
 
             //output trees
             DataTree<Brep> offsetSegments = new DataTree<Brep>();
             DataTree<Point3d> segmentSpringLocations = new DataTree<Point3d>();
             DataTree<Point3d> edgeSpringLocations = new DataTree<Point3d>();
             DataTree<Line> edgeSpringLines = new DataTree<Line>();
+            DataTree<BuilderBeam> k3dSprings = new DataTree<BuilderBeam>();
+
 
             // get spring locations by dividing segmented shell interface curves
             // make one Brep with all segments to work with topology
@@ -98,6 +118,8 @@ namespace ACORN_shells
                 // try offset on surface for both directions (inwards and outwards), use the one that is not null (is on surface)
                 List<Curve> offsetSurfEdges = new List<Curve>();
                 BrepFace segmentFace = segment.Faces[0]; //offsetOnCurve only works on Surfaces and BrepFaces
+                //BrepFace segmentFace = segmentedShell.Faces[faceIndex];  // would make things easier, but trimming info is lost
+                // see: https://discourse.mcneel.com/t/splitting-a-brep-face-with-curves-using-brepface-split-method/33846/4
 
                 // get topology-aware edges from segmentedShell
                 int[] edgeIndexes = segmentedShell.Faces[faceIndex].AdjacentEdges();
@@ -106,7 +128,7 @@ namespace ACORN_shells
                 {
                     BrepEdge brepEdge = segmentedShell.Edges[edgeIndex];
                     int[] adjFcs = brepEdge.AdjacentFaces(); //TEST
-                    if (brepEdge.AdjacentFaces().Length > 1) // eliminates outside edges 
+                    if (brepEdge.AdjacentFaces().Length > 1) // disregards outside edges WEIRD BUG
                     {
                         Curve edge = brepEdge;
                         Curve offsetEdge = null;
@@ -128,6 +150,9 @@ namespace ACORN_shells
                                 //this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Not offsetting!");
                             }
                         }
+                        //extend edges to ensure split
+                        offsetEdge = offsetEdge.Extend(CurveEnd.Both, gapSize, CurveExtensionStyle.Smooth);
+
                         offsetSurfEdges.Add(offsetEdge);
                     }
                 }
@@ -176,6 +201,7 @@ namespace ACORN_shells
             // get spring lines per edge - repeating actions from previous loop per segment? = make it a function
             // only for edges between two segments
 
+
             for (int edgeIndex = 0; edgeIndex < edgeSpringLocations.BranchCount; edgeIndex++)
             {
                 GH_Path edgePath = new GH_Path(edgeIndex);
@@ -212,18 +238,38 @@ namespace ACORN_shells
 
                     // make spring line IF there are two spring ends
                     if (springEnds.Count == 2)
-                        edgeSpringLines.Add(new Line(springEnds[0], springEnds[1]), edgePath);
+                    {
+                        Line springLine = new Line(springEnds[0], springEnds[1]);
+                        edgeSpringLines.Add(springLine, edgePath);
+
+                        var k3dSpring = k3dKit.Part.LineToBeam(new List<Line3>() { springLine.Convert() },
+                            new List<string>() { "ACORNSPRING" },
+                            new List<CroSec>() { k3dSection },
+                            logger, out _);
+
+                        k3dSprings.AddRange(k3dSpring, edgePath);
+
+                    }
+                        
                 }
 
             }
 
+            // convert from Karamba Loads to Karamba.GHopper Loads
+            // might convert when created...
+            // do this at creation?
 
+            DataTree<GH_Element> ghSprings = new DataTree<GH_Element>();
+            foreach (GH_Path path in k3dSprings.Paths)
+                foreach (BuilderBeam k3dSpring in k3dSprings.Branch(path))
+                    ghSprings.Add(new GH_Element(k3dSpring));
 
             DA.SetDataTree(0, offsetSegments);
             DA.SetDataTree(1, segmentSpringLocations);
             DA.SetDataTree(2, edgeSpringLocations);
             DA.SetDataTree(3, edgeSpringLines);
-            DA.SetData(4, gapSize);
+            DA.SetDataTree(4, ghSprings);
+            DA.SetData(5, gapSize);
 
         }
 
