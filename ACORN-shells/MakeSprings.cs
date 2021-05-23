@@ -97,11 +97,17 @@ namespace ACORN_shells
             {
                 GH_Path edgePath = new GH_Path(edgeIndex);
                 BrepEdge segmentInterface = segmentedShell.Edges[edgeIndex];
-                int springCount = (int)Math.Ceiling(segmentInterface.GetLength() / approxSpringDist);
 
-                Point3d[] springs;
-                segmentInterface.DivideByCount(springCount, true, out springs); // declare in out in VS
-                edgeSpringLocations.AddRange(springs, edgePath);
+                if (segmentInterface.AdjacentFaces().Length > 1) // disregards outside edges
+                { 
+                    int springCount = (int)Math.Ceiling(segmentInterface.GetLength() / approxSpringDist);
+
+                    Point3d[] springs;
+                    segmentInterface.DivideByCount(springCount, true, out springs); // declare in out in VS
+                    edgeSpringLocations.AddRange(springs, edgePath);
+                }
+                else 
+                    edgeSpringLocations.Add(Point3d.Unset, edgePath); // adds empty list to keep data tree consistent with edge structure
             }
 
 
@@ -128,7 +134,7 @@ namespace ACORN_shells
                 {
                     BrepEdge brepEdge = segmentedShell.Edges[edgeIndex];
                     int[] adjFcs = brepEdge.AdjacentFaces(); //TEST
-                    if (brepEdge.AdjacentFaces().Length > 1) // disregards outside edges WEIRD BUG
+                    if (brepEdge.AdjacentFaces().Length > 1) // disregards outside edges
                     {
                         Curve edge = brepEdge;
                         Curve offsetEdge = null;
@@ -181,7 +187,9 @@ namespace ACORN_shells
                 BrepFace segmentFaceTopo = segmentedShell.Faces[faceIndex];
                 List<Point3d> faceSprings = new List<Point3d>();
                 foreach (int edgeIndex in segmentFaceTopo.AdjacentEdges())
-                    faceSprings.AddRange(edgeSpringLocations.Branch(edgeIndex));
+                    if (segmentedShell.Edges[edgeIndex].AdjacentFaces().Length == 2) //disregard outer segments
+                        faceSprings.AddRange(edgeSpringLocations.Branch(edgeIndex));
+                    
 
                 List<Point3d> offsetFaceSprings = new List<Point3d>(); // simplify in VS with map lambda functions?
                                                                        //offsetFaceSprings = offsetSegment.Faces[0].PullPointsToFace(faceSprings, gapSize * 10);
