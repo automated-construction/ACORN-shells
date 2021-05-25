@@ -16,6 +16,8 @@ using Karamba.Results;
 using Karamba.Models;
 using Karamba.GHopper.Geometry;
 using Karamba.Algorithms;
+using Grasshopper.Kernel.Geometry.Delaunay;
+using Rhino.Runtime.InteropWrappers;
 
 namespace ACORN
 {
@@ -45,10 +47,10 @@ namespace ACORN
         {
             pManager.AddNumberParameter("MaxComp", "MC", "Maximum compression stress [MPa]", GH_ParamAccess.item);
             pManager.AddNumberParameter("MaxComp%", "MC%", "Maximum compression of non-extreme stress elements [MPa]", GH_ParamAccess.item);
-            pManager.AddMeshParameter("MaxComp% mesh", "CM", "Extreme compression stress elements (viz)", GH_ParamAccess.item);
+            pManager.AddMeshParameter("MaxComp% mesh(es)", "CM", "Extreme compression stress elements (viz)", GH_ParamAccess.list);
             pManager.AddNumberParameter("MaxTens", "MT", "Maximum tension stress [MPa]", GH_ParamAccess.item);
             pManager.AddNumberParameter("MaxTens%", "MT%", "Maximum tension of non-extreme stress elements [MPa]", GH_ParamAccess.item);
-            pManager.AddMeshParameter("MaxTens% mesh", "TM", "Extreme tension stress elements (viz)", GH_ParamAccess.item);
+            pManager.AddMeshParameter("MaxTens% mesh", "TM", "Extreme tension stress elements (viz)", GH_ParamAccess.list);
             pManager.AddNumberParameter("Maximum displacement", "Disp", "Maximum displacement[cm]", GH_ParamAccess.item);
             pManager.AddNumberParameter("Buckling factor", "BF", "Buckling factor", GH_ParamAccess.item);
             pManager.AddGenericParameter("Analysed Model ThI", "MThI", "Analysed Model ThI", GH_ParamAccess.item); 
@@ -78,13 +80,15 @@ namespace ACORN
             // extract original shell mesh from k3dModel
             List<IMesh> k3dMeshes = new List<IMesh>();
             k3dModel.Disassemble(out _, out _, out k3dMeshes, out _, out _, out _, out _, out _, out _, out _, out _);
-            Mesh originalMesh = k3dMeshes[0].Convert();
+            // for segmented shell analysis, needs to cope with multipe meshes
+            List<Mesh> rhMeshes = new List<Mesh>();
+            foreach (IMesh k3dMesh in k3dMeshes) rhMeshes.Add(k3dMesh.Convert());
 
             // get first and second principal stress values for all elements, top and bottom layers
             var superimp_factors = new feb.VectReal { 1 }; // according to https://discourse.mcneel.com/t/shell-principal-stresses-in-karamba-api/120629
-            PrincipalStressDirs.solve(k3dModelThI, 0, -1, superimp_factors, out _, out _, out _, 
+            PrincipalStressDirs.solve(k3dModelThI, 0, -1, superimp_factors, out _, out _, out _,
                 out List<double> bottomPS1s, out List<double> bottomPS2s);
-            PrincipalStressDirs.solve(k3dModelThI, 0, 1, superimp_factors, out _, out _, out _, 
+            PrincipalStressDirs.solve(k3dModelThI, 0, 1, superimp_factors, out _, out _, out _,
                 out List<double> topPS1s, out List<double> topPS2s);
 
             // merge all stresses - create stressValue lists before? yes if we need them separately
@@ -97,10 +101,32 @@ namespace ACORN
 
             // create list of stressValue objects, pairing stress values and element indexes,  to sort "asynchronously" as in GH sort component
             List<StressValue> stressValues = new List<StressValue>();
-            foreach (List<double> PSlist in PSlists)
-                for (int i = 0; i < PSlist.Count; i++)
-                    stressValues.Add(new StressValue { Value = PSlist[i], Element = i});
 
+            // determine which mesh it belongs to through list partition, and which face in that mesh
+            foreach (List<double> PSlist in PSlists) { 
+                int meshIndex = 0;
+                int faceIndex = 0;
+                for (int elementIndex = 0; elementIndex < PSlist.Count; elementIndex++) { 
+                    // element count is for ALL meshes, face count is for belonging mesh
+
+                    // creates instance of StressValue 
+                    stressValues.Add(new StressValue { 
+                        Value = PSlist[elementIndex], 
+                        Element = elementIndex, 
+                        Mesh = meshIndex, 
+                        Face = faceIndex});
+
+                    // manage counts
+                    if (faceIndex < rhMeshes[meshIndex].Faces.Count-1)
+                        faceIndex++;
+                    else // reached the end of iterating all mesh's faces so next mesh
+                    {
+                        meshIndex++;
+                        faceIndex = 0;
+                    }
+                }
+            }
+            
             // sort StressValues by value, from negative (compression) to positive (tension)
             List<StressValue> sortedForCompression = stressValues.OrderBy(s => s.Value).ToList();
             List<StressValue> sortedForTension = new List<StressValue>(sortedForCompression);
@@ -117,27 +143,11 @@ namespace ACORN
             double maxTens = extremeElementsTension.First().Value * 10;
             double maxTensP = extremeElementsTension.Last().Value * 10;
 
+
             // generate meshes with extreme stress elements
-            Mesh meshComp = new Mesh(); 
-
-            // copy vertices from original mesh to extreme mesh
-            meshComp.Vertices.AddVertices(originalMesh.Vertices); 
-
-            // copy top valued element faces from original mesh to extreme mesh
-            foreach (StressValue sv in extremeElementsCompression)
-                meshComp.Faces.AddFace(originalMesh.Faces[sv.Element]);
-
-            // finish off
-            meshComp.Normals.ComputeNormals();
-            meshComp.Compact();
-
-            // repeat for tension (make function? rule of three?)
-            Mesh meshTens = new Mesh();
-            meshTens.Vertices.AddVertices(originalMesh.Vertices);
-            foreach (StressValue sv in extremeElementsTension)
-                meshTens.Faces.AddFace(originalMesh.Faces[sv.Element]);
-            meshTens.Normals.ComputeNormals();
-            meshTens.Compact();
+            // for visualisation purposes, even if analysing multiple meshes (eg, segmented shell)
+            List<Mesh> meshesComp = MakeExtremeMeshes(rhMeshes, extremeElementsCompression);
+            List<Mesh> meshesTens = MakeExtremeMeshes(rhMeshes, extremeElementsTension);
 
 
             // Analyze ThII for buckling and displacement
@@ -155,10 +165,10 @@ namespace ACORN
 
             DA.SetData(0, maxComp);
             DA.SetData(1, maxCompP);
-            DA.SetData(2, meshComp);
+            DA.SetDataList(2, meshesComp);
             DA.SetData(3, maxTens);
             DA.SetData(4, maxTensP);
-            DA.SetData(5, meshTens);
+            DA.SetDataList(5, meshesTens);
             DA.SetData(6, maxDispThI);
             DA.SetData(7, bucklingFactor);
             DA.SetData(8, new GH_Model(k3dModelThI));
@@ -183,11 +193,47 @@ namespace ACORN
         {
             get { return new Guid("20adf443-15e2-4d7c-85f8-63cf7d7b42bc"); }
         }
+        /// <summary>
+        /// Creates meshes with the elements top % stress values
+        /// Support and outputs multiple meshes
+        /// </summary>
+        /// <param name="origMeshes"></param>
+        /// <param name="SVs"></param>
+        /// <returns></returns>
+        private List<Mesh> MakeExtremeMeshes (List<Mesh> origMeshes, List<StressValue> SVs)
+        {
+            List<Mesh> extMeshes = new List<Mesh>();
+
+            // copy vertices from original mesh(es) to extreme mesh
+            foreach (Mesh rhMesh in origMeshes)
+            {
+                Mesh meshTens = new Mesh();
+                meshTens.Vertices.AddVertices(rhMesh.Vertices);
+                extMeshes.Add(meshTens);
+            }
+
+            // copy top valued element faces from original mesh to extreme mesh
+            foreach (StressValue sv in SVs)
+                //meshComp.Faces.AddFace(rhMesh.Faces[sv.Element]);
+                extMeshes[sv.Mesh].Faces.AddFace(origMeshes[sv.Mesh].Faces[sv.Face]);
+
+            // finish off
+            foreach (Mesh extMesh in extMeshes)
+            {
+                extMesh.Normals.ComputeNormals();
+                extMesh.Compact();
+            }
+
+            return extMeshes;
+        }
 
         class StressValue
         {
             public double Value { get; set; }
             public int Element { get; set; }
+            public int Mesh { get; set; } // mesh to which element belongs - support for multiple meshes
+            public int Face { get; set; } // face index in Mesh
+
         }
     }
 }
