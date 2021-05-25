@@ -38,9 +38,10 @@ namespace ACORN
         {
             pManager.AddGenericParameter("Karamba model", "M", "Karamba model for whole shell (pre-Analyze)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Percentile", "P", "Percentage of non-extreme stress elements (0-100)", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Buckling?", "B", "If True, calculate Buckling modes using ThII (slower)", GH_ParamAccess.item);
             pManager.AddBooleanParameter("First Principal Stress only?", "1", "If True, considers First Principal Stress only", GH_ParamAccess.item);
 
-            pManager[2].Optional = true;
+            pManager[3].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -61,11 +62,13 @@ namespace ACORN
         {
             GH_Model ghModel = new GH_Model();
             double percentile = 100;
+            bool buck = false;
             bool firstPS = false; //default
 
             if (!DA.GetData(0, ref ghModel)) return;
             if (!DA.GetData(1, ref percentile)) return;
-            DA.GetData(2, ref firstPS);
+            if (!DA.GetData(2, ref buck)) return;
+            DA.GetData(3, ref firstPS);
 
             // convert GH_Model to Model
             Model k3dModel = ghModel.Value;
@@ -152,15 +155,18 @@ namespace ACORN
 
             // Analyze ThII for buckling and displacement
             Model k3dModelThII = new Model(); // prelim + output for visualization with ShellView
-            List<double> maxDispsThII = new List<double>(); // output
-            AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out maxDispsThII, out _, out _, out k3dModelThII, out _); // using defaults from GH AnalyzeThII component
-            double maxDispThII = maxDispsThII[0] * 100; // assuming results in [m], even though component outputs in [cm];
-
             Model k3dModelThIIbuck = new Model();
-            List<double> bucklingFactors = new List<double>();
-            // defaults from GH BModes component; 300 MaxIter might be reduced for performance
-            Buckling.solve(k3dModelThII, 1, 1, 300, 1.0e-7, 1, out bucklingFactors, out k3dModelThIIbuck, out _); // like GH component, returns positive load factors only
-            double bucklingFactor = bucklingFactors[0];
+            double bucklingFactor = 0;
+            if (buck) 
+            {             
+                List<double> maxDispsThII = new List<double>(); // output
+                AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out maxDispsThII, out _, out _, out k3dModelThII, out _); // using defaults from GH AnalyzeThII component
+                double maxDispThII = maxDispsThII[0] * 100; // assuming results in [m], even though component outputs in [cm];
+                List<double> bucklingFactors = new List<double>();
+                // defaults from GH BModes component; 300 MaxIter might be reduced for performance
+                Buckling.solve(k3dModelThII, 1, 1, 300, 1.0e-7, 1, out bucklingFactors, out k3dModelThIIbuck, out _); // like GH component, returns positive load factors only
+                bucklingFactor = bucklingFactors[0];
+            }
 
 
             DA.SetData(0, maxComp);
