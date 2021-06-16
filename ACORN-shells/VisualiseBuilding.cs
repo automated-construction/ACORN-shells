@@ -34,6 +34,9 @@ namespace ACORN
             pManager.AddNumberParameter("CornerRadius", "CR", "Corner radius", GH_ParamAccess.item);
             pManager.AddNumberParameter("ColumnHeight", "CH", "Column height", GH_ParamAccess.item);
             pManager.AddBooleanParameter("FilletEdges", "FE", "Fillet edges for visualisation purposes. Computationally intensive, allow 20 seconds to calculate", GH_ParamAccess.item);
+            pManager.AddNumberParameter("TieRodRadius", "TR", "Tie rod radius. Optional, default is thickness/2", GH_ParamAccess.item);
+
+            pManager[6].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -54,6 +57,7 @@ namespace ACORN
             double cornerRadius = 0;
             double columnHeight = 0;
             bool filletEdges = false;
+            double tieRodRadius = 0;
 
             if (!DA.GetData(0, ref bayGeometryInput)) return;
             if (!DA.GetDataList(1, segments)) return;
@@ -61,6 +65,10 @@ namespace ACORN
             if (!DA.GetData(3, ref cornerRadius)) return;
             if (!DA.GetData(4, ref columnHeight)) return;
             if (!DA.GetData(5, ref filletEdges)) return;
+            DA.GetData(6, ref tieRodRadius);
+
+            // sets default tieRodRadius
+            if (tieRodRadius == 0) tieRodRadius = thickness / 2;
 
 
             double tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
@@ -199,7 +207,7 @@ namespace ACORN
 
             PolylineCurve tierodCurve = (PolylineCurve)bayCurve.Duplicate();
             tierodCurve.Translate(new Vector3d(0, 0, -thickness));
-            Brep tierods = Brep.CreatePipe(tierodCurve, thickness / 2, false, PipeCapMode.None, false, tol, tol)[0];
+            Brep tierods = Brep.CreatePipe(tierodCurve, tieRodRadius, false, PipeCapMode.None, false, tol, tol)[0];
 
 
 
