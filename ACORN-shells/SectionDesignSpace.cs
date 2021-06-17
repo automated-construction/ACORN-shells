@@ -11,6 +11,7 @@ using Rhino.Collections;
 using GH.MiscToolbox.Components.Utilities;
 using System.Drawing;
 using Grasshopper.Kernel.Types;
+using DSVcommon;
 
 namespace ACORN_shells
 {
@@ -30,42 +31,55 @@ namespace ACORN_shells
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddNumberParameter("Varying dimensions", "VD", "Varying dimensions that define section", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Design space", "DS", "All data points in the design space", GH_ParamAccess.tree);
-            pManager.AddNumberParameter("Reference vector", "RV", "Reference vector components", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Varying dimensions", "VD", "Varying dimensions that define section", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Design space", "DS", "Design Vectors in the design space", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Reference vector components", "RVC", "Reference vector components", GH_ParamAccess.list);
 
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddPathParameter("Data points in section", "DPS", "Paths of data points in section", GH_ParamAccess.list);
-            pManager.AddPathParameter("Closest data point", "CDP", "Path of data point closest to reference vector", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Design Vectors in section", "S", "Design Vectors in section", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Closest Design Vector", "C", "Design Vector closest to reference vector", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
-            List<double> varyingDimensions = new List<double>();
-            GH_Structure<List<GH_Number>> ghDesignSpace = new GH_Structure<GH_Number>();
-            List<double> referenceVector = new List<double>();
+            List<int> varyingDimensions = new List<int>();
+            List<DesignVector> designSpace = new List<DesignVector>();
+            List<double> referenceVectorComponents = new List<double>();
 
             if (!DA.GetDataList(0, varyingDimensions)) return;
-            if (!DA.GetDataTree<GH_Number>(1, out ghDesignSpace)) return;
-            if (!DA.GetDataList(2, referenceVector)) return;
+            if (!DA.GetDataList(1, designSpace)) return;
+            if (!DA.GetDataList(2, referenceVectorComponents)) return;
 
-            // convert DesignSpace: GH_Structure (Grasshopper) to DataTree (RhinoCommon)
-            DataTree<double> rhDesignSpace = new DataTree<double>();
-            foreach (GH_Path path in ghDesignSpace.Paths)
+            // find vector in DS closest to refVector
+            DesignVector referenceVector = new DesignVector(referenceVectorComponents);
+            DesignVector closestVector = DesignVector.FindClosestVector(designSpace, referenceVector, out _);
+
+            // determine fixed dimensions from varied - move to DSVcommon?
+            List<double> fixedDimensions = new List<double>();
+            double numberOfDimensions = designSpace[0].DesignMap.Count;
+            for (int dim = 0; dim < numberOfDimensions; dim++)
+                if (!varyingDimensions.Contains(dim)) fixedDimensions.Add(dim);
+
+            // find vectors in section, i.e., that have ALL the same values in the Fixed Dimensions as the reference vector
+            List<DesignVector> sectionedSpace = new List<DesignVector>();
+            foreach (DesignVector dv in designSpace)
             {
-                GH_Number ghDataPoint = ghDesignSpace.get_Branch(path)[0] as GH_Number;
-                double module = new List<double>();
-                GH_Convert.ToRectangle3d(ghModule, ref module, GH_Conversion.Both);
-                rhDesignSpace.Add(module, path);
+                List<bool> inSection = new List<bool>();
+                foreach (int fixedDimension in fixedDimensions)
+                {
+                    if (dv.DesignMap[fixedDimension] == referenceVector.DesignMap[fixedDimension]) inSection.Add(true);
+                    else inSection.Add(false);
+                }
+                // if inSection only contains Trues, then add vector to sectioned space
+                if (!inSection.Contains(false)) sectionedSpace.Add(dv);
             }
 
-
-
-            DA.SetDataTree(0, moduleTree);
+            DA.SetDataList(0, sectionedSpace);
+            DA.SetData(1, closestVector);
         }
 
         protected override System.Drawing.Bitmap Icon

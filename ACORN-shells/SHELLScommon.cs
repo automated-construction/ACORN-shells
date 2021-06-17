@@ -21,7 +21,7 @@ namespace ACORN_shells
     /// </summary>
     class SHELLScommon
     {
-        
+
         public static DataTree<object> TrimTreeD2(DataTree<object> tree)
         {
             DataTree<object> trimmedTree = new DataTree<object>();
@@ -57,7 +57,6 @@ namespace ACORN_shells
             for (int i = numAllEdges / 2; i < numAllEdges; i++) edges.Add(sortedAllEdges[i].EdgeCurve);
 
         }
-
 
 
     }
