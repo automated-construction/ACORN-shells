@@ -67,7 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
-    <Compile Include="SectionDesignSpace.cs" />
+    <Compile Include="ChartDesignSpace3D.cs" />
     <Compile Include="DSVcommon.cs" />
     <Compile Include="ExplodeDesignSpace .cs" />
     <Compile Include="MakeShell.cs" />
