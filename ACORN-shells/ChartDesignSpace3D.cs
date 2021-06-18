@@ -12,6 +12,7 @@ using GH.MiscToolbox.Components.Utilities;
 using System.Drawing;
 using Grasshopper.Kernel.Types;
 using DSVcommon;
+using Rhino.DocObjects;
 
 namespace ACORN_shells
 {
@@ -22,6 +23,8 @@ namespace ACORN_shells
     /// </summary>
     public class ChartDesignSpace3D : GH_Component
     {
+        List<TextDot> _axesTextDots;
+
         public ChartDesignSpace3D()
           : base("Chart Design Space 3D", "A:ChartDS-3D",
               "Charts a Design Space in 3D according to fixed dimensions",
@@ -77,7 +80,9 @@ namespace ACORN_shells
 
             List<Point3d> mappedPoints = DesignVector.MapDesignVectorsToChart(designSpacePoints, spaceBox, chartBox);
 
-            List<GeometryBase> axesElements = DesignVector.MakeChartAxes(chartBox, designSpace, varyingDimensions);
+            varyingDimensions.Add(resultToMap); // for the axes
+            List<GeometryBase> axesElements = DesignVector.MakeChartAxes(chartBox, designSpace, varyingDimensions, out _axesTextDots);
+
 
             DA.SetDataList(0, sectionedSpace);
             DA.SetData(1, closestVector);
@@ -86,6 +91,18 @@ namespace ACORN_shells
             DA.SetData(4, spaceBox);
             DA.SetDataList(5, mappedPoints); 
             DA.SetDataList(6, axesElements);
+        }
+
+        public override void DrawViewportMeshes(IGH_PreviewArgs args)
+        {
+            for (int i = 0; i < _axesTextDots.Count; i++)
+            {
+                args.Viewport.GetCameraFrame(out Plane plane);
+                plane.Origin = _axesTextDots[i].Point;
+                args.Viewport.GetWorldToScreenScale(_axesTextDots[i].Point, out double pixelsPerUnit);
+                args.Display.Draw3dText(_axesTextDots[i].Text, Color.Gray, plane, 10 / pixelsPerUnit, 
+                    "Arial", bold: true, false, TextHorizontalAlignment.Center, TextVerticalAlignment.Middle);
+            }
         }
 
         protected override System.Drawing.Bitmap Icon

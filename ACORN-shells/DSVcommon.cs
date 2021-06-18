@@ -13,6 +13,8 @@ namespace DSVcommon
         public int ID { get; set; }
         public List<double> DesignMap { get; set; }
         public List<double> ObjValues { get; set; }
+        public static int DesignMapSize { get; set; }
+        public static int ObjValuesSize { get; set; }
         public static List<string> DesignMapLabels { get; set; }
         public static List<string> ObjValuesLabels { get; set; }
 
@@ -106,7 +108,7 @@ namespace DSVcommon
 
             // determine fixed dimensions from varied - move to DSVcommon?
             List<double> fixedDimensions = new List<double>();
-            double numberOfDimensions = designSpace[0].DesignMap.Count;
+            double numberOfDimensions = DesignVector.DesignMapSize;
             for (int dim = 0; dim < numberOfDimensions; dim++)
                 if (!varyingDimensions.Contains(dim)) fixedDimensions.Add(dim);
 
@@ -148,21 +150,25 @@ namespace DSVcommon
             sectionedSpaceBox = new BoundingBox(sectionedSpacePoints);
 
             // get domain of resultToMap in the whole design space, not only sectioned space
-            // for extending bounding box so that charts are consistent for the same result
-            List<double> allValuesForResult = new List<double>();
-            foreach (DesignVector dv in designSpace)             
-                allValuesForResult.Add(dv.ObjValues[corrResultToMap]);
+            // if for sectionedSpace, use it in GetDimensionValues
+
+            GetDimensionValues(designSpace, resultToMap, out Interval resultsDomain, out _) ;
+
+
             sectionedSpaceBox = new BoundingBox
-                (sectionedSpaceBox.Min.X, sectionedSpaceBox.Min.Y, allValuesForResult.Min(),
-                sectionedSpaceBox.Max.X, sectionedSpaceBox.Max.Y, allValuesForResult.Max());
+                (sectionedSpaceBox.Min.X, sectionedSpaceBox.Min.Y, resultsDomain.Min,
+                sectionedSpaceBox.Max.X, sectionedSpaceBox.Max.Y, resultsDomain.Max);
 
             return sectionedSpacePoints;
 
         }
 
-        public static List<GeometryBase> MakeChartAxes(BoundingBox chartBox, List<DesignVector> designSpace, List<int> varyingDimensions)
+        public static List<GeometryBase> MakeChartAxes
+            (BoundingBox chartBox, List<DesignVector> designSpace, List<int> varyingDimensions, out List<TextDot> axesTextDots)
         {
             List<GeometryBase> axesElements = new List<GeometryBase>();
+            // axesTextDots need to be separate, to be displayed directly in viewport
+            axesTextDots = new List<TextDot>();
             // make axes lines
             Curve xAxis = new Line(chartBox.Min, new Vector3d(chartBox.Diagonal.X * Vector3d.XAxis)).ToNurbsCurve();
             Curve yAxis = new Line(chartBox.Min, new Vector3d(chartBox.Diagonal.Y * Vector3d.YAxis)).ToNurbsCurve();
@@ -170,44 +176,61 @@ namespace DSVcommon
 
             axesElements.AddRange(new List<GeometryBase>() { xAxis, yAxis, zAxis });
 
-            // set axes domains from varying dimensions and result -- repeats a lot (see Make3D chart ln 152)
-            List<double> allValuesForX = new List<double>();
-            foreach (DesignVector dv in designSpace)
-                allValuesForX.Add(dv.ObjValues[varyingDimensions[0]]);
-            Interval xAxisDomain = new Interval(allValuesForX.Min(), allValuesForX.Max());
+            // this should be refactored in a loop
+            GetDimensionValues(designSpace, varyingDimensions[0], out Interval xAxisDomain, out string xDimName);
+            axesElements.AddRange(MakeSingleAxis(xAxis, xAxisDomain, xDimName, out List<TextDot> xAxisTextDots));
+            axesTextDots.AddRange(xAxisTextDots);
 
-            axesElements.AddRange(MakeSingleAxis(xAxis, xAxisDomain));
-            //axesElements.AddRange(MakeSingleAxis(yAxis));
-            //axesElements.AddRange(MakeSingleAxis(zAxis));
+            GetDimensionValues(designSpace, varyingDimensions[1], out Interval yAxisDomain, out string yDimName);
+            axesElements.AddRange(MakeSingleAxis(yAxis, yAxisDomain, yDimName, out List<TextDot> yAxisTextDots));
+            axesTextDots.AddRange(yAxisTextDots);
+
+            GetDimensionValues(designSpace, varyingDimensions[2], out Interval zAxisDomain, out string zDimName);
+            axesElements.AddRange(MakeSingleAxis(zAxis, zAxisDomain, zDimName, out List<TextDot> zAxisTextDots));
+            axesTextDots.AddRange(zAxisTextDots);
 
             return axesElements;
         }
 
-        public static List<GeometryBase> MakeSingleAxis(Curve axisLine, Interval axisDomain)
+        public static List<GeometryBase> MakeSingleAxis(Curve axisLine, Interval axisDomain, string axisName, out List<TextDot> axisTextDots)
         {
             int nrDivs = 7; // make dependent on nr vectors per dimension...
-            double axisDotLength = .05;
+            double axisDotLength = .2;
+            int dp = 2; // nr of decimal places in axis text dots
+
+            //customize string formatting mask for variable number of decimal places
+            string formatMask = "{0:0.";
+            for (int i = 0; i < dp; i++) formatMask += "0";
+            formatMask += "}";
+
             
             List<GeometryBase> axisElements = new List<GeometryBase>();
 
             // divide axes lines and assign values - based on the whole Design Space
             Plane[] divPlanes = axisLine.GetPerpendicularFrames(axisLine.DivideByCount(nrDivs - 1, true));
 
+            // text dots cannot be output as geometry, rather displayed directly in viewport
             List<Curve> axisDots = new List<Curve>();
-            List<TextDot> axisTextDots = new List<TextDot>();
+            axisTextDots = new List<TextDot>();
             double step = axisDomain.Min; // for iterating axis values
 
             foreach (Plane divPlane in divPlanes)
             {
+                Vector3d dotDir = new Vector3d(divPlane.XAxis * - axisDotLength);
                 // adds a spoke to the axis line
-                axisDots.Add(new Line(divPlane.Origin, new Vector3d(divPlane.XAxis * -axisDotLength)).ToNurbsCurve());
+                axisDots.Add(new Line(divPlane.Origin, dotDir).ToNurbsCurve());
                 // adds a TextDot with the current axis value
-                axisTextDots.Add(new TextDot (step.ToString(), divPlane.PointAt(-axisDotLength, 0))); 
+                axisTextDots.Add(new TextDot (
+                    string.Format(formatMask, step), // truncate to N decimal places
+                    divPlane.Origin + dotDir * 2)); 
                 // update axis value
                 step += axisDomain.Length / (nrDivs - 1);
             }
+
             axisElements.AddRange(axisDots);
-            axisElements.AddRange(axisTextDots);
+
+            // add axis name
+            axisTextDots.Add(new TextDot(axisName, axisLine.PointAtEnd + axisLine.TangentAtEnd * axisDotLength* 2));
 
             return axisElements;
         }
@@ -242,10 +265,40 @@ namespace DSVcommon
                 transformedPoints.Add(transformedPoint);
             }
 
-
-
-
             return transformedPoints;
+        }
+        /// <summary>
+        /// Extracts a "row" in the design space corresponding to a specific dimension
+        /// Should be using an array to encode a design space...
+        /// </summary>
+        /// <param name="designSpace"></param>
+        /// <param name="dimension"></param>
+        /// <param name="domain"></param>
+        /// <returns></returns>
+        public static List<double> GetDimensionValues (List<DesignVector> designSpace, int dimension, out Interval domain, out string dimName)
+        {
+            List<double> allValues = new List<double>();
+
+            // select between design map or obj values
+            if (dimension < DesignVector.DesignMapSize)
+            {
+                foreach (DesignVector dv in designSpace)
+                    allValues.Add(dv.DesignMap[dimension]);
+                dimName = DesignMapLabels[dimension];
+            }
+
+
+            else
+            {
+                int corrDimension = dimension - DesignVector.DesignMapSize;
+                foreach (DesignVector dv in designSpace)
+                    allValues.Add(dv.ObjValues[corrDimension]);
+                dimName = ObjValuesLabels[corrDimension];
+            }    
+
+
+            domain = new Interval(allValues.Min(), allValues.Max());
+            return allValues;
         }
 
     }

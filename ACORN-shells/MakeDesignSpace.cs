@@ -53,7 +53,9 @@ namespace ACORN_shells
             if (!DA.GetDataList(2, designMapLabels)) return;
             if (!DA.GetDataList(3, objValueLabels)) return;
 
-            // set labels (static properties)
+            // set static properties
+            DesignVector.DesignMapSize = designMapLabels.Count;
+            DesignVector.ObjValuesSize = objValueLabels.Count;
             DesignVector.DesignMapLabels = designMapLabels;
             DesignVector.ObjValuesLabels = objValueLabels;
 
