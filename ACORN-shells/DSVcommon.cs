@@ -239,24 +239,17 @@ namespace DSVcommon
         {
             List<Point3d> transformedPoints = new List<Point3d>();
 
-            // create Transform for recreating BoxMap component
-            /*
-            Transform boxScaling = Transform.ChangeBasis
-                (Vector3d.XAxis * sourceBox.Diagonal.X, Vector3d.YAxis * sourceBox.Diagonal.Y, Vector3d.ZAxis * sourceBox.Diagonal.Z,
-                Vector3d.XAxis * targetBox.Diagonal.X, Vector3d.YAxis * targetBox.Diagonal.Y, Vector3d.ZAxis * targetBox.Diagonal.Z);
-            */
-
             // define origin plane of sourceBox
             Plane sourceOrigin = Plane.WorldXY;
             sourceOrigin.Origin = sourceBox.Min;
 
+            // create Transforms for recreating BoxMap component
             Transform boxScaling = Transform.Scale(sourceOrigin,
                 targetBox.Diagonal.X / sourceBox.Diagonal.X, 
                 targetBox.Diagonal.Y / sourceBox.Diagonal.Y, 
                 targetBox.Diagonal.Z / sourceBox.Diagonal.Z);
             Transform boxMoving = Transform.Translation(new Vector3d(targetBox.Min) - new Vector3d (sourceBox.Min));
             Transform boxMapping = Transform.Multiply(boxMoving, boxScaling);
-
 
             foreach (Point3d point in points)
             {
@@ -267,6 +260,34 @@ namespace DSVcommon
 
             return transformedPoints;
         }
+
+        public static Mesh MeshChartPoints(List<Point3d> pts)
+        {
+            // code from James Ramsden: http://james-ramsden.com/create-2d-delaunay-triangulation-mesh-with-c-in-grasshopper/
+            // with help from Daniel Piker: https://discourse.mcneel.com/t/3d-delaunay/126194
+
+            //convert point3d to node2
+            //grasshopper requres that nodes are saved within a Node2List for Delaunay
+            var nodes = new Grasshopper.Kernel.Geometry.Node2List();
+            for (int i = 0; i < pts.Count; i++)
+                //notice how we only read in the X and Y coordinates
+                //  this is why points should be mapped onto the XY plane
+                nodes.Append(new Grasshopper.Kernel.Geometry.Node2(pts[i].X, pts[i].Y));
+
+            //solve Delaunay
+            var delMesh = new Mesh();
+            var faces = new List<Grasshopper.Kernel.Geometry.Delaunay.Face>();
+
+            faces = Grasshopper.Kernel.Geometry.Delaunay.Solver.Solve_Faces(nodes, 0);
+
+            //output
+            delMesh = Grasshopper.Kernel.Geometry.Delaunay.Solver.Solve_Mesh(nodes, 0, ref faces);
+            for (int i = 0; i < pts.Count; i++)
+                delMesh.Vertices.SetVertex(i, pts[i]);
+            return delMesh;
+        }
+
+
         /// <summary>
         /// Extracts a "row" in the design space corresponding to a specific dimension
         /// Should be using an array to encode a design space...

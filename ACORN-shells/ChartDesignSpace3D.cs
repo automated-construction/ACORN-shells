@@ -50,6 +50,7 @@ namespace ACORN_shells
             pManager.AddBoxParameter("Space Box", "B", "Box containing Design Space points", GH_ParamAccess.item);
             pManager.AddPointParameter("Mapped points", "M", "Points corresponding to mapped sectioned Design Vectors", GH_ParamAccess.list);
             pManager.AddGeometryParameter("Chart axes", "A", "Chart axes", GH_ParamAccess.list);
+            pManager.AddMeshParameter("Chart mesh", "M", "Chart mesh", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -83,6 +84,7 @@ namespace ACORN_shells
             varyingDimensions.Add(resultToMap); // for the axes
             List<GeometryBase> axesElements = DesignVector.MakeChartAxes(chartBox, designSpace, varyingDimensions, out _axesTextDots);
 
+            Mesh mappedMesh = DesignVector.MeshChartPoints(mappedPoints);
 
             DA.SetDataList(0, sectionedSpace);
             DA.SetData(1, closestVector);
@@ -91,6 +93,8 @@ namespace ACORN_shells
             DA.SetData(4, spaceBox);
             DA.SetDataList(5, mappedPoints); 
             DA.SetDataList(6, axesElements);
+            DA.SetData(7, mappedMesh);
+
         }
 
         public override void DrawViewportMeshes(IGH_PreviewArgs args)
