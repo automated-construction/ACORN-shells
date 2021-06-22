@@ -5,9 +5,35 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Rhino.Geometry;
+using Grasshopper.Kernel.Types;
 
 namespace DSVcommon
 {
+    /*
+    public class DesignVector_GH : GH_Goo<DesignVector>
+
+    {
+
+        //...
+        public override bool IsValid => throw new NotImplementedException();
+
+        public override string TypeName => throw new NotImplementedException();
+
+        public override string TypeDescription => throw new NotImplementedException();
+
+        public override IGH_Goo Duplicate()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ToString()
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+    */
+
     public class DesignVector
     {
         public int ID { get; set; }

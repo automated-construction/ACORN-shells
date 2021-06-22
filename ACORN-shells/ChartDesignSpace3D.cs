@@ -35,7 +35,7 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddIntegerParameter("Varying dimensions", "VD", "Varying dimensions that define section", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Design space", "DS", "Design Vectors in the design space", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Design space", "DS", "Design Vectors in the design space", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Reference vector components", "RVC", "Reference vector components", GH_ParamAccess.list);
             pManager.AddIntegerParameter("Result to map", "R", "Result to map", GH_ParamAccess.item);
             pManager.AddBoxParameter("Chart Box", "B", "Box containing the chart", GH_ParamAccess.item);
@@ -57,19 +57,39 @@ namespace ACORN_shells
         {
 
             List<int> varyingDimensions = new List<int>();
-            List<DesignVector> designSpace = new List<DesignVector>();
+            GH_Structure<IGH_Goo> designSpaces = new GH_Structure<IGH_Goo>();
+            //DataTree<DesignVector> designSpaces = new DataTree<DesignVector>();
+            //List<DesignVector> designSpace = new List<DesignVector>();
             List<double> referenceVectorComponents = new List<double>();
             int resultToMap = 0;
             Box ghChartBox = Box.Unset;
 
             if (!DA.GetDataList(0, varyingDimensions)) return;
-            if (!DA.GetDataList(1, designSpace)) return;
+            if (!DA.GetDataTree(1, out designSpaces)) return;
+            //if (!DA.GetDataList(1, designSpace)) return;
             if (!DA.GetDataList(2, referenceVectorComponents)) return;
             if (!DA.GetData(3, ref resultToMap)) return; 
             if (!DA.GetData(4, ref ghChartBox)) return;
 
             // convert Box to BoundingBox
             BoundingBox chartBox = ghChartBox.BoundingBox;
+
+            // extract DesignVectors from GH_Goo?
+            List<List<DesignVector>> rhDesignSpaces = new List<List<DesignVector>>();
+            foreach (GH_Path path in designSpaces.Paths)
+            {
+                //IList<DesignVector> currDSlist = designSpaces.get_Branch(path) as IList<DesignVector>;
+                //List<DesignVector> currDesignSpace = designSpaces.get_Branch(path) as List<DesignVector>;
+                List<DesignVector> currDesignSpace = designSpaces.get_Branch(path) as List<DesignVector>;
+                /*
+                List<DesignVector> sectionedSpace = DesignVector.SectionDesignSpace
+                    (varyingDimensions, designSpace, referenceVectorComponents, out DesignVector closestVector);
+                string closestVectorInfo = closestVector.DescribeVector();
+                */
+                rhDesignSpaces.Add(currDesignSpace);
+            }
+
+            List<DesignVector> designSpace = rhDesignSpaces[0];
 
             List<DesignVector> sectionedSpace = DesignVector.SectionDesignSpace
                 (varyingDimensions, designSpace, referenceVectorComponents, out DesignVector closestVector);
@@ -99,14 +119,17 @@ namespace ACORN_shells
 
         public override void DrawViewportMeshes(IGH_PreviewArgs args)
         {
-            for (int i = 0; i < _axesTextDots.Count; i++)
-            {
-                args.Viewport.GetCameraFrame(out Plane plane);
-                plane.Origin = _axesTextDots[i].Point;
-                args.Viewport.GetWorldToScreenScale(_axesTextDots[i].Point, out double pixelsPerUnit);
-                args.Display.Draw3dText(_axesTextDots[i].Text, Color.Gray, plane, 10 / pixelsPerUnit, 
-                    "Arial", bold: true, false, TextHorizontalAlignment.Center, TextVerticalAlignment.Middle);
+            if (_axesTextDots != null) {
+                for (int i = 0; i < _axesTextDots.Count; i++)
+                {
+                    args.Viewport.GetCameraFrame(out Plane plane);
+                    plane.Origin = _axesTextDots[i].Point;
+                    args.Viewport.GetWorldToScreenScale(_axesTextDots[i].Point, out double pixelsPerUnit);
+                    args.Display.Draw3dText(_axesTextDots[i].Text, Color.Gray, plane, 10 / pixelsPerUnit, 
+                        "Arial", bold: true, false, TextHorizontalAlignment.Center, TextVerticalAlignment.Middle);
+                }
             }
+
         }
 
         protected override System.Drawing.Bitmap Icon
