@@ -67,11 +67,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
-    <Compile Include="ChartDesignSpace3D.cs" />
-    <Compile Include="DSVcommon.cs" />
-    <Compile Include="ExplodeDesignSpace .cs" />
+    <None Include="ChartDesignSpace3D.cs" />
+    <None Include="DSVcommon.cs" />
+    <None Include="ExplodeDesignSpace .cs" />
     <Compile Include="MakeShell.cs" />
-    <Compile Include="MakeDesignSpace.cs" />
+    <None Include="MakeDesignSpace.cs" />
     <Compile Include="ShellLoads.cs" />
     <Compile Include="MakeSprings.cs" />
     <Compile Include="SimulatePinbed.cs" />
