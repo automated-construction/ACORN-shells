@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="AnalysisResultsExternal.cs" />
     <Compile Include="MakeShell.cs" />
     <Compile Include="ShellLoads.cs" />
     <Compile Include="MakeSprings.cs" />
