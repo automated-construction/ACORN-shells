@@ -37,10 +37,12 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("Shell segments", "SS", "Shell segments", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs", GH_ParamAccess.item);
+            //pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs (optional, default in every mesh vertex on interface)", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs)", GH_ParamAccess.item);
             pManager.AddNumberParameter("Gap size", "G", "Distance between segments (optional, for visualisation)", GH_ParamAccess.item);
             pManager.AddGenericParameter("Springs Cross Section", "CS", "Karamba spring cross section", GH_ParamAccess.item);
 
+            //pManager[1].Optional = true;
             pManager[2].Optional = true;
         }
 
@@ -59,7 +61,7 @@ namespace ACORN_shells
             double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; //smaller tollerance works!
 
             List<Brep> segments = new List<Brep>();
-            double approxSpringDist = 0;
+            double approxSpringDist = double.NaN;
             double gapSize = 0.005; // optional, for viz
             GH_CrossSection ghSection = null;
             
