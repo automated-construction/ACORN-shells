@@ -43,9 +43,10 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Dead Load value", "DLV", "Dead Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddNumberParameter("Live Load value", "LLV", "Live Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Live Load pattern", "LLP", "Load pattern.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Area adjustment factors", "AAF", "Area adjustment factors for testing gap", GH_ParamAccess.list); //TEST for area adjustements
 
 
-            //pManager[3].Optional = true;
+            pManager[4].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -60,17 +61,33 @@ namespace ACORN_shells
             double deadLoadValue = 0;
             double liveLoadValue = 0;
             int loadPattern = 0;
+            List<double> areaFactors= new List<double>();// TEST for area adjustements
 
             if (!DA.GetDataList(0, shellMeshes)) return;
             if (!DA.GetData(1, ref deadLoadValue)) return;
             if (!DA.GetData(2, ref liveLoadValue)) return;
             if (!DA.GetData(3, ref loadPattern)) return;
+            DA.GetDataList(4, areaFactors); //TEST for area adjustements
 
             // Create Karamba loads
             List<Load> k3dLoads = new List<Karamba.Loads.Load>();
 
             // Gravitational load
-            Load gravity = new GravityLoad(new Vector3(0, 0, -1 * DL_FACTOR));
+
+            // if area factors, average them out for gravity - 
+            // should be done individually, but that makes the component complicated, needing volume and density
+            // to be revised for variable thickness
+            double areaFactorGravity = 0;
+            if (areaFactors.Count > 0)
+            {
+                foreach (double areaFactor in areaFactors)
+                    areaFactorGravity += areaFactor;
+                areaFactorGravity /= areaFactors.Count; 
+            }
+            else
+                areaFactorGravity = 1;
+
+            Load gravity = new GravityLoad(new Vector3(0, 0, -1 * areaFactorGravity * DL_FACTOR));
             k3dLoads.Add(gravity);
 
             var k3dFL = new KarambaCommon.Factories.FactoryLoad();
@@ -85,11 +102,26 @@ namespace ACORN_shells
 
             List<Point3d> checkPoints = new List<Point3d>(); // for testing loadPatterns FOR LIVELOAD
 
-            foreach (Mesh shellMesh in shellMeshes)
+            //foreach (Mesh shellMesh in shellMeshes)
+            for (int i = 0; i<shellMeshes.Count;i++)
             {
+                Mesh shellMesh = shellMeshes[i];
+
+                //TEST for area adjustements
+                if (areaFactors.Count > 0)
+                {
+                    double areaFactor = areaFactors[i];
+                    deadLoadValue *= areaFactor;
+                    liveLoadValue *= areaFactor;
+                }
+
                 Mesh3 baseMesh = m.toBaseMesh(shellMesh.Convert());
 
+                //----------- Gravity?
+
+
                 //----------- Dead load mesh load - same as Loads component > MeshLoad Const   
+
                 MeshLoad deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
                 k3dLoads.Add(deadLoad);
 

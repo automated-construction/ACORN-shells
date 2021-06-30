@@ -140,14 +140,14 @@ namespace ACORN_shells
                     {
                         Curve edge = brepEdge;
                         Curve offsetEdge = null;
-                        Curve[] offsetEdgeArray = edge.OffsetOnSurface(segmentFace, gapSize / 2, tol);
+                        Curve[] offsetEdgeArray = edge.OffsetOnSurface(segmentFace, gapSize / 2, tol / 10);
                         if (offsetEdgeArray != null)
                         {
                             offsetEdge = offsetEdgeArray[0];
                         }
                         else
                         {
-                            offsetEdgeArray = edge.OffsetOnSurface(segmentFace, -gapSize / 2, tol);
+                            offsetEdgeArray = edge.OffsetOnSurface(segmentFace, -gapSize / 2, tol / 10);
                             if (offsetEdgeArray != null)
                             {
                                 offsetEdge = offsetEdgeArray[0];
