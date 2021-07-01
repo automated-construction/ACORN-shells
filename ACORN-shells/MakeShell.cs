@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Grasshopper.Kernel;
 using Rhino.Geometry;
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Data;
 
 using Karamba.GHopper.Geometry;
 using Karamba.Geometry;
 using Karamba.Elements;
 using Karamba.Supports;
+using Karamba.Materials;
+using Karamba.CrossSections;
 using Karamba.GHopper.Elements;
 using Karamba.GHopper.Supports;
+using Karamba.GHopper.Materials;
 
 namespace ACORN_shells
 {
@@ -39,9 +45,9 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
             pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.list);
+            pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
 
             pManager[3].Optional = true;
             pManager[4].Optional = true;
@@ -57,53 +63,94 @@ namespace ACORN_shells
         {
             Brep shell = null;
             List<Mesh> meshes = new List<Mesh>();
-            //List<Curve> corners = new List<Curve>();
-            List<double> thicknesses = new List<double>();
-            //double thickness = 0;
-            Karamba.GHopper.Materials.GH_FemMaterial ghMat = null;
+            //GH_Structure <GH_Mesh> ghMeshes = new GH_Structure<GH_Mesh>();
+            //List<double> thicknesses = new List<double>();
+            GH_Structure<GH_Number> ghThicknesses = new GH_Structure<GH_Number>();
+            List<GH_FemMaterial> ghMats = new List<GH_FemMaterial>();
             bool fixedSupport = false;
 
             if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetDataList(1, meshes)) return;
-            if (!DA.GetDataList(2, thicknesses)) return;
-            DA.GetData(3, ref ghMat);
+            if (!DA.GetDataTree(2, out ghThicknesses)) return;
+            DA.GetDataList(3, ghMats);
             DA.GetData(4, ref fixedSupport);
 
-            var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+            var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // for extracting supports
             var logger = new Karamba.Utilities.MessageLogger();
             var k3dKit = new KarambaCommon.Toolkit();
 
-            // Make a default concrete material for Karamba
-            Karamba.Materials.FemMaterial k3dMaterial = null;
 
-            if (ghMat == null)
-                k3dMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T);
-            else
-                k3dMaterial = ghMat.Value;
 
-            // Cross section (predefined, allow input) OR component to make shell
-            Karamba.CrossSections.CroSec_Shell k3dSection = null;
-            if (thicknesses.Count == 1)
-                k3dSection = k3dKit.CroSec.ShellConst(thicknesses[0], 0, k3dMaterial, "SHELL", "SHELL", "");
-            else
-                k3dSection = new Karamba.CrossSections.CroSec_Shell
-                    ("", "", "", null, new List<Karamba.Materials.FemMaterial> { k3dMaterial }, new List<double>() { 0 }, thicknesses);
+            // -------------- MATERIALS: accepts multiple materials for each segment
+            FemMaterial k3dDefaultMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T);
+            List<FemMaterial> k3dMaterials = new List<FemMaterial>(); // to match meshes list, works if only one mesh
 
-            // Create shell element
-            //var k3dNodes = new List<Point3>();
-            List<BuilderShell> k3dShells = new List<BuilderShell>();
-            foreach (Mesh shellMesh in meshes)
+            switch (ghMats.Count)
             {
-                var k3dShell = k3dKit.Part.MeshToShell(new List<Mesh3>() { shellMesh.Convert() },
-                    new List<string>() { "ACORNSHELL" },
-                    new List<Karamba.CrossSections.CroSec>() { k3dSection },
-                    logger, out _);
-
-                k3dShells.AddRange(k3dShell);
+                case 0:
+                    // use default material
+                    for (int i = 0; i < meshes.Count; i++)
+                        k3dMaterials.Add(k3dDefaultMaterial);
+                    break;
+                case 1:
+                    for (int i = 0; i < meshes.Count; i++)
+                        k3dMaterials.Add(ghMats[0].Value);
+                    break;
+                default:
+                    foreach (GH_FemMaterial ghMat in ghMats) // assuming that number of materials and number of meshes match 
+                        k3dMaterials.Add (ghMat.Value);
+                    break;
             }
 
 
+            // --------------- CROSS SECTION
 
+            // -------------- CROSS SECTION: decision tree based on number of materials and thicknesses
+
+            //CroSec_Shell k3dSingleSection = null;
+            List<CroSec_Shell> k3dSections = new List<CroSec_Shell>();
+
+            bool singleThickness = (ghThicknesses.FlattenData().Count == 1); // constant thickness for whole shell
+            bool constantThickness = (ghThicknesses.FlattenData().Count == meshes.Count); // constant thickness per segment
+            bool variableThickness = !(singleThickness || constantThickness); // variable thickness per segment
+
+            if (singleThickness)
+                for (int i = 0; i < k3dMaterials.Count; i++)
+                    k3dSections.Add(k3dKit.CroSec.ShellConst(ghThicknesses.FlattenData()[0].Value, 0, k3dMaterials[i], "SHELL", "SHELL", ""));
+
+            if (constantThickness)
+                for (int i = 0; i < k3dMaterials.Count; i++)
+                    k3dSections.Add(k3dKit.CroSec.ShellConst(ghThicknesses.FlattenData()[i].Value, 0, k3dMaterials[i], "SHELL", "SHELL", ""));
+
+            if (variableThickness)
+                for (int i = 0; i < k3dMaterials.Count; i++)
+                {
+                    List<GH_Number> ghSegmentThicknesses = ghThicknesses.get_Branch(new GH_Path(i)) as List<GH_Number>; // needs to be converted into doubles
+                    List<double> segmentThicknesses = new List<double>();
+                    foreach (GH_Number number in ghSegmentThicknesses)
+                        segmentThicknesses.Add(number.Value);
+                    k3dSections.Add (new CroSec_Shell ("", "", "", null, new List<FemMaterial> { k3dMaterials[i] }, new List<double>() { 0 }, segmentThicknesses));
+                }
+
+
+            //------------------- SHELL ELEMENTS
+            // Create shell element
+            List<BuilderShell> k3dShells = new List<BuilderShell>();
+
+            for (int i = 0; i < meshes.Count; i++)
+            {
+                Mesh mesh = meshes[i];
+                var k3dShell = k3dKit.Part.MeshToShell(new List<Mesh3>() { mesh.Convert() },
+                    new List<string>() { "ACORNSHELL" },
+                    new List<CroSec>() { k3dSections[i] },
+                    logger, out _);
+
+                k3dShells.AddRange(k3dShell);
+
+            }
+
+
+            // ------------- SUPPORTS
 
             // extract shell corners
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); // discarding shell edges
@@ -148,7 +195,7 @@ namespace ACORN_shells
                 }
             }
 
-            // convert from Karamba Loads to Karamba.GHopper Loads
+            // convert from Karamba lists to Karamba.GHopper lists
             // might convert when created...
             // do this at creation?
 
