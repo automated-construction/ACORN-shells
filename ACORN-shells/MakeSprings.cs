@@ -166,7 +166,7 @@ namespace ACORN_shells
                 }
 
                 // split segmentFace with offset curves (using BrepFace.Split)
-                Brep segmentFacePieces = segmentFace.Split(offsetSurfEdges, tol);
+                Brep segmentFacePieces = segmentFace.Split(offsetSurfEdges, tol / 10);
                 // get brep's BrepFaces
                 List<BrepFace> segmentFacePiecesFaces = segmentFacePieces.Faces.ToList<BrepFace>();
 
@@ -201,8 +201,22 @@ namespace ACORN_shells
                     //ComponentIndex ci; // for out in ClosestPoint; remove in VisualStudio
                     //double s, t; // for out in ClosestPoint; remove in VisualStudio
                     //Vector3d normal; // for out in ClosestPoint; remove in VisualStudio
+
+                    // determine closest corner of offsetSegment, 
+                    // to avoid points too close to offsetSegment corner
+                    BrepVertexList offsetSegmentVertices = offsetSegment.Vertices;
+                    List<Point3d> offsetSegmentPoints = new List<Point3d>();
+                    foreach (BrepVertex offsetSegmentVertex in offsetSegmentVertices)
+                        offsetSegmentPoints.Add(offsetSegmentVertex.Location);
+                    Point3d closestCornerInOffsetSegment = offsetSegmentPoints
+                        [new PointCloud(offsetSegmentPoints).ClosestPoint(faceSpring)];
+
+                    // if closest point in offset segment is too close to offset segment corner, use corner
                     offsetSegment.ClosestPoint(faceSpring, out offsetFaceSpring, out _, out _, out _, gapSize * 2, out _);
-                    offsetFaceSprings.Add(offsetFaceSpring);
+                    if (offsetFaceSpring.DistanceTo(closestCornerInOffsetSegment) < approxSpringDist * .25)
+                        offsetFaceSprings.Add(closestCornerInOffsetSegment);
+                    else
+                        offsetFaceSprings.Add(offsetFaceSpring);
                 }
 
                 segmentSpringLocations.AddRange(offsetFaceSprings, segmentPath);
@@ -255,7 +269,7 @@ namespace ACORN_shells
                         var k3dSpring = k3dKit.Part.LineToBeam(new List<Line3>() { springLine.Convert() },
                             new List<string>() { "ACORNSPRING" },
                             new List<CroSec>() { k3dSection },
-                            logger, out _);
+                            logger, out _, true, gapSize/2);
 
                         k3dSprings.AddRange(k3dSpring, edgePath);
 
