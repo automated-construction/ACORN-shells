@@ -67,6 +67,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
+    <Compile Include="StressResults.cs" />
+    <Compile Include="AnalysisResultsFinal.cs" />
     <Compile Include="AnalysisResultsExternal.cs" />
     <Compile Include="VariableThicknessShell.cs" />
     <Compile Include="MakeShell.cs" />
