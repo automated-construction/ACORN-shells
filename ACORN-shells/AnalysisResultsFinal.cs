@@ -126,40 +126,5 @@ namespace ACORN
         /// <param name="origMeshes"></param>
         /// <param name="SVs"></param>
         /// <returns></returns>
-        private List<Mesh> MakeExtremeMeshes (List<Mesh> origMeshes, List<StressValue> SVs)
-        {
-            List<Mesh> extMeshes = new List<Mesh>();
-
-            // copy vertices from original mesh(es) to extreme mesh
-            foreach (Mesh rhMesh in origMeshes)
-            {
-                Mesh meshTens = new Mesh();
-                meshTens.Vertices.AddVertices(rhMesh.Vertices);
-                extMeshes.Add(meshTens);
-            }
-
-            // copy top valued element faces from original mesh to extreme mesh
-            foreach (StressValue sv in SVs)
-                //meshComp.Faces.AddFace(rhMesh.Faces[sv.Element]);
-                extMeshes[sv.Mesh].Faces.AddFace(origMeshes[sv.Mesh].Faces[sv.Face]);
-
-            // finish off
-            foreach (Mesh extMesh in extMeshes)
-            {
-                extMesh.Normals.ComputeNormals();
-                extMesh.Compact();
-            }
-
-            return extMeshes;
-        }
-
-        class StressValue
-        {
-            public double Value { get; set; }
-            public int Element { get; set; }
-            public int Mesh { get; set; } // mesh to which element belongs - support for multiple meshes
-            public int Face { get; set; } // face index in Mesh
-
-        }
     }
 }

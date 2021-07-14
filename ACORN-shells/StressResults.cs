@@ -20,7 +20,7 @@ using Grasshopper.Kernel.Geometry.Delaunay;
 using Rhino.Runtime.InteropWrappers;
 using Rhino.Render.Fields;
 
-namespace ACORN
+namespace ACORN_shells
 {
     /// <summary>
     /// Should render AnalysisResults and AnalysisResultsExternal obsolete
