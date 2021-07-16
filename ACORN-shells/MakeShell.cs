@@ -163,12 +163,7 @@ namespace ACORN_shells
                 // find mesh that is closest to corner
 
                 Point3d cornerCenter = c.PointAtNormalizedLength(0.5);
-                Mesh cornerMesh;
-                //int meshIndex;
-                //bool found = c.ClosestPoints(meshes, out _, out _, out meshIndex, 0.05);
-                //cornerMesh = meshes[meshIndex];
-
-                cornerMesh = meshes[0];
+                Mesh cornerMesh = meshes[0];
                 double bestDistance = 10000000;
                 foreach (Mesh currMesh in meshes)
                 {
@@ -180,6 +175,11 @@ namespace ACORN_shells
                     }
                 }
 
+
+                // filter corner mesh for vertices on naked edge
+                //Polyline[] cornerMeshNakedEdges = cornerMesh.GetNa
+
+                // find vertices in corner mesh on the corner edge
                 foreach (var v in cornerMesh.Vertices)
                 {
                     var test = c.ClosestPoint(v, out _, fileTol);

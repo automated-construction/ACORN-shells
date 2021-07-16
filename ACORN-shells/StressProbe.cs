@@ -54,6 +54,7 @@ namespace ACORN_shells
             pManager.AddIntegerParameter("Element index", "E", "Index of FEM element closest to point", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Mesh index", "M", "Index of Mesh closest to point", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Face index", "F", "Index of Mesh face closest to point", GH_ParamAccess.item);
+            pManager.AddPointParameter("Element center", "C", "Center of element face", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -94,6 +95,7 @@ namespace ACORN_shells
             DA.SetData(4, bestES.Element);
             DA.SetData(5, bestES.Mesh);
             DA.SetData(6, bestES.Face);
+            DA.SetData(7, bestES.princ_origin_top);
 
 
 
