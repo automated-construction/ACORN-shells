@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using Rhino;
+using Rhino.Collections;
 using Rhino.Geometry;
 using Rhino.Geometry.Intersect;
 
@@ -47,6 +48,7 @@ namespace ACORN
             pManager.AddBrepParameter("Columns", "C", "Columns", GH_ParamAccess.list);
             pManager.AddBrepParameter("ColumnHeads", "CH", "Column heads", GH_ParamAccess.list);
             pManager.AddBrepParameter("TieRods", "TR", "Tie rods", GH_ParamAccess.item);
+            pManager.AddBrepParameter("Braces", "B", "Braces", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -69,7 +71,6 @@ namespace ACORN
 
             // sets default tieRodRadius
             if (tieRodRadius == 0) tieRodRadius = thickness / 2;
-
 
             double tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             PolylineCurve bayPolylineCurve = (PolylineCurve) bayGeometryInput;
@@ -162,18 +163,21 @@ namespace ACORN
                     if (ptIn == PointContainment.Inside)
                     {
 
-                        Point3d projPt = Intersection.ProjectPointsToBreps(
+                        Point3d[] result = Intersection.ProjectPointsToBreps(
                           new List<Brep> { shell.ToBrep() },
                           new List<Point3d> { pt },
                           new Vector3d(0, 0, -1),
-                          tol)[0];
+                          tol);
 
-                        Line axis = new Line(projPt, pt);
+                        if ((result != null) && (result.Length > 0)) { 
+                            Point3d projPt = result[0];
+                            Line axis = new Line(projPt, pt);
 
-                        Brep spacer = Brep.CreatePipe(
-                          axis.ToNurbsCurve(), thickness / 2, false, PipeCapMode.None, false, tol, tol)[0];
-                        spacer.Translate(new Vector3d(0, 0, thickness / 2));
-                        spacers.Add(spacer);
+                            Brep spacer = Brep.CreatePipe(
+                              axis.ToNurbsCurve(), thickness / 2, false, PipeCapMode.None, false, tol, tol)[0];
+                            spacer.Translate(new Vector3d(0, 0, thickness / 2));
+                            spacers.Add(spacer);
+                        }
                     }
                 }
 
@@ -183,7 +187,9 @@ namespace ACORN
             double columnRadius = cornerRadius / 2;
             List<Brep> columns = new List<Brep>();
             List<Brep> columnHeads = new List<Brep>();
-            foreach (Point3d corner in bayGeometry)
+            Point3dList corners = bayGeometry;
+            corners.RemoveAt(0);
+            foreach (Point3d corner in corners)
             {
                 Line columnAxis = new Line(corner, new Vector3d(0, 0, columnHeight));
                 Brep column = Brep.CreatePipe(columnAxis.ToNurbsCurve(), columnRadius, false, PipeCapMode.None, false, tol, tol)[0];
@@ -203,17 +209,46 @@ namespace ACORN
 
             // missing: translate all up; add tierods
 
+            double freeHeight = columnHeight - shellHeight - thickness;
+
+
             // ------- make Tierods ----------- //
 
             PolylineCurve tierodCurve = (PolylineCurve)bayCurve.Duplicate();
             tierodCurve.Translate(new Vector3d(0, 0, -thickness));
             Brep tierods = Brep.CreatePipe(tierodCurve, tieRodRadius, false, PipeCapMode.None, false, tol, tol)[0];
 
+            // ------- make X braces ---------- //
+            List<Curve> braceCurves = tierodCurve.DuplicateSegments().ToList<Curve>();
+
+            DataTree<Brep> braceRods = new DataTree<Brep>();
+            double braceHeight = freeHeight - 0.300;
+            int iPath = 0;
+            foreach (Curve braceCurve in braceCurves)
+            {
+                GH_Path currPath = new GH_Path(iPath);
+
+                Point3d startTop = braceCurve.PointAtStart;
+                Point3d endTop = braceCurve.PointAtEnd;
+                Point3d startBottom = startTop - Vector3d.ZAxis * braceHeight;
+                Point3d endBottom = endTop - Vector3d.ZAxis * braceHeight;
+
+                Curve braceDiag1 = new Line(startTop, endBottom).ToNurbsCurve();
+                Brep braceRod1 = Brep.CreatePipe(braceDiag1, tieRodRadius, false, PipeCapMode.None, false, tol, tol)[0];
+                braceRod1.Translate(0, 0, freeHeight);
+                braceRods.Add(braceRod1, currPath);
+
+                Curve braceDiag2 = new Line(startBottom, endTop).ToNurbsCurve();
+                Brep braceRod2 = Brep.CreatePipe(braceDiag2, tieRodRadius, false, PipeCapMode.None, false, tol, tol)[0];
+                braceRod2.Translate(0, 0, freeHeight);
+                braceRods.Add(braceRod2, currPath);
+                iPath ++;
+            }
 
 
             // move everything up: thickSegments, floorBrep, spacers, columnHeads, tierods
 
-            double freeHeight = columnHeight - shellHeight - thickness;
+
             foreach (Brep brep in thickSegments)
                 brep.Translate(0, 0, freeHeight);
             floorBrep.Translate(0, 0, freeHeight);
@@ -230,6 +265,7 @@ namespace ACORN
             DA.SetDataList(3, columns);
             DA.SetDataList(4, columnHeads);
             DA.SetData(5, tierods);
+            DA.SetDataTree(6, braceRods);
         }
 
         public override GH_Exposure Exposure
