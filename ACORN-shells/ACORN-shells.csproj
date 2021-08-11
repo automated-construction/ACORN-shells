@@ -69,6 +69,7 @@
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="ElementStress.cs" />
     <Compile Include="FixMesh.cs" />
+    <Compile Include="LineToSpring.cs" />
     <Compile Include="StressProbe.cs" />
     <Compile Include="StressResults.cs" />
     <Compile Include="AnalysisResultsFinal.cs" />

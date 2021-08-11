@@ -54,6 +54,8 @@ namespace ACORN_shells
             pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree); //VIZ
             pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
+            //pManager.AddPathParameter("Karamba Spring Start Vertices", "SV", "Karamba Spring Start Vertices", GH_ParamAccess.tree);
+            //pManager.AddPathParameter("Karamba Spring End Vertices", "EV", "Karamba Spring End Vertices", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -84,6 +86,8 @@ namespace ACORN_shells
             DataTree<Point3d> edgeSpringLocations = new DataTree<Point3d>();
             DataTree<Line> edgeSpringLines = new DataTree<Line>();
             DataTree<BuilderBeam> k3dSprings = new DataTree<BuilderBeam>();
+            //DataTree<GH_Path> k3dSpringsStartPaths = new DataTree<GH_Path>();
+            //DataTree<GH_Path> k3dSpringsEndPaths = new DataTree<GH_Path>();
 
 
             // get spring locations by dividing segmented shell interface curves
@@ -225,7 +229,7 @@ namespace ACORN_shells
             // get spring lines per edge - repeating actions from previous loop per segment? = make it a function
             // only for edges between two segments
 
-
+            int currSpringID = 0;
             for (int edgeIndex = 0; edgeIndex < edgeSpringLocations.BranchCount; edgeIndex++)
             {
                 GH_Path edgePath = new GH_Path(edgeIndex);
@@ -265,14 +269,14 @@ namespace ACORN_shells
                     {
                         Line springLine = new Line(springEnds[0], springEnds[1]);
                         edgeSpringLines.Add(springLine, edgePath);
-
+                        string springName = "ACORNSPRING" + currSpringID.ToString();
                         var k3dSpring = k3dKit.Part.LineToBeam(new List<Line3>() { springLine.Convert() },
-                            new List<string>() { "ACORNSPRING" },
+                            new List<string>() { springName },
                             new List<CroSec>() { k3dSection },
                             logger, out _, true, gapSize/2);
 
                         k3dSprings.AddRange(k3dSpring, edgePath);
-
+                        currSpringID ++;
                     }
                         
                 }
@@ -294,6 +298,9 @@ namespace ACORN_shells
             DA.SetDataTree(3, edgeSpringLines);
             DA.SetDataTree(4, ghSprings);
             DA.SetData(5, gapSize);
+            //DA.SetDataTree(6, k3dSpringsStartPaths);
+            //DA.SetDataTree(7, k3dSpringsStartPaths);
+
 
         }
 

@@ -48,9 +48,11 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.list);
             pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
+            pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
 
             pManager[3].Optional = true;
             pManager[4].Optional = true;
+            pManager[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -68,12 +70,14 @@ namespace ACORN_shells
             GH_Structure<GH_Number> ghThicknesses = new GH_Structure<GH_Number>();
             List<GH_FemMaterial> ghMats = new List<GH_FemMaterial>();
             bool fixedSupport = false;
+            bool orientedSupport = false;
 
             if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetDataList(1, meshes)) return;
             if (!DA.GetDataTree(2, out ghThicknesses)) return;
             DA.GetDataList(3, ghMats);
             DA.GetData(4, ref fixedSupport);
+            DA.GetData(5, ref orientedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // for extracting supports
             var logger = new Karamba.Utilities.MessageLogger();
@@ -160,6 +164,7 @@ namespace ACORN_shells
             List<Support> k3dSupports = new List<Support>();
             foreach (var c in corners) 
             {
+
                 // find mesh that is closest to corner
 
                 Point3d cornerCenter = c.PointAtNormalizedLength(0.5);
@@ -175,9 +180,20 @@ namespace ACORN_shells
                     }
                 }
 
+                Plane supportOrientation = Plane.WorldXY;
+                if (orientedSupport)
+                {
+                    // determine support orientation plane (for straight support line; consider curved in the future)
+                    Vector3d supportXAxis = c.TangentAt(0.5);
+                    Vector3d supportYAxis = Vector3d.CrossProduct(Vector3d.ZAxis, supportXAxis);
+                    supportOrientation = new Plane(cornerCenter, supportXAxis, supportYAxis);
+                }
+
 
                 // filter corner mesh for vertices on naked edge
                 //Polyline[] cornerMeshNakedEdges = cornerMesh.GetNa
+
+                bool fixedRotation = fixedSupport;
 
                 // find vertices in corner mesh on the corner edge
                 foreach (var v in cornerMesh.Vertices)
@@ -185,10 +201,10 @@ namespace ACORN_shells
                     var test = c.ClosestPoint(v, out _, fileTol);
                     if (test)
                     {
-                        if (fixedSupport)
-                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, true, true, true }));
+                        if (orientedSupport)
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { false, true, true, fixedRotation, fixedRotation, fixedRotation }, supportOrientation.Convert()));
                         else
-                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, false, false, false }));
+                            k3dSupports.Add(k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, fixedRotation, fixedRotation, fixedRotation }));
 
                         //break;
                     }
