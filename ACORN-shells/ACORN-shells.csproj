@@ -70,6 +70,7 @@
     <Compile Include="ElementStress.cs" />
     <Compile Include="FixMesh.cs" />
     <Compile Include="LineToSpring.cs" />
+    <Compile Include="DisassembleSupport.cs" />
     <Compile Include="StressProbe.cs" />
     <Compile Include="StressResults.cs" />
     <Compile Include="AnalysisResultsFinal.cs" />

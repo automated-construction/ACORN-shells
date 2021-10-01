@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -195,10 +196,30 @@ namespace ACORN_shells
 
                 bool fixedRotation = fixedSupport;
 
+                // custom tolerance for finding support points // could be out of the loop
+                MeshTopologyEdgeList meshEdges = cornerMesh.TopologyEdges;
+                List<double> edgeLengths = new List<double>();
+                for (int i = 0; i < meshEdges.Count; i++)
+                    edgeLengths.Add(meshEdges.EdgeLine(i).Length);
+                double customTol = edgeLengths.Average() * 0.10;
+
+
                 // find vertices in corner mesh on the corner edge
-                foreach (var v in cornerMesh.Vertices)
+                Point3d[] cornerMeshVertices = cornerMesh.Vertices.ToPoint3dArray();
+
+                // for performance, only use vertices on naked edges!
+                Point3d[] cornerMeshEdgeVertices = new Point3d[cornerMeshVertices.Length];
+                bool[] cornerMeshEdgePointStatus = cornerMesh.GetNakedEdgePointStatus();
+                for (int i = 0; i < cornerMeshVertices.Length; i++)
+                    if (cornerMeshEdgePointStatus[i]) 
+                        cornerMeshEdgeVertices[i] = cornerMeshVertices[i];
+
+                // remove duplicate mesh vertices
+                //Point3d[] uniqueMeshVertices = Point3d.CullDuplicates(cornerMeshVertices, customTol);
+                Point3d[] uniqueMeshVertices = Point3d.CullDuplicates(cornerMeshEdgeVertices, customTol);
+                foreach (Point3d v in uniqueMeshVertices)
                 {
-                    var test = c.ClosestPoint(v, out _, fileTol);
+                    var test = c.ClosestPoint(v, out _, customTol);
                     if (test)
                     {
                         if (orientedSupport)
