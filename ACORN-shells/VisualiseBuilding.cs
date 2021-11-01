@@ -36,8 +36,10 @@ namespace ACORN
             pManager.AddNumberParameter("ColumnHeight", "CH", "Column height", GH_ParamAccess.item);
             pManager.AddBooleanParameter("FilletEdges", "FE", "Fillet edges for visualisation purposes. Computationally intensive, allow 20 seconds to calculate", GH_ParamAccess.item);
             pManager.AddNumberParameter("TieRodRadius", "TR", "Tie rod radius. Optional, default is thickness/2", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("NrSpacers", "NS", "Number of spacers. Optional, default is 10", GH_ParamAccess.item);
 
             pManager[6].Optional = true;
+            pManager[7].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -60,6 +62,7 @@ namespace ACORN
             double columnHeight = 0;
             bool filletEdges = false;
             double tieRodRadius = 0;
+            int nrPts = 10;
 
             if (!DA.GetData(0, ref bayGeometryInput)) return;
             if (!DA.GetDataList(1, segments)) return;
@@ -68,6 +71,7 @@ namespace ACORN
             if (!DA.GetData(4, ref columnHeight)) return;
             if (!DA.GetData(5, ref filletEdges)) return;
             DA.GetData(6, ref tieRodRadius);
+            DA.GetData(7, ref nrPts);
 
             // sets default tieRodRadius
             if (tieRodRadius == 0) tieRodRadius = thickness / 2;
@@ -150,7 +154,6 @@ namespace ACORN
             // make floorSpacers
             //List<Point3d> floorPts = new List<Point3d>();
             List<Brep> spacers = new List<Brep>();
-            int nrPts = 10;
             double ptDist = (double)1 / nrPts;
 
             for (double i = ptDist / 2; i < 1; i += ptDist)

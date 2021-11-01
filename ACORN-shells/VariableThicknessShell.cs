@@ -78,7 +78,7 @@ namespace ACORN_shells
             NurbsSurface origSrf = trimmedSurface.ToNurbsSurface();
             Curve trimCurve = trimmedSurface.OuterLoop.To3dCurve();
 
-
+            
             // get uv coordinates for corner curves midpoints (OBSOLETE, for SoftEdit)
             List<Point2d> suppUVs = new List<Point2d>();
             List<Point3d> suppPts = new List<Point3d>();
@@ -91,6 +91,7 @@ namespace ACORN_shells
                 origSrf.ToBrep().ClosestPoint (thickPt, out _, out _, out double s, out double t, maximumDistance, out _);
                 suppUVs.Add(new Point2d(s, t));
             }
+            
 
             // for simplification, use distance apex-support, assuming symmetry
             // get apex point
