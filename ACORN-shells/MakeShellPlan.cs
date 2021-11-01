@@ -12,7 +12,7 @@ namespace ACORN_shells
         public MakeShellPlan()
           : base("MakeShellPlan", "A:MakeShellPlan",
               "Creates a 2D shell plan on the XY plane.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Formfinding")
         {
         }
 

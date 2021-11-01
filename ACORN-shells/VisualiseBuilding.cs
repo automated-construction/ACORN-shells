@@ -23,7 +23,7 @@ namespace ACORN
         public VisualiseBuilding()
           : base("Visualise Building", "A:VizBldg",
               "Generates demo building geometry",
-              "ACORN", "Shells")
+              "ACORN Shells", "Utilities")
         {
         }
 

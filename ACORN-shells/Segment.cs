@@ -12,7 +12,7 @@ namespace ACORN_shells
         public Segment()
           : base("Segment", "A:Segment",
               "Segment shell using stress lines.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Segmentation")
         {
         }
 

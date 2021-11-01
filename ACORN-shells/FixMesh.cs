@@ -35,7 +35,7 @@ namespace ACORN_shells
         public FixMesh()
           : base("FixMesh", "A:FixMesh",
               "Fixes mesh for FEM",
-              "ACORN", "Shells")
+              "ACORN Shells", "Utilities")
         {
         }
 

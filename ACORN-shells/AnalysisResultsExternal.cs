@@ -29,7 +29,7 @@ namespace ACORN
         public AnalysisResultsExternal()
           : base("Analysis Results External", "A:ResultsX",
               "Gets analysis results for whole shell, from a pre-analysed model",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

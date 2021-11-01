@@ -27,7 +27,7 @@ namespace ACORN_shells
         public PreliminaryShellAnalysisModel()
           : base("PreliminaryShellAnalysisModel", "A:PreliminaryShellAnalysisModel",
               "Create preliminary shell analysis Karamba3D model with gravitational loads.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

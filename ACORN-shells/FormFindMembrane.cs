@@ -32,7 +32,7 @@ namespace ACORN_shells
         public FormFindMembrane()
           : base("FormFindMembrane", "A:FormFindMembrane",
               "Use Kiwi3D to form-find the shell using membrane component. Uses Kiwi3D v0.5.0.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Formfinding")
         {
         }
 

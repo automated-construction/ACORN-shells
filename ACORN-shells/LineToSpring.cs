@@ -30,7 +30,7 @@ namespace ACORN_shells
         public LineToSpring()
           : base("Make Springs From Lines", "A:LineToSpring",
               "Creates Karamba spring beam from a line",
-              "ACORN", "Shells")
+              "ACORN Shells", "Segmentation")
         {
         }
 

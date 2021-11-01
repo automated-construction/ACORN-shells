@@ -38,7 +38,7 @@ namespace ACORN_shells
         public MakeShell()
           : base("Make Karamba Shell Element", "A:MakeShell",
               "Create Karamba Shell element for analysis.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

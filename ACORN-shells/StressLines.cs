@@ -18,7 +18,7 @@ namespace ACORN_shells
         public StressLines()
           : base("StressLines", "A:StressLines",
               "Generate stress lines and cable profiles from analysed Karamba model.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Segmentation")
         {
         }
 

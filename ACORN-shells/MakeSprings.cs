@@ -30,7 +30,7 @@ namespace ACORN_shells
         public MakeSprings()
           : base("Make Springs", "A:Springs",
               "Simulates the pinbed mould.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Segmentation")
         {
         }
 

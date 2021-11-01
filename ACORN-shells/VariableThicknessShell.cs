@@ -33,7 +33,7 @@ namespace ACORN_shells
         public VariableThicknessShell()
           : base("Makes Variable Thickness Shell Surface", "A:VarThickShell",
               "Creates a shell with variable thickness, with three layers: medial layer to pass to Karamba, top and bottom to calculate local thicknesses",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

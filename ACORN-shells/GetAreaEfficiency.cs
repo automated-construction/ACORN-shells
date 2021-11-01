@@ -21,7 +21,7 @@ namespace ACORN_shells
         public GetAreaEfficiency()
           : base("Get Area Efficiency", "A:AreaEff",
               "Calculates area efficiency of segment / modules",
-              "ACORN", "Pinbed")
+              "ACORN Shells", "Pinbed")
         {
         }
 

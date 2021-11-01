@@ -24,7 +24,7 @@ namespace ACORN_shells
         public FormFindKiwi()
           : base("FormFindKiwi", "A:FormFindKiwi",
               "Use Kiwi3D to form-find the shell. Uses Kiwi3D v0.5.0.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Formfinding")
         {
         }
 

@@ -33,7 +33,7 @@ namespace ACORN_shells
         public StressProbe()
           : base("Stress Probe", "A:StressProbe",
               "Gets stress results for specified point in shell",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

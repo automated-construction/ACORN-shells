@@ -32,7 +32,7 @@ namespace ACORN
         public AnalysisResultsFinal()
           : base("Analysis Results Final", "A:ResultsFinal",
               "Gets analysis results for shell",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

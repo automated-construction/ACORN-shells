@@ -21,7 +21,7 @@ namespace ACORN_shells
         public FitModules()
           : base("Fit Pinbed Modules", "A:FitMods",
               "Fits pinbed module rectangles to a segment bounding box.",
-              "ACORN", "Pinbed")
+              "ACORN Shells", "Pinbed")
         {
         }
 

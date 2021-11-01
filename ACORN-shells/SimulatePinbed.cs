@@ -24,7 +24,7 @@ namespace ACORN_shells
         public SimulatePinbed()
           : base("Simulate Pinbed", "A:SimPinbed",
               "Simulates the pinbed mould.",
-              "ACORN", "Pinbed")
+              "ACORN Shells", "Pinbed")
         {
         }
 

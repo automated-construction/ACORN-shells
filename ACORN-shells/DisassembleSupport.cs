@@ -27,7 +27,7 @@ namespace ACORN_shells
         public DisassembleSupport()
           : base("Disassemble Support", "A:DisassembleSupport",
               "Disassembles a Karamba Support",
-              "ACORN", "Shells")
+              "ACORN Shells", "Utilities")
         {
         }
 

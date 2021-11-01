@@ -21,7 +21,7 @@ namespace ACORN_shells
         public LoadPattern()
           : base("Load Pattern", "A:LoadPattern",
               "Creates load pattern",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

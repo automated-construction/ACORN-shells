@@ -36,7 +36,7 @@ namespace ACORN_shells
         public ShellLoads()
           : base("ShellLoads", "A:ShellLoads",
               "Create loads for Karamba FEA.",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

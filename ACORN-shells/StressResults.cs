@@ -32,7 +32,7 @@ namespace ACORN_shells
         public StressResults()
           : base("Stress Results", "A:StressResults",
               "Gets stress results from shell analysis",
-              "ACORN", "Shells")
+              "ACORN Shells", "Analysis")
         {
         }
 

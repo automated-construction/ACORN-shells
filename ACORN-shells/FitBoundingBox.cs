@@ -18,7 +18,7 @@ namespace ACORN_shells
         public FitBoundingBox()
           : base("Fit Bounding Box", "A:FitBBox",
               "Fits a bounding box to a shell segment, minimizing volume.",
-              "ACORN", "Pinbed")
+              "ACORN Shells", "Pinbed")
         {
         }
 
