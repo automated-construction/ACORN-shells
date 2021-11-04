@@ -76,6 +76,7 @@
     <Compile Include="StressResults.cs" />
     <Compile Include="AnalysisResultsFinal.cs" />
     <Compile Include="AnalysisResultsExternal.cs" />
+    <Compile Include="VariableThicknessMesh.cs" />
     <Compile Include="VariableThicknessShell.cs" />
     <Compile Include="MakeShell.cs" />
     <Compile Include="ShellLoads.cs" />

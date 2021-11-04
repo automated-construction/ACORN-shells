@@ -43,6 +43,7 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Thickness at apex", "Ta", "Thickness of shell at apex.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Thickness at supports", "Ts", "Thickness of shell at supports.", GH_ParamAccess.item);
             pManager.AddMeshParameter("Shell meshes", "M", "Shell meshes to calculate thickness per face.", GH_ParamAccess.list);
+            pManager.AddBooleanParameter("Linear", "L", "Linear interpolation.", GH_ParamAccess.item);
             //pManager.AddIntegerParameter("Number of layers", "L", "Number of layers", GH_ParamAccess.item);
 
             pManager[3].Optional = true;
@@ -53,7 +54,7 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Top surface", "T", "Shell top surface (extrados)", GH_ParamAccess.item);
             pManager.AddBrepParameter("Medial surface", "M", "Shell medial surface", GH_ParamAccess.item);
             pManager.AddBrepParameter("Bottom surface", "B", "Shell bottom surface (intrados)", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Mesh thicknesses", "MT", "Thicknesses peer face for input meshes", GH_ParamAccess.tree);
+            //pManager.AddNumberParameter("Mesh thicknesses", "MT", "Thicknesses peer face for input meshes", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -62,12 +63,14 @@ namespace ACORN_shells
             double thickApex = 0;
             double thickSupp = 0;
             List<Mesh> meshes = new List<Mesh>();
+            bool linear = false;
             //int layerCount = 0;
 
             if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetData(1, ref thickApex)) return;
             if (!DA.GetData(2, ref thickSupp)) return;
             DA.GetDataList(3, meshes);
+            if (!DA.GetData(4, ref linear)) return;
             //if (!DA.GetData(3, ref layerCount)) return;
 
             double tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
@@ -78,10 +81,11 @@ namespace ACORN_shells
             NurbsSurface origSrf = trimmedSurface.ToNurbsSurface();
             Curve trimCurve = trimmedSurface.OuterLoop.To3dCurve();
 
-            
+            List<Point3d> suppPts = new List<Point3d>();
+            /*
             // get uv coordinates for corner curves midpoints (OBSOLETE, for SoftEdit)
             List<Point2d> suppUVs = new List<Point2d>();
-            List<Point3d> suppPts = new List<Point3d>();
+            
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); //edges not used, but out _ was not working
             foreach (Curve corner in corners)
             {
@@ -91,7 +95,7 @@ namespace ACORN_shells
                 origSrf.ToBrep().ClosestPoint (thickPt, out _, out _, out double s, out double t, maximumDistance, out _);
                 suppUVs.Add(new Point2d(s, t));
             }
-            
+            */
 
             // for simplification, use distance apex-support, assuming symmetry
             // get apex point
@@ -124,8 +128,11 @@ namespace ACORN_shells
                         Point3d currCtrlPt = currSrf.Points.GetControlPoint(u, v).Location;
 
                         // calculate extra thickness
-                        //double positionFactor = currCtrlPt.DistanceTo(apex) / semidiagonal; //linear
-                        double positionFactor = Math.Pow (currCtrlPt.DistanceTo(apex) / semidiagonal, 2); //quadratic
+                        double positionFactor = 1;
+                        if (linear)
+                            positionFactor = currCtrlPt.DistanceTo(apex) / semidiagonal; //linear
+                        else
+                            positionFactor = Math.Pow (currCtrlPt.DistanceTo(apex) / semidiagonal, 2); //quadratic
 
                         double currThickness = (thickApex + (thickExtra * positionFactor)) * layerFactor;
 
@@ -138,6 +145,7 @@ namespace ACORN_shells
                 layers.Add(currSurfTrimmed);
             }
 
+            /*
             // calculate thicknesses from meshes
 
             Brep topSrf = layers[0];
@@ -163,14 +171,14 @@ namespace ACORN_shells
                 thicknesses.AddRange(currMeshThicknesses, currPath);
                 currMesh++;
             }
-
+            */
 
 
 
             DA.SetData(0, layers[0]);
             DA.SetData(1, layers[1]);
             DA.SetData(2, layers[2]);
-            DA.SetDataTree(3, thicknesses);
+            //DA.SetDataTree(3, thicknesses);
         }
 
         protected override System.Drawing.Bitmap Icon
