@@ -31,8 +31,8 @@ namespace ACORN_shells
     {
 
         public VariableThicknessShell()
-          : base("Makes Variable Thickness Shell Surface", "A:VarThickShell",
-              "Creates a shell with variable thickness, with three layers: medial layer to pass to Karamba, top and bottom to calculate local thicknesses",
+          : base("Variable Thickness Shell", "A:VarThickShell",
+              "Creates a shell with variable thickness, with three layers: medial layer to pass onto Karamba, top and bottom to calculate local thicknesses",
               "ACORN Shells", "Analysis")
         {
         }
@@ -82,20 +82,20 @@ namespace ACORN_shells
             Curve trimCurve = trimmedSurface.OuterLoop.To3dCurve();
 
             List<Point3d> suppPts = new List<Point3d>();
-            /*
+            
             // get uv coordinates for corner curves midpoints (OBSOLETE, for SoftEdit)
-            List<Point2d> suppUVs = new List<Point2d>();
+            //List<Point2d> suppUVs = new List<Point2d>();
             
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); //edges not used, but out _ was not working
             foreach (Curve corner in corners)
             {
                 Point3d thickPt = corner.PointAtNormalizedLength(.5);
                 suppPts.Add(thickPt);
-                double maximumDistance = 1.0;
-                origSrf.ToBrep().ClosestPoint (thickPt, out _, out _, out double s, out double t, maximumDistance, out _);
-                suppUVs.Add(new Point2d(s, t));
+                //double maximumDistance = 1.0;
+                //origSrf.ToBrep().ClosestPoint (thickPt, out _, out _, out double s, out double t, maximumDistance, out _);
+                //suppUVs.Add(new Point2d(s, t));
             }
-            */
+            
 
             // for simplification, use distance apex-support, assuming symmetry
             // get apex point
