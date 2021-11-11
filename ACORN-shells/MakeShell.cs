@@ -18,6 +18,7 @@ using Karamba.CrossSections;
 using Karamba.GHopper.Elements;
 using Karamba.GHopper.Supports;
 using Karamba.GHopper.Materials;
+using Karamba.GHopper.CrossSections;
 
 namespace ACORN_shells
 {
@@ -45,9 +46,9 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
-            pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.list);
+            pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.tree);
-            pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.tree);
             pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
             pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
 
@@ -58,25 +59,27 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Shell Elements", "E", "Shell elements for Karamba", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Shell Supports", "S", "Shell supports for Karamba", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Shell Elements", "E", "Shell elements for Karamba", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Shell Supports", "S", "Shell supports for Karamba", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Brep shell = null;
-            List<Mesh> meshes = new List<Mesh>();
-            //GH_Structure <GH_Mesh> ghMeshes = new GH_Structure<GH_Mesh>();
+            //List<Mesh> meshes = new List<Mesh>();
+            GH_Structure <GH_Mesh> ghMeshes = new GH_Structure<GH_Mesh>();
             //List<double> thicknesses = new List<double>();
             GH_Structure<GH_Number> ghThicknesses = new GH_Structure<GH_Number>();
-            List<GH_FemMaterial> ghMats = new List<GH_FemMaterial>();
+            //List<GH_FemMaterial> ghMats = new List<GH_FemMaterial>();
+            //GH_Structure<GH_FemMaterial> ghMats = new GH_Structure<GH_FemMaterial>();
+            GH_Structure<IGH_Goo> ghMats = new GH_Structure<IGH_Goo>();
             bool fixedSupport = false;
             bool orientedSupport = false;
 
             if (!DA.GetData(0, ref shell)) return;
-            if (!DA.GetDataList(1, meshes)) return;
+            if (!DA.GetDataTree(1, out ghMeshes)) return;
             if (!DA.GetDataTree(2, out ghThicknesses)) return;
-            DA.GetDataList(3, ghMats);
+            DA.GetDataTree(3, out ghMats);
             DA.GetData(4, ref fixedSupport);
             DA.GetData(5, ref orientedSupport);
 
@@ -87,30 +90,42 @@ namespace ACORN_shells
 
 
             // -------------- MATERIALS: accepts multiple materials for each segment
-            FemMaterial k3dDefaultMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T);
-            List<FemMaterial> k3dMaterials = new List<FemMaterial>(); // to match meshes list, works if only one mesh
+            GH_FemMaterial k3dDefaultMaterial = new GH_FemMaterial (k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T)); //default material
+            //List<FemMaterial> k3dMaterials = new List<FemMaterial>(); // to match meshes list, works if only one mesh
+            GH_Structure<GH_FemMaterial> k3dMats = new GH_Structure<GH_FemMaterial>();
 
-            switch (ghMats.Count)
+            // populate materials tree to match mesh tree
+
+            foreach (GH_Path path in ghMeshes.Paths)
             {
-                case 0:
-                    // use default material
-                    for (int i = 0; i < meshes.Count; i++)
-                        k3dMaterials.Add(k3dDefaultMaterial);
-                    break;
-                case 1:
-                    for (int i = 0; i < meshes.Count; i++)
-                        k3dMaterials.Add(ghMats[0].Value);
-                    break;
-                default:
-                    foreach (GH_FemMaterial ghMat in ghMats) // assuming that number of materials and number of meshes match 
-                        k3dMaterials.Add (ghMat.Value);
-                    break;
+                if (ghMats.Paths.Count == 0) // use single default material
+                    k3dMats.Append(k3dDefaultMaterial, path);
+                if (ghMats.Paths.Count == 1) // use single input material
+                    k3dMats.Append(ghMats.FlattenData()[0] as GH_FemMaterial, path);
+                if (ghMats.Paths.Count > 1) // use input material from tree
+                    k3dMats.Append(ghMats.get_Branch(path)[0] as GH_FemMaterial, path);
             }
+            /*
+                        switch (ghMats.Paths.Count)
+                        {
+                            case 0: // use default material
+                                k3dSingleMaterial = k3dDefaultMaterial;
+                                break;
+                            case 1: // use input material
+                                k3dSingleMaterial = ghMats.FlattenData()[0].Value;
+                                break;
+                            default:
+                                foreach (GH_FemMaterial ghMat in ghMats) // assuming that number of materials and number of meshes match 
+                                    k3dMaterials.Add (ghMat.Value);
+                                break;
+                        }*/
 
 
             // --------------- CROSS SECTION
 
+            /*
             // -------------- CROSS SECTION: decision tree based on number of materials and thicknesses
+
 
             //CroSec_Shell k3dSingleSection = null;
             List<CroSec_Shell> k3dSections = new List<CroSec_Shell>();
@@ -136,10 +151,40 @@ namespace ACORN_shells
                         segmentThicknesses.Add(number.Value);
                     k3dSections.Add (new CroSec_Shell ("", "", "", null, new List<FemMaterial> { k3dMaterials[i] }, new List<double>() { 0 }, segmentThicknesses));
                 }
+*/
+
+            GH_Structure<GH_CrossSection> ghSecs = new GH_Structure<GH_CrossSection>();
+            // populate sections tree to match mesh tree
+            foreach (GH_Path path in ghMeshes.Paths)
+            {
+                List<GH_Number> ghSegmentThicknesses = new List<GH_Number>();
+
+                // decide between single thickness or multiple thicknesses
+                if (ghThicknesses.FlattenData().Count == 1) // use single input thickness
+                    ghSegmentThicknesses = ghThicknesses.FlattenData();
+                else // use multiple input thicknesses - should work for single thickness per segment
+                    ghSegmentThicknesses = ghThicknesses.get_Branch(path) as List<GH_Number>;
+
+                // convert GH_Numbers to doubles for thicknesses
+                List<double> segmentThicknesses = new List<double>();
+                foreach (GH_Number number in ghSegmentThicknesses)
+                    segmentThicknesses.Add(number.Value);
+
+                // get material for cross section
+                FemMaterial k3dMat = k3dMats.get_Branch(path)[0] as FemMaterial;
+
+                // create cross section
+                CroSec_Shell k3dCrossSection = new CroSec_Shell("", "", "", null, new List<FemMaterial> { k3dMat }, new List<double>() { 0 }, segmentThicknesses);
+                ghSecs.Append(new GH_CrossSection(k3dCrossSection), path);
+                    
+            }
+
+
 
 
             //------------------- SHELL ELEMENTS
             // Create shell element
+            /*
             List<BuilderShell> k3dShells = new List<BuilderShell>();
 
             for (int i = 0; i < meshes.Count; i++)
@@ -153,16 +198,133 @@ namespace ACORN_shells
                 k3dShells.AddRange(k3dShell);
 
             }
+            */
+
+            //DataTree<BuilderShell> k3dShells = new DataTree<BuilderShell>();
+            GH_Structure<GH_Element> ghShells = new GH_Structure<GH_Element>();
+            foreach (GH_Path path in ghMeshes.Paths)
+            {
+                // get mesh for shell element
+                //Mesh k3dMesh = ghMeshes.get_Branch(path)[0] as Mesh;
+                GH_Mesh ghMesh = ghMeshes.get_Branch(path)[0] as GH_Mesh;
+                Mesh k3dMesh = ghMesh.Value;
+
+                /*
+                // get material for cross section
+                FemMaterial k3dMat = k3dMats.get_Branch(path)[0] as FemMaterial;
+
+                // get thicknesses for cross section
+                List<GH_Number> ghSegmentThicknesses = ghThicknesses.get_Branch(path) as List<GH_Number>; 
+                // needs to be converted into doubles
+                List<double> k3dSegmentThicknesses = new List<double>();
+                foreach (GH_Number number in ghSegmentThicknesses)
+                    k3dSegmentThicknesses.Add(number.Value);
+                    */
+
+                // get cross section for shell element
+                //CroSec_Shell k3dSection = ghSecs.get_Branch(path)[0] as CroSec_Shell;
+
+                GH_CrossSection ghSection = ghSecs.get_Branch(path)[0] as GH_CrossSection;
+                CroSec k3dSection = ghSection.Value;
+
+                //CroSec_Shell k3dSection = new CroSec_Shell("", "", "", null, new List<FemMaterial> { k3dMat }, new List<double>() { 0 }, k3dSegmentThicknesses);
+
+                // create shell element
+                var k3dShell = k3dKit.Part.MeshToShell(
+                    new List<Mesh3>() { k3dMesh.Convert() },
+                    new List<string>() { "ACORNSHELL" },
+                    new List<CroSec>() { k3dSection },
+                    logger, out _);
+
+                GH_Element ghShell = new GH_Element(k3dShell[0]);
+                ghShells.Append(ghShell, path);
+            }
+
+
+
+
+
+
 
 
             // ------------- SUPPORTS
+
+            GH_Structure<GH_Support> ghSupports = new GH_Structure<GH_Support>();
 
             // extract shell corners
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); // discarding shell edges
 
 
-            // Fixed support
+            // custom tolerance for finding support points // could be out of the loop
+            Mesh firstMesh = ghMeshes.FlattenData()[0].Value as Mesh; // first mesh of the tree?
+            MeshTopologyEdgeList meshEdges = firstMesh.TopologyEdges;
+            List<double> edgeLengths = new List<double>();
+            for (int i = 0; i < meshEdges.Count; i++)
+                edgeLengths.Add(meshEdges.EdgeLine(i).Length);
+            double customTol = edgeLengths.Average() * 0.10;
+
+
+            
             List<Support> k3dSupports = new List<Support>();
+
+            foreach (GH_Path path in ghMeshes.Paths)
+            {
+                // create branch, even if empty
+                ghSupports.EnsurePath(path);
+
+                //Mesh cornerMesh = ghMeshes.get_Branch(path)[0] as Mesh;
+                GH_Mesh ghCornerMesh = ghMeshes.get_Branch(path)[0] as GH_Mesh;
+                Mesh cornerMesh = ghCornerMesh.Value;
+
+
+                // find vertices in corner mesh on the corner edge
+                // for performance, only use vertices on naked edges!
+                Point3d[] cornerMeshVertices = cornerMesh.Vertices.ToPoint3dArray();
+                Point3d[] cornerMeshEdgeVertices = new Point3d[cornerMeshVertices.Length];
+                bool[] cornerMeshEdgePointStatus = cornerMesh.GetNakedEdgePointStatus();
+                for (int i = 0; i < cornerMeshVertices.Length; i++)
+                    if (cornerMeshEdgePointStatus[i])
+                        cornerMeshEdgeVertices[i] = cornerMeshVertices[i];
+                // remove duplicate mesh vertices
+                Point3d[] uniqueMeshVertices = Point3d.CullDuplicates(cornerMeshEdgeVertices, customTol);
+
+                bool fixedRotation = fixedSupport;
+
+
+                foreach (var c in corners)
+                {
+                    // determine support orientation
+                    Point3d cornerCenter = c.PointAtNormalizedLength(0.5);
+                    Plane supportOrientation = Plane.WorldXY;
+                    if (orientedSupport)
+                    {
+                        // determine support orientation plane (for straight support line; consider curved in the future)
+                        Vector3d supportXAxis = c.TangentAt(0.5);
+                        Vector3d supportYAxis = Vector3d.CrossProduct(Vector3d.ZAxis, supportXAxis);
+                        supportOrientation = new Plane(cornerCenter, supportXAxis, supportYAxis);
+                    }
+
+
+                    foreach (Point3d v in uniqueMeshVertices)
+                    {
+                        var test = c.ClosestPoint(v, out _, customTol);
+                        if (test)
+                        {
+                            Support k3dSupport = new Support();
+                            if (orientedSupport)
+                                k3dSupport = k3dKit.Support.Support(v.Convert(), new bool[] { false, true, true, fixedRotation, fixedRotation, fixedRotation }, supportOrientation.Convert());
+                            else
+                                k3dSupport = k3dKit.Support.Support(v.Convert(), new bool[] { true, true, true, fixedRotation, fixedRotation, fixedRotation });
+
+                            ghSupports.Append(new GH_Support(k3dSupport), path);
+                            //break;
+                        }
+                    }
+                }
+            }
+
+
+            /*
             foreach (var c in corners) 
             {
 
@@ -181,6 +343,7 @@ namespace ACORN_shells
                     }
                 }
 
+                // what is this for?
                 Plane supportOrientation = Plane.WorldXY;
                 if (orientedSupport)
                 {
@@ -191,17 +354,6 @@ namespace ACORN_shells
                 }
 
 
-                // filter corner mesh for vertices on naked edge
-                //Polyline[] cornerMeshNakedEdges = cornerMesh.GetNa
-
-                bool fixedRotation = fixedSupport;
-
-                // custom tolerance for finding support points // could be out of the loop
-                MeshTopologyEdgeList meshEdges = cornerMesh.TopologyEdges;
-                List<double> edgeLengths = new List<double>();
-                for (int i = 0; i < meshEdges.Count; i++)
-                    edgeLengths.Add(meshEdges.EdgeLine(i).Length);
-                double customTol = edgeLengths.Average() * 0.10;
 
 
                 // find vertices in corner mesh on the corner edge
@@ -217,6 +369,8 @@ namespace ACORN_shells
                 // remove duplicate mesh vertices
                 //Point3d[] uniqueMeshVertices = Point3d.CullDuplicates(cornerMeshVertices, customTol);
                 Point3d[] uniqueMeshVertices = Point3d.CullDuplicates(cornerMeshEdgeVertices, customTol);
+
+                bool fixedRotation = fixedSupport;
                 foreach (Point3d v in uniqueMeshVertices)
                 {
                     var test = c.ClosestPoint(v, out _, customTol);
@@ -235,17 +389,18 @@ namespace ACORN_shells
             // convert from Karamba lists to Karamba.GHopper lists
             // might convert when created...
             // do this at creation?
-
+            /*
             List<GH_Element> ghElements = new List<GH_Element>();
             foreach (BuilderShell k3dShell in k3dShells)
                 ghElements.Add(new GH_Element(k3dShell));
+                
 
             List<GH_Support> ghSupports = new List<GH_Support>();
             foreach (Support k3dSupport in k3dSupports)
                 ghSupports.Add(new GH_Support(k3dSupport));
-
-            DA.SetDataList(0, ghElements);
-            DA.SetDataList(1, ghSupports);
+*/
+            DA.SetDataTree(0, ghShells);
+            DA.SetDataTree(1, ghSupports);
         }
 
         protected override System.Drawing.Bitmap Icon
