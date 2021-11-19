@@ -47,7 +47,7 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
             pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.tree);
-            pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell [cm].", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.tree);
             pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
             pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
@@ -67,9 +67,9 @@ namespace ACORN_shells
         {
             Brep shell = null;
             //List<Mesh> meshes = new List<Mesh>();
-            GH_Structure <GH_Mesh> ghMeshes = new GH_Structure<GH_Mesh>();
+            GH_Structure <GH_Mesh> inMeshes = new GH_Structure<GH_Mesh>();
             //List<double> thicknesses = new List<double>();
-            GH_Structure<GH_Number> ghThicknesses = new GH_Structure<GH_Number>();
+            GH_Structure<GH_Number> inThicknesses = new GH_Structure<GH_Number>();
             //List<GH_FemMaterial> ghMats = new List<GH_FemMaterial>();
             //GH_Structure<GH_FemMaterial> ghMats = new GH_Structure<GH_FemMaterial>();
             GH_Structure<IGH_Goo> ghMats = new GH_Structure<IGH_Goo>();
@@ -77,8 +77,8 @@ namespace ACORN_shells
             bool orientedSupport = false;
 
             if (!DA.GetData(0, ref shell)) return;
-            if (!DA.GetDataTree(1, out ghMeshes)) return;
-            if (!DA.GetDataTree(2, out ghThicknesses)) return;
+            if (!DA.GetDataTree(1, out inMeshes)) return;
+            if (!DA.GetDataTree(2, out inThicknesses)) return;
             DA.GetDataTree(3, out ghMats);
             DA.GetData(4, ref fixedSupport);
             DA.GetData(5, ref orientedSupport);
@@ -87,6 +87,20 @@ namespace ACORN_shells
             var logger = new Karamba.Utilities.MessageLogger();
             var k3dKit = new KarambaCommon.Toolkit();
 
+            // remap trees with single branch to {0}, avoiding the need to flatten (good practice?)
+            // should be made into a method, for generic Type
+
+            GH_Structure<GH_Mesh> ghMeshes = new GH_Structure<GH_Mesh>();
+            if (inMeshes.Paths.Count == 1) // build new tree with corrected branch path
+                ghMeshes.AppendRange(inMeshes.get_Branch(inMeshes.Paths[0]) as List<GH_Mesh>, new GH_Path(0));
+            else // hard copy of inThicknesses
+                ghMeshes = new GH_Structure<GH_Mesh>(inMeshes, false);
+
+            GH_Structure<GH_Number> ghThicknesses = new GH_Structure<GH_Number>();
+            if (inThicknesses.Paths.Count == 1) // build new tree with corrected branch path
+                ghThicknesses.AppendRange (inThicknesses.get_Branch(inThicknesses.Paths[0]) as List<GH_Number>, new GH_Path(0));
+            else // hard copy of inThicknesses
+                ghThicknesses = new GH_Structure<GH_Number>(inThicknesses, false);
 
 
             // -------------- MATERIALS: accepts multiple materials for each segment
@@ -165,13 +179,15 @@ namespace ACORN_shells
                 else // use multiple input thicknesses - should work for single thickness per segment
                     ghSegmentThicknesses = ghThicknesses.get_Branch(path) as List<GH_Number>;
 
+
                 // convert GH_Numbers to doubles for thicknesses
                 List<double> segmentThicknesses = new List<double>();
                 foreach (GH_Number number in ghSegmentThicknesses)
                     segmentThicknesses.Add(number.Value);
 
                 // get material for cross section
-                FemMaterial k3dMat = k3dMats.get_Branch(path)[0] as FemMaterial;
+                GH_FemMaterial ghMat = k3dMats.get_Branch(path)[0] as GH_FemMaterial;
+                FemMaterial k3dMat = ghMat.Value;
 
                 // create cross section
                 CroSec_Shell k3dCrossSection = new CroSec_Shell("", "", "", null, new List<FemMaterial> { k3dMat }, new List<double>() { 0 }, segmentThicknesses);

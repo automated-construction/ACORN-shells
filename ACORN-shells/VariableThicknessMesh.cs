@@ -42,7 +42,7 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddNumberParameter("Mesh thicknesses", "MT", "Thicknesses peer face for input meshes", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Mesh thicknesses", "MT", "Thicknesses [cm] per face for input meshes", GH_ParamAccess.tree);
             //pManager.AddPointParameter("Top points", "TP", "Intersection points with surfaces (TEST)", GH_ParamAccess.tree); //TEST
             //pManager.AddPointParameter("Bottom points", "BP", "Intersection points with surfaces (TEST)", GH_ParamAccess.tree); //TEST
         }
