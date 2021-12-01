@@ -54,6 +54,7 @@ namespace ACORN_shells
             pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree); //VIZ
             pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
+            //pManager.AddGenericParameter("Index Springs", "K", "Spring elements based on node index", GH_ParamAccess.tree);
             //pManager.AddPathParameter("Karamba Spring Start Vertices", "SV", "Karamba Spring Start Vertices", GH_ParamAccess.tree);
             //pManager.AddPathParameter("Karamba Spring End Vertices", "EV", "Karamba Spring End Vertices", GH_ParamAccess.tree);
         }
@@ -86,6 +87,7 @@ namespace ACORN_shells
             DataTree<Point3d> edgeSpringLocations = new DataTree<Point3d>();
             DataTree<Line> edgeSpringLines = new DataTree<Line>();
             DataTree<BuilderBeam> k3dSprings = new DataTree<BuilderBeam>();
+            DataTree<BuilderBeam> k3dSpringsIndex = new DataTree<BuilderBeam>();
             //DataTree<GH_Path> k3dSpringsStartPaths = new DataTree<GH_Path>();
             //DataTree<GH_Path> k3dSpringsEndPaths = new DataTree<GH_Path>();
 
@@ -198,7 +200,8 @@ namespace ACORN_shells
                     
 
                 List<Point3d> offsetFaceSprings = new List<Point3d>(); // simplify in VS with map lambda functions?
-                                                                       //offsetFaceSprings = offsetSegment.Faces[0].PullPointsToFace(faceSprings, gapSize * 10);
+                //offsetFaceSprings = offsetSegment.Faces[0].PullPointsToFace(faceSprings, gapSize * 10);
+
                 foreach (Point3d faceSpring in faceSprings)
                 {
                     Point3d offsetFaceSpring;
@@ -273,10 +276,19 @@ namespace ACORN_shells
                         var k3dSpring = k3dKit.Part.LineToBeam(new List<Line3>() { springLine.Convert() },
                             new List<string>() { springName },
                             new List<CroSec>() { k3dSection },
-                            logger, out _, true, gapSize/2);
+                            logger, out _, true, gapSize / 2);
+
+                        // find node index for springsEnds[0] and [1] -- WIP
+                        int iStart = 0;
+                        int iEnd = 0;
+                        var k3dSpringIndex = k3dKit.Part.IndexToBeam(
+                            iStart, iEnd,
+                            springName,
+                            k3dSection);
 
                         k3dSprings.AddRange(k3dSpring, edgePath);
-                        currSpringID ++;
+                        k3dSpringsIndex.Add(k3dSpringIndex, edgePath);
+                        currSpringID++;
                     }
                         
                 }
@@ -292,12 +304,19 @@ namespace ACORN_shells
                 foreach (BuilderBeam k3dSpring in k3dSprings.Branch(path))
                     ghSprings.Add(new GH_Element(k3dSpring));
 
+            DataTree<GH_Element> ghSpringsIndex = new DataTree<GH_Element>();
+            foreach (GH_Path path in k3dSpringsIndex.Paths)
+                foreach (BuilderBeam k3dSpring in k3dSpringsIndex.Branch(path))
+                    ghSpringsIndex.Add(new GH_Element(k3dSpring));
+
             DA.SetDataTree(0, offsetSegments);
             DA.SetDataTree(1, segmentSpringLocations);
             DA.SetDataTree(2, edgeSpringLocations);
             DA.SetDataTree(3, edgeSpringLines);
             DA.SetDataTree(4, ghSprings);
             DA.SetData(5, gapSize);
+            //DA.SetDataTree(6, ghSpringsIndex);
+
             //DA.SetDataTree(6, k3dSpringsStartPaths);
             //DA.SetDataTree(7, k3dSpringsStartPaths);
 
