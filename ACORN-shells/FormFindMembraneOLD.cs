@@ -9,10 +9,10 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace ACORN_shells
 {
-    public class FormFindMembrane : GH_Component
+    public class FormFindMembraneOLD : GH_Component
     {
-        // Kiwi3D parameters (Mish's: why here?)
-        //int MAT_CONC = 5; // CONCRETE
+        // Kiwi3D parameters
+        int MAT_CONC = 5; // CONCRETE
         int MAT_ETFE = 4; // ETFE (Membrane)
         int MAT_STEEL = 1; // STEEL
         int CRV_DEGREE = 3;
@@ -24,17 +24,14 @@ namespace ACORN_shells
         int FF_ITERS = 5; // make input?
 
         Brep FormFoundShell = null;
-        //List<Curve> FormFoundCorners = new List<Curve>();
-        //List<Curve> FormFoundEdges = new List<Curve>();
+        List<Curve> FormFoundCorners = new List<Curve>();
+        List<Curve> FormFoundEdges = new List<Curve>();
         string KiwiErrors = "";
-        // for testing outputs
-        Brep unscaled = null;
-        object kiwiModel = null;
 
         // change name if it becomes only formfinding component
-        public FormFindMembrane()
-          : base("FormFindMembrane", "A:FormFindMembrane",
-              "Use Kiwi3D to form-find the shell using membrane component. Uses Kiwi3D v0.5.0.",
+        public FormFindMembraneOLD()
+          : base("FormFindMembraneOLD", "A:FormFindMembraneOLD",
+              "{OLD} Use Kiwi3D to form-find the shell using membrane component. Uses Kiwi3D v0.5.0.",
               "ACORN Shells", "Formfinding")
         {
         }
@@ -42,39 +39,65 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("PlanShell", "PS", "Flat brep to brep to be form found.", GH_ParamAccess.item);
+            pManager.AddBrepParameter("MultiplePatches", "MP", "Multiple patches (testing)", GH_ParamAccess.list);
             pManager.AddNumberParameter("Height", "H", "Target height of shell.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis (optional, default = 10)", GH_ParamAccess.item);
-            pManager.AddNumberParameter("MembranePrestress", "MP", "Membrane prestress force [kN/m]", GH_ParamAccess.item);
-            pManager.AddNumberParameter("CablePrestress", "CP", "Cable prestress force [kN]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("SubDiv", "SD", "Number of subdivisions of shell for analysis.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Run", "R", "Toggle to run analysis.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("CurveSupports", "CS", "Use Corner curves as supports", GH_ParamAccess.item); // test
+            pManager.AddBooleanParameter("ScaleDeform", "SD", "Use DefMod to scale, otherwise, uses Geomtry Scaling.", GH_ParamAccess.item); // test
+            pManager.AddNumberParameter("ThicknessFactor", "TF", "Thickness = Shell Height * TF", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MembranePrestressU", "MPu", "Membrane prestress force [kN/m] in local u-direction", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MembranePrestressV", "MPv", "Membrane prestress force [kN/m] in local v-direction", GH_ParamAccess.item);
+            pManager.AddNumberParameter("CablePrestressV", "CP", "Cable prestress force [kN]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Load", "L", "Load [kN]", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("planarEdges", "PE", "Force edges to remain in their vertical plane.", GH_ParamAccess.item); // test
+            pManager.AddBooleanParameter("updateOnChange", "U", "Run IGA Solver on [parameter change]", GH_ParamAccess.item); // test
 
-            pManager[2].Optional = true; //subdiv
+            // TODO: add optionals
+            pManager[1].Optional = true; //multiple patches
+            pManager[3].Optional = true; //subdiv
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("KiwiErrors", "O", "Errors from Kiwi3D.", GH_ParamAccess.item);
             pManager.AddBrepParameter("FormFoundShell", "S", "Form found shell.", GH_ParamAccess.item);
-            //pManager.AddBrepParameter("Unscaled deformed", "UD", "Unscaled shape", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("Kiwi model", "KM", "Kiwi Model [test]", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
             Brep planShell = null;
+            List<Brep> multiPatches = new List<Brep>();
             double height = 0;
             double subDiv = 10; //default?
-            var membPrestress1 = 0.1; // P1 is u-direction
-            var cablePrestress = 0.1;
             bool run = false;
+            bool curveSupports = false; // test
+            bool scaleDeform = false; // test
+            double thickFact = 1.0; // test
+
+            var membPrestress1 = 0.1; // P1 is u-direction
+            var membPrestress2 = 0.1; // P2 is v-direction
+            var cablePrestress = 0.1;
+            var srfLoad = 0.010;
+            bool planarEdges = false; // test
+            bool updateOnChange = false; // test
+
 
             if (!DA.GetData(0, ref planShell)) return;
-            if (!DA.GetData(1, ref height)) return;
-            DA.GetData(2, ref subDiv);
-            if (!DA.GetData(3, ref membPrestress1)) return;
-            if (!DA.GetData(4, ref cablePrestress)) return;
-            if (!DA.GetData(5, ref run)) return;
+            DA.GetDataList(1, multiPatches);
+            if (!DA.GetData(2, ref height)) return;
+            DA.GetData(3, ref subDiv);
+            if (!DA.GetData(4, ref run)) return;
+            if (!DA.GetData(5, ref curveSupports)) return; // test
+            if (!DA.GetData(6, ref scaleDeform)) return; // test
+            if (!DA.GetData(7, ref thickFact)) return; // test
+            if (!DA.GetData(8, ref membPrestress1)) return; // test
+            if (!DA.GetData(9, ref membPrestress2)) return; // test
+            if (!DA.GetData(10, ref cablePrestress)) return; // test
+            if (!DA.GetData(11, ref srfLoad)) return; // test
+            if (!DA.GetData(12, ref planarEdges)) return; // test
+            if (!DA.GetData(13, ref updateOnChange)) return;
 
             if (subDiv == 0)
                 subDiv = SURF_SUBDIV;
@@ -82,28 +105,29 @@ namespace ACORN_shells
             // default values, move to FIELD?
             double membraneThickness = 0.001;
             double cableDiameter = 0.01; 
-            double srfLoad = 0.100; 
 
 
             // extract shell corners and edges
             SHELLScommon.GetShellEdges(planShell, out List<Curve> corners, out List<Curve> edges);
-            
-            List<Brep> shellPatches = new List<Brep>();
-            shellPatches.Add(planShell);
 
-            if (run)
+            // single Brep vs. Multiple
+            List<Brep> shellPatches = new List<Brep>();
+            if (!multiPatches.Any()) // multiPatches is empty
+                shellPatches.Add(planShell);
+            else
+                shellPatches.AddRange(multiPatches);
+
+            bool calculate = updateOnChange | run; // runs Kiwi analysis if run button or input change
+
+            if (calculate)
             {
                     var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
                 // Get all Kiwi3d components
                 // TODO: Delete unused components: LinearAnalysis, ShellElement?
-                var componentNames = new List<string>() { "Kiwi3d.MaterialDefaults", "Kiwi3d.CurveRefinement", "Kiwi3d.SurfaceRefinement", 
-                    //"Kiwi3d.ShellElement", 
-                    "Kiwi3d.MembraneElement", "Kiwi3d.CableElement", "Kiwi3d.SupportPoint", 
-                    //"Kiwi3d.SupportCurve", 
-                    "Kiwi3d.SurfaceLoad", "Kiwi3d.Formfinding", 
-                    //"Kiwi3d.LinearAnalysis", 
-                    "Kiwi3d.AnalysisModel", "Kiwi3d.IGASolver", "Kiwi3d.DeformedModel" };
+                var componentNames = new List<string>() { "Kiwi3d.MaterialDefaults", "Kiwi3d.CurveRefinement", "Kiwi3d.SurfaceRefinement", "Kiwi3d.ShellElement", "Kiwi3d.MembraneElement", "Kiwi3d.CableElement",
+                    "Kiwi3d.SupportPoint", "Kiwi3d.SupportCurve", "Kiwi3d.SurfaceLoad", "Kiwi3d.Formfinding", "Kiwi3d.LinearAnalysis", "Kiwi3d.AnalysisModel",
+                    "Kiwi3d.IGASolver", "Kiwi3d.DeformedModel" };
 
                 var componentInfos = componentNames.ToDictionary(x => x, x => Rhino.NodeInCode.Components.FindComponent(x));
 
@@ -132,12 +156,13 @@ namespace ACORN_shells
                 // Define structural elements
                 var kiwiElements = new List<object>();
 
-                // Define membrane patches - using same membrane prestress for both directions
+                // Define membrane patches
                 foreach (var m in shellPatches)
                     kiwiElements.Add ((CallComponent(componentInfos, "Kiwi3d.MembraneElement", new object[] {
-                        m, kiwiMembraneMaterial, membraneThickness, membPrestress1, membPrestress1, kiwiMembraneRefinement, null, true, null })[0] as IList<object>)[0]);
+                        m, kiwiMembraneMaterial, membraneThickness, membPrestress1, membPrestress2, kiwiMembraneRefinement, null, true, null })[0] as IList<object>)[0]);
 
                 // Define edge cables
+
                 foreach (var e in edges)
                     kiwiElements.Add((CallComponent(componentInfos, "Kiwi3d.CableElement", new object[] { 
                         e, kiwiCableMaterial, cableDiameter, cablePrestress, false, kiwiCableRefinement, null, true })[0] as IList<object>)[0]);
@@ -145,6 +170,23 @@ namespace ACORN_shells
                 // Pinned support at corners
                 // Divide the curves into points since the support curve seems to not work as expected
                 var kiwiSupports = new List<object>();
+
+                // TESTING
+                // with curve supports, to confirm same Karamba analysis results in LoR report
+                
+                /*
+                if (curveSupports)
+
+                //kiwiSupports = new List<object>(); // clears previous kiwiSupports, using points
+                foreach (var c in corners)
+                {
+                    kiwiSupports.Add((CallComponent(componentInfos, "Kiwi3d.SupportCurve", new object[] { c, true,
+                        true, true, false })[0] as IList<object>)[0]);
+                }
+
+                else          
+                */
+                
                 foreach (var c in corners)
                 {
                     Point3d[] points = new Point3d[0];
@@ -161,11 +203,9 @@ namespace ACORN_shells
                 {
                     Point3d[] points = new Point3d[0]; // support points
                     double[] ts = e.DivideByCount(CRV_SUBDIV, false, out points); // divide in equal parameters?
-
                     // get vectors perpendicular to line for determining which directions to constrain
                     Plane[] pFrames = e.GetPerpendicularFrames(ts);
-
-                    // constraints using dot product of "outward direction" with the corresponding degree of freedom
+                    // constrains using dot product of "outward direction" with the corresponding degree of freedom
                     bool DX = (pFrames[0].YAxis * Vector3d.XAxis) != 0; // if 0, outward and X are colinear, so we must constrain
                     bool DY = (pFrames[0].YAxis * Vector3d.YAxis) != 0; // if 0, outward and Y are colinear, so we must constrain
                     bool DZ = false; // needs to be able to move vertically
@@ -178,42 +218,56 @@ namespace ACORN_shells
 
 
                 // Uniform load pushing upwards - supporting multiple membrane patches
+                //var kiwiLoads = (CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
+                //  planShell, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0];
                 var kiwiLoads = new List<object>();
                 foreach (var m in shellPatches)
                     kiwiLoads.Add((CallComponent(componentInfos, "Kiwi3d.SurfaceLoad", new object[] {
                         m, "1", Vector3d.ZAxis, srfLoad, null, null, 1 })[0] as IList<object>)[0]);
 
                 // Run Kiwi analysis
+                //var kiwiAnalOptions = (CallComponent(componentInfos, "Kiwi3d.LinearAnalysis", new object[] { ANAL_OUTPUT })[0] as IList<object>)[0];
                 var kiwiAnalOptions = (CallComponent(componentInfos, "Kiwi3d.Formfinding", new object[] { 
                     "Formfinding", FF_STEPS, FF_ITERS, ANAL_OUTPUT })[0] as IList<object>)[0];
-                kiwiModel = (CallComponent(componentInfos, "Kiwi3d.AnalysisModel",
+                var kiwiModel = (CallComponent(componentInfos, "Kiwi3d.AnalysisModel",
                     new object[] { kiwiAnalOptions, kiwiElements, kiwiSupports, kiwiLoads })[0] as IList<object>)[0];
                 var kiwiResult = CallComponent(componentInfos, "Kiwi3d.IGASolver", new object[] { kiwiModel, tmpDir, true });
                 KiwiErrors = kiwiResult[1] == null ? "" : (kiwiResult[1] as IList<object>)[0] as string;
                 var kiwiModelRes = (kiwiResult[0] as IList<object>)[0];
 
-
                 // Scale deformed shell to target height
-                FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
-
+                if (shellPatches.Count == 1)
+                    FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>)[0] as Brep;
+                else //multiple membrane patches
+                {
+                    var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes })[1] as IList<object>);                    
+                    List<Brep> FormFoundSrfs = new List<Brep>();
+                    for (int i = 0; i < shellPatches.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                    FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
+                }
 
 
                 if (FormFoundShell != null)
                 {
-                    unscaled = FormFoundShell; //test
-                    // get height of formfound shell
                     var bounds = FormFoundShell.GetBoundingBox(Plane.WorldXY);
                     var scale = height / (bounds.Max.Z - bounds.Min.Z);
 
-                    FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    if (shellPatches.Count == 1)
+                        FormFoundShell = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>)[0] as Brep;
+                    else //multiple membrane patches
+                    {
+                        var FormFoundGeo = (CallComponent(componentInfos, "Kiwi3d.DeformedModel", new object[] { kiwiModelRes, null, scale })[1] as IList<object>);
+                        List<Brep> FormFoundSrfs = new List<Brep>();
+                        for (int i = 0; i < shellPatches.Count; i++) FormFoundSrfs.Add(FormFoundGeo[i] as Brep);
+                        FormFoundShell = Brep.JoinBreps(FormFoundSrfs, fileTol)[0];
+                    }
+
                 }
 
             }
             
             DA.SetData(0, KiwiErrors);
             DA.SetData(1, FormFoundShell);
-            //DA.SetData(2, unscaled); //test
-            //DA.SetData(3, kiwiModel); //test
         }
 
         private object[] CallComponent(Dictionary<string, Rhino.NodeInCode.ComponentFunctionInfo> components, string componentName, object[] args)
@@ -232,7 +286,7 @@ namespace ACORN_shells
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("59b0224d-0f8d-4782-9995-d22acea7de9c"); }
+            get { return new Guid("0cb2b3a8-51d2-44d1-9e9e-3f3ec7759f0a"); }
         }
     }
 }
