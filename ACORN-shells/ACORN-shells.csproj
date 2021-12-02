@@ -72,10 +72,10 @@
     <Compile Include="ElementStress.cs" />
     <Compile Include="FixMesh.cs" />
     <Compile Include="FormFindMembrane.cs" />
-    <Compile Include="FormFindMembraneOLD.cs" />
     <Compile Include="LineToSpring.cs" />
     <Compile Include="DisassembleSupport.cs" />
     <Compile Include="LoadPattern.cs" />
+    <Compile Include="PreliminaryModel.cs" />
     <Compile Include="StressProbe.cs" />
     <Compile Include="StressResults.cs" />
     <Compile Include="AnalysisResultsFinal.cs" />
@@ -88,7 +88,6 @@
     <Compile Include="SimulatePinbed.cs" />
     <Compile Include="GetAreaEfficiency.cs" />
     <Compile Include="FitModules.cs" />
-    <Compile Include="FormFindKiwi.cs" />
     <Compile Include="FitBoundingBox.cs" />
     <Compile Include="MakeShellPlan.cs" />
     <Compile Include="MinimumBoundingBox.cs" />
@@ -96,7 +95,6 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SHELLScommon.cs" />
     <Compile Include="StressLines.cs" />
-    <Compile Include="PreliminaryShellAnalysisModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -115,6 +113,13 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Resources\ACORN_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\formfind.png" />
+    <Content Include="Resources\makeplan.png" />
+    <Content Include="Resources\prelim.png" />
+    <Content Include="Resources\segment.png" />
+    <Content Include="Resources\stresslines.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

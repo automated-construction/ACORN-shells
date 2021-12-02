@@ -258,7 +258,7 @@ namespace ACORN_shells
         {
             get
             {
-                return ACORN_shells.Properties.Resources.ACORN_24;
+                return ACORN_shells.Properties.Resources.stresslines;
             }
         }
 

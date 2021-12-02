@@ -57,7 +57,5 @@ namespace ACORN_shells
             for (int i = numAllEdges / 2; i < numAllEdges; i++) edges.Add(sortedAllEdges[i].EdgeCurve);
 
         }
-
-
     }
 }
