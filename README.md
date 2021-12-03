@@ -1,6 +1,6 @@
 # ACORN-shells
 
-<a href="https://automated.construction/" target="_blank">ACORN: Automating COncrete constRuctioN</a>
+ACORN: Automating COncrete constRuctioN (https://automated.construction/)
 
 Design and optimisation of thin shells for building slabs
 
