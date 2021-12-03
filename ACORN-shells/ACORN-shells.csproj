@@ -70,10 +70,10 @@
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="ElementStress.cs" />
-    <Compile Include="FixMesh.cs" />
+    <Compile Include="Utilities\FixMesh.cs" />
     <Compile Include="FormFindMembrane.cs" />
     <Compile Include="LineToSpring.cs" />
-    <Compile Include="DisassembleSupport.cs" />
+    <Compile Include="Utilities\DisassembleSupport.cs" />
     <Compile Include="LoadPattern.cs" />
     <Compile Include="PreliminaryModel.cs" />
     <Compile Include="StressProbe.cs" />
@@ -101,7 +101,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="AnalysisResults.cs" />
-    <Compile Include="VisualiseBuilding.cs" />
+    <Compile Include="Utilities\VisualiseBuilding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
