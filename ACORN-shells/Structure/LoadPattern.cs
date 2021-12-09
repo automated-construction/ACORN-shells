@@ -21,7 +21,8 @@ namespace ACORN_shells
         public LoadPattern()
           : base("Load Pattern", "A:LoadPattern",
               "Creates load pattern",
-              "ACORN Shells", "Analysis")
+              "ACORN Shells", "  Structure")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

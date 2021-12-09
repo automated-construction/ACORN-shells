@@ -18,72 +18,110 @@ using Karamba.GHopper.Geometry;
 using Karamba.Algorithms;
 using Grasshopper.Kernel.Geometry.Delaunay;
 using Rhino.Runtime.InteropWrappers;
-using Rhino.Render.Fields;
 
-namespace ACORN_shells
+namespace ACORN
 {
     /// <summary>
-    /// Should render AnalysisResults and AnalysisResultsExternal obsolete
-    /// Only uses AnalyzeThI if FAST is on, and if it does not work reverts back to ThII
-    /// Change name after testing
+    /// Generates demo building geometry
     /// </summary>
-    public class StressResults : GH_Component
+    public class AnalysisResultsExternal : GH_Component
     {
-        public StressResults()
-          : base("Stress Results", "A:StressResults",
-              "Gets stress results from shell analysis",
-              "ACORN Shells", "Analysis")
+        public AnalysisResultsExternal()
+          : base("Analysis Results External", "A:ResultsX",
+              "Gets analysis results for whole shell, from a pre-analysed model",
+              "ACORN Shells", " Analysis")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
 
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Analysed Model", "AM", "Analysed Model (ThI or ThII)", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Percentile", "P", "Percentage of non-extreme stress elements (0-100). Default: 95%", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Karamba model", "M", "Karamba model for whole shell (pre-Analyze)", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Analysed Model ThI", "MThI", "Analysed Model ThI", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Maximum displacement ThI", "DispThI", "Maximum displacement[cm]", GH_ParamAccess.item);
+            //pManager.AddGenericParameter("Analysed Model ThII", "MThII", "Analysed Model ThII", GH_ParamAccess.item);
+            //pManager.AddGenericParameter("Analysed Model ThIIB", "MThIIB", "Analysed Model ThII with buckling", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Percentile", "P", "Percentage of non-extreme stress elements (0-100)", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Buckling?", "B", "If True, calculate Buckling modes using ThII (slower)", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("First Principal Stress only?", "1", "If True, considers First Principal Stress only", GH_ParamAccess.item);
 
-            pManager[1].Optional = true;
+            pManager[3].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddNumberParameter("MaxComp", "C", "Maximum compression stress [MPa]", GH_ParamAccess.item);
-            pManager.AddNumberParameter("MaxComp%", "C%", "Maximum compression of non-extreme stress elements [MPa]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MaxComp", "MC", "Maximum compression stress [MPa]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MaxComp%", "MC%", "Maximum compression of non-extreme stress elements [MPa]", GH_ParamAccess.item);
             pManager.AddMeshParameter("MaxComp% mesh(es)", "CM", "Extreme compression stress elements (viz)", GH_ParamAccess.list);
-            pManager.AddNumberParameter("MaxTens", "T", "Maximum tension stress [MPa]", GH_ParamAccess.item);
-            pManager.AddNumberParameter("MaxTens%", "T%", "Maximum tension of non-extreme stress elements [MPa]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MaxTens", "MT", "Maximum tension stress [MPa]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("MaxTens%", "MT%", "Maximum tension of non-extreme stress elements [MPa]", GH_ParamAccess.item);
             pManager.AddMeshParameter("MaxTens% mesh", "TM", "Extreme tension stress elements (viz)", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Maximum displacement", "Disp", "Maximum displacement[cm]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Buckling factor", "BF", "Buckling factor", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Analysed Model ThI", "MThI", "Analysed Model ThI", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Analysed Model ThII", "MThII", "Analysed Model ThII", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Analysed Model ThIIB", "MThIIB", "Analysed Model ThII with buckling", GH_ParamAccess.item);
+
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_Model ghModelAnalysis = new GH_Model();
-            double percentile = 95;
+            GH_Model ghModel = new GH_Model();
+            GH_Model ghModelThI = new GH_Model();
+            double maxDisp = 0;
+            //GH_Model ghModelThII = new GH_Model();
+            //GH_Model ghModelThIIbuck = new GH_Model();
+            double percentile = 100;
+            bool buck = false;
+            bool firstPS = false; //default
 
-            if (!DA.GetData(0, ref ghModelAnalysis)) return;
-            DA.GetData(1, ref percentile);
+            if (!DA.GetData(0, ref ghModel)) return;
+            if (!DA.GetData(1, ref ghModelThI)) return;
+            if (!DA.GetData(2, ref maxDisp)) return;
+            //if (!DA.GetData(1, ref ghModelThII)) return;
+            //if (!DA.GetData(2, ref ghModelThIIbuck)) return;
+            if (!DA.GetData(3, ref percentile)) return;
+            if (!DA.GetData(4, ref buck)) return;
+            DA.GetData(5, ref firstPS);
 
             // convert GH_Model to Model
-            Model k3dModelAnalysis = ghModelAnalysis.Value;
+            Model k3dModel = ghModel.Value;
+            Model k3dModelThI = ghModelThI.Value;
+            //Model k3dModelThII = ghModelThII.Value;
+            //Model k3dModelThIIbuck = ghModelThIIbuck.Value;
 
-            //------------ STRESSES
+
+            // Analyse ThI done externally due to error
+            // Analyze ThI for stresses
+
+            //Model k3dModelThI = new Model(); // for stress calc + output for visualization with ShellView
+            //List<double> maxDispsThI = new List<double>(); // output
+            //ThIAnalyze.solve(k3dModel, out maxDispsThI, out _, out _, out _, out k3dModelThI);
+            //double maxDisp = maxDispsThI[0] * 100; // assuming results in [m], even though component outputs in [cm]
+
+
 
             // extract original shell mesh from k3dModel
             List<IMesh> k3dMeshes = new List<IMesh>();
-            k3dModelAnalysis.Disassemble(out _, out _, out k3dMeshes, out _, out _, out _, out _, out _, out _, out _, out _);
+            k3dModel.Disassemble(out _, out _, out k3dMeshes, out _, out _, out _, out _, out _, out _, out _, out _);
             // for segmented shell analysis, needs to cope with multipe meshes
             List<Mesh> rhMeshes = new List<Mesh>();
             foreach (IMesh k3dMesh in k3dMeshes) rhMeshes.Add(k3dMesh.Convert());
 
             // get first and second principal stress values for all elements, top and bottom layers
             var superimp_factors = new feb.VectReal { 1 }; // according to https://discourse.mcneel.com/t/shell-principal-stresses-in-karamba-api/120629
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, -1, superimp_factors, out _, out _, out _,
+            PrincipalStressDirs.solve(k3dModelThI, 0, -1, superimp_factors, out _, out _, out _,
                 out List<double> bottomPS1s, out List<double> bottomPS2s);
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, 1, superimp_factors, out _, out _, out _,
+            PrincipalStressDirs.solve(k3dModelThI, 0, 1, superimp_factors, out _, out _, out _,
                 out List<double> topPS1s, out List<double> topPS2s);
 
             // merge all stresses - create stressValue lists before? yes if we need them separately
-            List<List<double>> PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
+            List<List<double>> PSlists = new List<List<double>>();
+            if (firstPS)
+                PSlists = new List<List<double>> { bottomPS1s, topPS1s };
+            else
+                PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
             List<double> allPSs = PSlists.SelectMany(e => e).ToList();
 
             // create list of stressValue objects, pairing stress values and element indexes,  to sort "asynchronously" as in GH sort component
@@ -136,14 +174,38 @@ namespace ACORN_shells
             List<Mesh> meshesComp = MakeExtremeMeshes(rhMeshes, extremeElementsCompression);
             List<Mesh> meshesTens = MakeExtremeMeshes(rhMeshes, extremeElementsTension);
 
+
+            // Analyze ThII for buckling and displacement
+            Model k3dModelThII = new Model(); // prelim + output for visualization with ShellView
+            Model k3dModelThIIbuck = new Model();
+            double bucklingFactor = 0;
+            if (buck) 
+            {             
+                List<double> maxDispsThII = new List<double>(); // output
+                AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out maxDispsThII, out _, out _, out k3dModelThII, out _); 
+                // using defaults from GH AnalyzeThII component
+                // if second order analysis, use second order dispplacement
+                maxDisp = maxDispsThII[0] * 100; // assuming results in [m], even though component outputs in [cm];
+                List<double> bucklingFactors = new List<double>();
+                // defaults from GH BModes component; 300 MaxIter might be reduced for performance
+                Buckling.solve(k3dModelThII, 1, 1, 300, 1.0e-7, 1, out bucklingFactors, out k3dModelThIIbuck, out _); // like GH component, returns positive load factors only
+                bucklingFactor = bucklingFactors[0];
+            }
+
+
+
+
             DA.SetData(0, maxComp);
             DA.SetData(1, maxCompP);
             DA.SetDataList(2, meshesComp);
             DA.SetData(3, maxTens);
             DA.SetData(4, maxTensP);
             DA.SetDataList(5, meshesTens);
-
-
+            DA.SetData(6, maxDisp);
+            DA.SetData(7, bucklingFactor);
+            DA.SetData(8, new GH_Model(k3dModelThI));
+            DA.SetData(9, new GH_Model(k3dModelThII));
+            DA.SetData(10, new GH_Model(k3dModelThIIbuck));
         }
 
         public override GH_Exposure Exposure
@@ -162,7 +224,7 @@ namespace ACORN_shells
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("8eaddef5-3ab9-4e5a-bd1d-6ae4645cdac0"); }
+            get { return new Guid("9795510b-76b0-4c37-add1-4ad424df7e3c"); }
         }
         /// <summary>
         /// Creates meshes with the elements top % stress values

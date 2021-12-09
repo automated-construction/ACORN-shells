@@ -12,7 +12,8 @@ namespace ACORN_shells
         public MakeShellPlan()
           : base("MakeShellPlan", "A:MakeShellPlan",
               "Creates a 2D shell plan on the XY plane.",
-              "ACORN Shells", "Formfinding")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -110,6 +111,11 @@ namespace ACORN_shells
         public override Guid ComponentGuid
         {
             get { return new Guid("05f0f2e6-e8cf-49fe-b1ff-961b3f29a523"); }
+        }
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.primary; }
         }
     }
 }

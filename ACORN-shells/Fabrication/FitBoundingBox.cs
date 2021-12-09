@@ -18,7 +18,8 @@ namespace ACORN_shells
         public FitBoundingBox()
           : base("Fit Bounding Box", "A:FitBBox",
               "Fits a bounding box to a shell segment, minimizing volume.",
-              "ACORN Shells", "Pinbed")
+              "ACORN Shells", " Fabrication")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

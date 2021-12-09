@@ -18,7 +18,8 @@ namespace ACORN_shells
         public StressLines()
           : base("StressLines", "A:StressLines",
               "Generate stress lines and cable profiles from analysed Karamba model.",
-              "ACORN Shells", "Segmentation")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -266,5 +267,12 @@ namespace ACORN_shells
         {
             get { return new Guid("8d387c45-1b18-4cc3-9596-c9c9a05a470c"); }
         }
+
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.secondary; }
+        }
+
     }
 }

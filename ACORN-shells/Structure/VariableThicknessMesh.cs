@@ -26,7 +26,8 @@ namespace ACORN_shells
         public VariableThicknessMesh()
           : base("Variable Thickness Mesh", "A:VarThickMesh",
               "Calculates mesh face heights form Variable Thickness Surface",
-              "ACORN Shells", "Analysis")
+              "ACORN Shells", "  Structure")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

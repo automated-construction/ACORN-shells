@@ -33,7 +33,8 @@ namespace ACORN_shells
         public StressProbe()
           : base("Stress Probe", "A:StressProbe",
               "Gets stress results for specified point in shell",
-              "ACORN Shells", "Analysis")
+              "ACORN Shells", " Analysis")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

@@ -23,14 +23,15 @@ using Karamba.GHopper.CrossSections;
 namespace ACORN_shells
 {
     /// <summary>
-    /// Simulates the pinbed mould.
+    /// Generates Spring elements for modelling interfaces between shell segments.
     /// </summary>
     public class MakeSprings : GH_Component
     {
         public MakeSprings()
           : base("Make Springs", "A:Springs",
-              "Simulates the pinbed mould.",
-              "ACORN Shells", "Segmentation")
+              "Generates Spring elements for modelling interfaces between shell segments.",
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -335,5 +336,11 @@ namespace ACORN_shells
         {
             get { return new Guid("d48c042a-6742-4c63-8e20-3a38ae82404f"); }
         }
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.tertiary; }
+        }
+
     }
 }

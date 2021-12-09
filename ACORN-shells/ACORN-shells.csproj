@@ -71,36 +71,35 @@
     <Compile Include="ACORN-shellsInfo.cs" />
     <Compile Include="ElementStress.cs" />
     <Compile Include="Utilities\FixMesh.cs" />
-    <Compile Include="FormFindMembrane.cs" />
-    <Compile Include="LineToSpring.cs" />
+    <Compile Include="Shape\FormFindMembrane.cs" />
+    <Compile Include="Shape\LineToSpring.cs" />
     <Compile Include="Utilities\DisassembleSupport.cs" />
-    <Compile Include="LoadPattern.cs" />
-    <Compile Include="PreliminaryModel.cs" />
-    <Compile Include="StressProbe.cs" />
-    <Compile Include="StressResults.cs" />
-    <Compile Include="AnalysisResultsFinal.cs" />
-    <Compile Include="AnalysisResultsExternal.cs" />
-    <Compile Include="VariableThicknessMesh.cs" />
-    <Compile Include="VariableThicknessShell.cs" />
-    <Compile Include="MakeShell.cs" />
-    <Compile Include="ShellLoads.cs" />
-    <Compile Include="MakeSprings.cs" />
-    <Compile Include="SimulatePinbed.cs" />
-    <Compile Include="GetAreaEfficiency.cs" />
-    <Compile Include="FitModules.cs" />
-    <Compile Include="FitBoundingBox.cs" />
-    <Compile Include="MakeShellPlan.cs" />
-    <Compile Include="MinimumBoundingBox.cs" />
+    <Compile Include="Structure\LoadPattern.cs" />
+    <Compile Include="Shape\PreliminaryModel.cs" />
+    <Compile Include="Analysis\StressProbe.cs" />
+    <Compile Include="Analysis\StressResults.cs" />
+    <Compile Include="Analysis\AnalysisResultsFinal.cs" />
+    <Compile Include="Analysis\AnalysisResultsExternal.cs" />
+    <Compile Include="Structure\VariableThicknessMesh.cs" />
+    <Compile Include="Shape\VariableThicknessShell.cs" />
+    <Compile Include="Structure\MakeShell.cs" />
+    <Compile Include="Structure\ShellLoads.cs" />
+    <Compile Include="Shape\MakeSprings.cs" />
+    <Compile Include="Fabrication\SimulatePinbed.cs" />
+    <Compile Include="Fabrication\GetAreaEfficiency.cs" />
+    <Compile Include="Fabrication\FitModules.cs" />
+    <Compile Include="Fabrication\FitBoundingBox.cs" />
+    <Compile Include="Shape\MakeShellPlan.cs" />
     <Compile Include="PsarrasBoundingBox.cs" />
-    <Compile Include="Segment.cs" />
+    <Compile Include="Shape\Segment.cs" />
     <Compile Include="SHELLScommon.cs" />
-    <Compile Include="StressLines.cs" />
+    <Compile Include="Shape\StressLines.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="AnalysisResults.cs" />
+    <Compile Include="Analysis\AnalysisResults.cs" />
     <Compile Include="Utilities\VisualiseBuilding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -121,6 +120,7 @@
     <Content Include="Resources\segment.png" />
     <Content Include="Resources\stresslines.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -35,7 +35,8 @@ namespace ACORN_shells
         public FixMesh()
           : base("FixMesh", "A:FixMesh",
               "Fixes mesh for FEM",
-              "ACORN Shells", "Utilities")
+              "ACORN Shells", " Utilities")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

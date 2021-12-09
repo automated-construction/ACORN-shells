@@ -32,7 +32,8 @@ namespace ACORN
         public AnalysisResultsFinal()
           : base("Analysis Results Final", "A:ResultsFinal",
               "Gets analysis results for shell",
-              "ACORN Shells", "Analysis")
+              "ACORN Shells", " Analysis")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

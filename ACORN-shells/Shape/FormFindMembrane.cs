@@ -35,7 +35,8 @@ namespace ACORN_shells
         public FormFindMembrane()
           : base("FormFindMembrane", "A:FormFindMembrane",
               "Use Kiwi3D to form-find the shell using membrane component. Uses Kiwi3D v0.5.0.",
-              "ACORN Shells", "Formfinding")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -234,5 +235,12 @@ namespace ACORN_shells
         {
             get { return new Guid("59b0224d-0f8d-4782-9995-d22acea7de9c"); }
         }
+
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.primary; }
+        }
+
     }
 }

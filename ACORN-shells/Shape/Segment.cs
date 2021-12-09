@@ -12,7 +12,8 @@ namespace ACORN_shells
         public Segment()
           : base("Segment", "A:Segment",
               "Segment shell using stress lines.",
-              "ACORN Shells", "Segmentation")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -140,5 +141,11 @@ namespace ACORN_shells
         {
             get { return new Guid("79bca3ce-5149-4b9b-8862-c7e832eff071"); }
         }
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.secondary; }
+        }
+
     }
 }

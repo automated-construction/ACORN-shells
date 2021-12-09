@@ -24,7 +24,8 @@ namespace ACORN_shells
         public SimulatePinbed()
           : base("Simulate Pinbed", "A:SimPinbed",
               "Simulates the pinbed mould.",
-              "ACORN Shells", "Pinbed")
+              "ACORN Shells", " Fabrication")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

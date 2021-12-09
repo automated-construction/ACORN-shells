@@ -26,7 +26,8 @@ namespace ACORN_shells
         public PreliminaryModel()
           : base("PreliminaryModel", "A:PreliminaryModel",
               "Create preliminary shell analysis Karamba3D model for segmentation purposes.",
-              "ACORN Shells", "Segmentation")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -121,5 +122,11 @@ namespace ACORN_shells
         {
             get { return new Guid("0c7a26eb-e043-438b-8989-08f471669a99"); }
         }
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.secondary; }
+        }
+
     }
 }

@@ -27,7 +27,8 @@ namespace ACORN_shells
         public DisassembleSupport()
           : base("Disassemble Support", "A:DisassembleSupport",
               "Disassembles a Karamba Support",
-              "ACORN Shells", "Utilities")
+              "ACORN Shells", " Utilities")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 

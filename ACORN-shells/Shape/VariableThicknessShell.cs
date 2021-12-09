@@ -33,7 +33,8 @@ namespace ACORN_shells
         public VariableThicknessShell()
           : base("Variable Thickness Shell", "A:VarThickShell",
               "Creates a shell with variable thickness, with three layers: medial layer to pass onto Karamba, top and bottom to calculate local thicknesses",
-              "ACORN Shells", "Analysis")
+              "ACORN Shells", "  Shape")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -193,5 +194,12 @@ namespace ACORN_shells
         {
             get { return new Guid("a75d44eb-a7c9-4933-82f5-1b347a18a3e6"); }
         }
+
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.primary; }
+        }
+
     }
 }

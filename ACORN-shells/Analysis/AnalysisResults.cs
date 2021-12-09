@@ -24,12 +24,13 @@ namespace ACORN
     /// <summary>
     /// Generates demo building geometry
     /// </summary>
-    public class AnalysisResultsExternal : GH_Component
+    public class AnalysisResults : GH_Component
     {
-        public AnalysisResultsExternal()
-          : base("Analysis Results External", "A:ResultsX",
-              "Gets analysis results for whole shell, from a pre-analysed model",
-              "ACORN Shells", "Analysis")
+        public AnalysisResults()
+          : base("Analysis Results", "A:Results",
+              "Gets analysis results for whole shell",
+              "ACORN Shells", " Analysis")
+        // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
 
@@ -37,10 +38,6 @@ namespace ACORN
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Karamba model", "M", "Karamba model for whole shell (pre-Analyze)", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Analysed Model ThI", "MThI", "Analysed Model ThI", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Maximum displacement ThI", "DispThI", "Maximum displacement[cm]", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("Analysed Model ThII", "MThII", "Analysed Model ThII", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("Analysed Model ThIIB", "MThIIB", "Analysed Model ThII with buckling", GH_ParamAccess.item);
             pManager.AddNumberParameter("Percentile", "P", "Percentage of non-extreme stress elements (0-100)", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Buckling?", "B", "If True, calculate Buckling modes using ThII (slower)", GH_ParamAccess.item);
             pManager.AddBooleanParameter("First Principal Stress only?", "1", "If True, considers First Principal Stress only", GH_ParamAccess.item);
@@ -61,45 +58,29 @@ namespace ACORN
             pManager.AddGenericParameter("Analysed Model ThI", "MThI", "Analysed Model ThI", GH_ParamAccess.item);
             pManager.AddGenericParameter("Analysed Model ThII", "MThII", "Analysed Model ThII", GH_ParamAccess.item);
             pManager.AddGenericParameter("Analysed Model ThIIB", "MThIIB", "Analysed Model ThII with buckling", GH_ParamAccess.item);
-
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_Model ghModel = new GH_Model();
-            GH_Model ghModelThI = new GH_Model();
-            double maxDisp = 0;
-            //GH_Model ghModelThII = new GH_Model();
-            //GH_Model ghModelThIIbuck = new GH_Model();
             double percentile = 100;
             bool buck = false;
             bool firstPS = false; //default
 
             if (!DA.GetData(0, ref ghModel)) return;
-            if (!DA.GetData(1, ref ghModelThI)) return;
-            if (!DA.GetData(2, ref maxDisp)) return;
-            //if (!DA.GetData(1, ref ghModelThII)) return;
-            //if (!DA.GetData(2, ref ghModelThIIbuck)) return;
-            if (!DA.GetData(3, ref percentile)) return;
-            if (!DA.GetData(4, ref buck)) return;
-            DA.GetData(5, ref firstPS);
+            if (!DA.GetData(1, ref percentile)) return;
+            if (!DA.GetData(2, ref buck)) return;
+            DA.GetData(3, ref firstPS);
 
             // convert GH_Model to Model
             Model k3dModel = ghModel.Value;
-            Model k3dModelThI = ghModelThI.Value;
-            //Model k3dModelThII = ghModelThII.Value;
-            //Model k3dModelThIIbuck = ghModelThIIbuck.Value;
 
-
-            // Analyse ThI done externally due to error
             // Analyze ThI for stresses
 
-            //Model k3dModelThI = new Model(); // for stress calc + output for visualization with ShellView
-            //List<double> maxDispsThI = new List<double>(); // output
-            //ThIAnalyze.solve(k3dModel, out maxDispsThI, out _, out _, out _, out k3dModelThI);
-            //double maxDisp = maxDispsThI[0] * 100; // assuming results in [m], even though component outputs in [cm]
-
-
+            Model k3dModelThI = new Model(); // for stress calc + output for visualization with ShellView
+            List<double> maxDispsThI = new List<double>(); // output
+            ThIAnalyze.solve(k3dModel, out maxDispsThI, out _, out _, out _, out k3dModelThI);
+            double maxDisp = maxDispsThI[0] * 100; // assuming results in [m], even though component outputs in [cm]
 
             // extract original shell mesh from k3dModel
             List<IMesh> k3dMeshes = new List<IMesh>();
@@ -181,8 +162,7 @@ namespace ACORN
             if (buck) 
             {             
                 List<double> maxDispsThII = new List<double>(); // output
-                AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out maxDispsThII, out _, out _, out k3dModelThII, out _); 
-                // using defaults from GH AnalyzeThII component
+                AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out maxDispsThII, out _, out _, out k3dModelThII, out _); // using defaults from GH AnalyzeThII component
                 // if second order analysis, use second order dispplacement
                 maxDisp = maxDispsThII[0] * 100; // assuming results in [m], even though component outputs in [cm];
                 List<double> bucklingFactors = new List<double>();
@@ -223,7 +203,7 @@ namespace ACORN
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("9795510b-76b0-4c37-add1-4ad424df7e3c"); }
+            get { return new Guid("20adf443-15e2-4d7c-85f8-63cf7d7b42bc"); }
         }
         /// <summary>
         /// Creates meshes with the elements top % stress values

@@ -13,6 +13,9 @@ using Karamba.GHopper.Geometry;
 
 namespace ACORN_shells
 {
+    /// <summary>
+    /// This class is only used by Analysis > StressProbe, and should therefore be moved there
+    /// </summary>
     public class ElementStress
     {
         public int Element { get; set; }
