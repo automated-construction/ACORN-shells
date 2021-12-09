@@ -105,6 +105,55 @@ namespace ACORN_shells
 
         }
 
+        public double CalculateMaximumCompression() // returns minimum (most negative) stress value, being compression in Karamba
+        {
+            List<double> fourStresses = new List<double> { this.princ_val1_top, this.princ_val1_bottom, this.princ_val2_top, this.princ_val2_bottom };
+            List<double> sortedStresses = fourStresses.OrderBy(e => e).ToList();
+            return sortedStresses.First();
+        }
+
+        public double CalculateMaximumTension() // returns maximum (most positive) stress value, being tension in Karamba
+        {
+            List<double> fourStresses = new List<double> { this.princ_val1_top, this.princ_val1_bottom, this.princ_val2_top, this.princ_val2_bottom };
+            List<double> sortedStresses = fourStresses.OrderByDescending(e => e).ToList();
+            return sortedStresses.First();
+        }
+
+        /// <summary>
+        /// Creates meshes with the elements top % stress values
+        /// Support and outputs multiple meshes
+        /// </summary>
+        /// <param name="origMeshes"></param>
+        /// <param name="SVs"></param>
+        /// <returns></returns>
+        public static List<Mesh> MakeExtremeMeshes(List<Mesh> origMeshes, List<ElementStress> SVs)
+        {
+            List<Mesh> extMeshes = new List<Mesh>();
+
+            // copy vertices from original mesh(es) to extreme mesh
+            foreach (Mesh rhMesh in origMeshes)
+            {
+                Mesh meshTens = new Mesh();
+                meshTens.Vertices.AddVertices(rhMesh.Vertices);
+                extMeshes.Add(meshTens);
+            }
+
+            // copy top valued element faces from original mesh to extreme mesh
+            foreach (ElementStress sv in SVs)
+                //meshComp.Faces.AddFace(rhMesh.Faces[sv.Element]);
+                extMeshes[sv.Mesh].Faces.AddFace(origMeshes[sv.Mesh].Faces[sv.Face]);
+
+            // finish off
+            foreach (Mesh extMesh in extMeshes)
+            {
+                extMesh.Normals.ComputeNormals();
+                extMesh.Compact();
+            }
+
+            return extMeshes;
+        }
+
+
 
     }
 }

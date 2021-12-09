@@ -81,15 +81,16 @@ namespace ACORN_shells
 
             // create list of stressValue objects, pairing stress values and element indexes,  to sort "asynchronously" as in GH sort component
             List<StressValue> stressValues = new List<StressValue>();
+            //List<ElementStress> stressValues = new List<ElementStress>();
 
             // determine which mesh it belongs to through list partition, and which face in that mesh
             foreach (List<double> PSlist in PSlists) { 
                 int meshIndex = 0;
                 int faceIndex = 0;
-                for (int elementIndex = 0; elementIndex < PSlist.Count; elementIndex++) { 
+                for (int elementIndex = 0; elementIndex < PSlist.Count; elementIndex++) {
                     // element count is for ALL meshes, face count is for belonging mesh
 
-                    // creates instance of StressValue 
+                    // creates instance of ElementStress 
                     stressValues.Add(new StressValue { 
                         Value = PSlist[elementIndex], 
                         Element = elementIndex, 

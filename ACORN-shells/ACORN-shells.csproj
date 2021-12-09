@@ -69,7 +69,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
-    <Compile Include="ElementStress.cs" />
+    <Compile Include="Analysis\StressResultsNEW.cs" />
+    <Compile Include="Analysis\ElementStress.cs" />
     <Compile Include="Utilities\FixMesh.cs" />
     <Compile Include="Shape\FormFindMembrane.cs" />
     <Compile Include="Shape\LineToSpring.cs" />
@@ -90,7 +91,7 @@
     <Compile Include="Fabrication\FitModules.cs" />
     <Compile Include="Fabrication\FitBoundingBox.cs" />
     <Compile Include="Shape\MakeShellPlan.cs" />
-    <Compile Include="PsarrasBoundingBox.cs" />
+    <Compile Include="Fabrication\PsarrasBoundingBox.cs" />
     <Compile Include="Shape\Segment.cs" />
     <Compile Include="SHELLScommon.cs" />
     <Compile Include="Shape\StressLines.cs" />
