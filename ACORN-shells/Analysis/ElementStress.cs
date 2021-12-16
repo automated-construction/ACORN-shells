@@ -109,14 +109,14 @@ namespace ACORN_shells
         {
             List<double> fourStresses = new List<double> { this.princ_val1_top, this.princ_val1_bottom, this.princ_val2_top, this.princ_val2_bottom };
             List<double> sortedStresses = fourStresses.OrderBy(e => e).ToList();
-            return sortedStresses.First();
+            return sortedStresses[0];
         }
 
         public double CalculateMaximumTension() // returns maximum (most positive) stress value, being tension in Karamba
         {
             List<double> fourStresses = new List<double> { this.princ_val1_top, this.princ_val1_bottom, this.princ_val2_top, this.princ_val2_bottom };
             List<double> sortedStresses = fourStresses.OrderByDescending(e => e).ToList();
-            return sortedStresses.First();
+            return sortedStresses[0];
         }
 
         /// <summary>

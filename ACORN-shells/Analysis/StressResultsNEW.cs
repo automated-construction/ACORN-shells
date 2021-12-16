@@ -64,21 +64,20 @@ namespace ACORN_shells
             //sort all elements for Compression by looking at minimum stress value
             List<ElementStress> sortedForCompression = elementStresses.OrderBy(s => s.CalculateMaximumCompression()).ToList();
             List<ElementStress> sortedForTension = elementStresses.OrderByDescending(s => s.CalculateMaximumTension()).ToList();
-   
+
             // extract number of extreme elements based on input percentile
-            int countExtremeElements = (int) Math.Round (elementStresses.Count * (100 - percentile) / 100); 
-            List<ElementStress> extremeElementsCompression = sortedForCompression.GetRange(0, countExtremeElements);
-            List<ElementStress> extremeElementsTension = sortedForTension.GetRange(0, countExtremeElements);
+            int countExtremeElements = (int) Math.Round (elementStresses.Count * (100 - percentile) / 100);
 
             // get values for output, converted from kN/cm2 to MPa
-            double maxComp = extremeElementsCompression.First().CalculateMaximumCompression() * 10;
-            double maxCompP = extremeElementsCompression.Last().CalculateMaximumCompression() * 10;
-            double maxTens = extremeElementsTension.First().CalculateMaximumTension() * 10;
-            double maxTensP = extremeElementsTension.Last().CalculateMaximumTension() * 10;
-
+            double maxComp = sortedForCompression[0].CalculateMaximumCompression() * 10;
+            double maxCompP = sortedForCompression[countExtremeElements].CalculateMaximumCompression() * 10;
+            double maxTens = sortedForTension[0].CalculateMaximumTension() * 10;
+            double maxTensP = sortedForTension[countExtremeElements].CalculateMaximumTension() * 10;
 
             // generate meshes with extreme stress elements
             // for visualisation purposes, even if analysing multiple meshes (eg, segmented shell)
+            List<ElementStress> extremeElementsCompression = sortedForCompression.GetRange(0, countExtremeElements);
+            List<ElementStress> extremeElementsTension = sortedForTension.GetRange(0, countExtremeElements);
             List<Mesh> meshesComp = ElementStress.MakeExtremeMeshes(rhMeshes, extremeElementsCompression);
             List<Mesh> meshesTens = ElementStress.MakeExtremeMeshes(rhMeshes, extremeElementsTension);
 
