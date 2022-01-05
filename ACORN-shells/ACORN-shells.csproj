@@ -115,8 +115,16 @@
     <None Include="Resources\ACORN_24.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\varThickMesh.png" />
+    <None Include="Resources\varThick.png" />
+    <None Include="Resources\disSupp.png" />
     <Content Include="Resources\formfind.png" />
+    <None Include="Resources\lineSpring.png" />
+    <None Include="Resources\loadPatt.png" />
+    <None Include="Resources\makeLoads.png" />
     <Content Include="Resources\makeplan.png" />
+    <None Include="Resources\makeSprings.png" />
+    <None Include="Resources\makeShell.png" />
     <Content Include="Resources\prelim.png" />
     <Content Include="Resources\segment.png" />
     <Content Include="Resources\stresslines.png" />

@@ -73,6 +73,16 @@ namespace ACORN_shells.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap disSupp {
+            get {
+                object obj = ResourceManager.GetObject("disSupp", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap formfind {
             get {
                 object obj = ResourceManager.GetObject("formfind", resourceCulture);
@@ -83,9 +93,59 @@ namespace ACORN_shells.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap lineSpring {
+            get {
+                object obj = ResourceManager.GetObject("lineSpring", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap loadPatt {
+            get {
+                object obj = ResourceManager.GetObject("loadPatt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap makeLoads {
+            get {
+                object obj = ResourceManager.GetObject("makeLoads", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap makeplan {
             get {
                 object obj = ResourceManager.GetObject("makeplan", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap makeShell {
+            get {
+                object obj = ResourceManager.GetObject("makeShell", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap makeSprings {
+            get {
+                object obj = ResourceManager.GetObject("makeSprings", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -116,6 +176,26 @@ namespace ACORN_shells.Properties {
         internal static System.Drawing.Bitmap stresslines {
             get {
                 object obj = ResourceManager.GetObject("stresslines", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap varThick {
+            get {
+                object obj = ResourceManager.GetObject("varThick", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap varThickMesh {
+            get {
+                object obj = ResourceManager.GetObject("varThickMesh", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
