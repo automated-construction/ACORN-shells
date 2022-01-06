@@ -121,8 +121,26 @@
   <data name="ACORN_24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ACORN_24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="analysisRes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\analysisRes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="analysisResOLD" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\analysisResOLD.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="areaEff" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\areaEff.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="disSupp" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\disSupp.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fitBox" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fitBox.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fitModule" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fitModule.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fixMesh" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fixMesh.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="formfind" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\formfind.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -151,13 +169,28 @@
   <data name="segment" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\segment.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="simPinbed" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\simPinbed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="stresslines" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stresslines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="stressProbe" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\stressProbe.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="stressRes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\stressRes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="stressResOLD" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\stressResOLD.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="varThick" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\varThick.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="varThickMesh" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\varThickMesh.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="vizBuilding" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\vizBuilding.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

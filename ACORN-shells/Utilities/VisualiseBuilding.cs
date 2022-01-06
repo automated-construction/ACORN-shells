@@ -283,7 +283,7 @@ namespace ACORN
             get
             {
                 // You can add image files to your project resources and access them like this:
-                return ACORN_shells.Properties.Resources.ACORN_24;
+                return ACORN_shells.Properties.Resources.vizBuilding;
             }
         }
 
