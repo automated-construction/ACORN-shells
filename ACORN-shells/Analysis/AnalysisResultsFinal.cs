@@ -30,7 +30,7 @@ namespace ACORN
     public class AnalysisResultsFinal : GH_Component
     {
         public AnalysisResultsFinal()
-          : base("Analysis Results Final", "A:ResultsFinal",
+          : base("Analysis Results Final", "ResultsFinal",
               "Gets analysis results for shell",
               "ACORN Shells", " Analysis")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

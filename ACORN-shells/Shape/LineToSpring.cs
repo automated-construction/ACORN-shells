@@ -28,8 +28,8 @@ namespace ACORN_shells
     public class LineToSpring : GH_Component
     {
         public LineToSpring()
-          : base("Make Springs From Lines", "A:LineToSpring",
-              "Creates Karamba spring beam from a line",
+          : base("Line to Spring", "LineToSpring",
+              "Creates Karamba spring beam from a GH line",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {

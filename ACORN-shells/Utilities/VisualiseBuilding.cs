@@ -21,8 +21,8 @@ namespace ACORN
     public class VisualiseBuilding : GH_Component
     {
         public VisualiseBuilding()
-          : base("Visualise Building", "A:VizBldg",
-              "Generates demo building geometry",
+          : base("Visualise Building", "VizBldg",
+              "Generates whole building geometry, beyond the floor shells",
               "ACORN Shells", " Utilities")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {

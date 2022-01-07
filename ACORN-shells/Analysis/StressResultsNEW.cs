@@ -22,7 +22,7 @@ namespace ACORN_shells
     public class StressResultsNEW : GH_Component
     {
         public StressResultsNEW()
-          : base("Stress Results NEW", "A:StressResultsNEW",
+          : base("Stress Results NEW", "StressResultsNEW",
               "Gets stress results from shell analysis",
               "ACORN Shells", " Analysis")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

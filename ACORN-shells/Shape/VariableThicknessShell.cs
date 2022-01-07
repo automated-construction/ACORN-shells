@@ -22,16 +22,12 @@ namespace ACORN_shells
     /// <summary>
     /// Creates a shell with variable thickness, with three layers: 
     /// medial layer to pass to Karamba, top and bottom to calculate local thicknesses
-    /// 
-    /// ToDo:
-    /// change name
-    /// coordinate with MakeShell
     /// </summary>
     public class VariableThicknessShell : GH_Component
     {
 
         public VariableThicknessShell()
-          : base("Variable Thickness Shell", "A:VarThickShell",
+          : base("Variable Thickness Shell", "VarThickShell",
               "Creates a shell with variable thickness, with three layers: medial layer to pass onto Karamba, top and bottom to calculate local thicknesses",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

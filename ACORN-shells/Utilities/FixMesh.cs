@@ -25,15 +25,11 @@ using Karamba.Utilities.AABBTrees;
 
 namespace ACORN_shells
 {
-    /// <summary>
-    /// Should render AnalysisResults and AnalysisResultsExternal obsolete
-    /// Only uses AnalyzeThI if FAST is on, and if it does not work reverts back to ThII
-    /// Change name after testing
-    /// </summary>
+
     public class FixMesh : GH_Component
     {
         public FixMesh()
-          : base("FixMesh", "A:FixMesh",
+          : base("Fix Mesh", "FixMesh",
               "Fixes mesh for FEM",
               "ACORN Shells", " Utilities")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

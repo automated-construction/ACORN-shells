@@ -10,7 +10,7 @@ namespace ACORN_shells
     public class Segment : GH_Component
     {
         public Segment()
-          : base("Segment", "A:Segment",
+          : base("Segmentation layout", "Segment",
               "Segment shell using stress lines.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

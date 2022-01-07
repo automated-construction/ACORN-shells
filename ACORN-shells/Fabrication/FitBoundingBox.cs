@@ -16,7 +16,7 @@ namespace ACORN_shells
     public class FitBoundingBox : GH_Component
     {
         public FitBoundingBox()
-          : base("Fit Bounding Box", "A:FitBBox",
+          : base("Minimum Volume Box", "MinBox",
               "Fits a bounding box to a shell segment, minimizing volume.",
               "ACORN Shells", " Fabrication")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

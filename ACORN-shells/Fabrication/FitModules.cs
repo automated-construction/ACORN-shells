@@ -19,7 +19,7 @@ namespace ACORN_shells
     public class FitModules : GH_Component
     {
         public FitModules()
-          : base("Fit Pinbed Modules", "A:FitMods",
+          : base("Pinbed Modules", "PinMods",
               "Fits pinbed module rectangles to a segment bounding box.",
               "ACORN Shells", " Fabrication")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

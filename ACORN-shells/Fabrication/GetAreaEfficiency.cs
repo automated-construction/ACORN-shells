@@ -19,7 +19,7 @@ namespace ACORN_shells
     public class GetAreaEfficiency : GH_Component
     {
         public GetAreaEfficiency()
-          : base("Get Area Efficiency", "A:AreaEff",
+          : base("Area Efficiency", "AreaEff",
               "Calculates area efficiency of segment / modules",
               "ACORN Shells", " Fabrication")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

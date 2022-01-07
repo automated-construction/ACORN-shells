@@ -37,7 +37,7 @@ namespace ACORN_shells
         double ALPHA_T = 0.00001;
 
         public MakeShell()
-          : base("Make Karamba Shell Element", "A:MakeShell",
+          : base("Karamba Shell Element", "ShellElem",
               "Create Karamba Shell element for analysis.",
               "ACORN Shells", "  Structure")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

@@ -28,7 +28,7 @@ namespace ACORN_shells
     public class MakeSprings : GH_Component
     {
         public MakeSprings()
-          : base("Make Springs", "A:Springs",
+          : base("Interface springs", "Springs",
               "Generates Spring elements for modelling interfaces between shell segments.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

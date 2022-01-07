@@ -10,7 +10,7 @@ namespace ACORN_shells
     public class MakeShellPlan : GH_Component
     {
         public MakeShellPlan()
-          : base("MakeShellPlan", "A:MakeShellPlan",
+          : base("Shell Plan", "ShellPlan",
               "Creates a 2D shell plan on the XY plane.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

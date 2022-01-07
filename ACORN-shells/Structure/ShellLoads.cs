@@ -34,7 +34,7 @@ namespace ACORN_shells
         double LL_FACTOR = 1.50; // live load design safety factor
 
         public ShellLoads()
-          : base("ShellLoads", "A:ShellLoads",
+          : base("Shell Loads", "ShellLoads",
               "Create loads for Karamba FEA.",
               "ACORN Shells", "  Structure")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 

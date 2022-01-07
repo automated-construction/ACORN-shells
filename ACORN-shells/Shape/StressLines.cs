@@ -16,8 +16,8 @@ namespace ACORN_shells
         int MAX_ITER = 500;
 
         public StressLines()
-          : base("StressLines", "A:StressLines",
-              "Generate stress lines and cable profiles from analysed Karamba model.",
+          : base("Stress lines", "StressLines",
+              "Generate stress lines and cable profiles from preliminary Karamba model.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {

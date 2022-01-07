@@ -33,8 +33,8 @@ namespace ACORN_shells
 
         // change name if it becomes only formfinding component
         public FormFindMembrane()
-          : base("FormFindMembrane", "A:FormFindMembrane",
-              "Use Kiwi3D to form-find the shell using membrane component. Uses Kiwi3D v0.5.0.",
+          : base("Formfind Shell", "FormFind",
+              "Use Kiwi3D to form-find the shell. Uses Kiwi3D v0.5.0.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {

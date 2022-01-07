@@ -19,8 +19,8 @@ namespace ACORN_shells
     public class LoadPattern : GH_Component
     {
         public LoadPattern()
-          : base("Load Pattern", "A:LoadPattern",
-              "Creates load pattern",
+          : base("Load Pattern", "LoadPattern",
+              "Create asymmetric load pattern for buulding use simulation",
               "ACORN Shells", "  Structure")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
