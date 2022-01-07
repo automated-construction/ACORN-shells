@@ -24,7 +24,7 @@ namespace ACORN_shells
         double ALPHA_T = 0.00001;
 
         public PreliminaryModel()
-          : base("Preliminary model", "PreModel",
+          : base("Preliminary Model", "PreModel",
               "Create preliminary shell analysis Karamba3D model for segmentation purposes.",
               "ACORN Shells", "  Shape")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
