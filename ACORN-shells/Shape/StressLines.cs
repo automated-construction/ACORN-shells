@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Karamba.GHopper.Geometry;
+using Karamba.GHopper.Models;
 using Karamba.Geometry;
 using System.Linq;
 
@@ -27,30 +28,29 @@ namespace ACORN_shells
         {
             pManager.AddGenericParameter("Model", "M", "Analysed Karamba model.", GH_ParamAccess.item);
             pManager.AddBrepParameter("Shell", "S", "Shell Brep.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("KeystoneWidth", "KW", "Width of keystone.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("CornerstoneWidth", "CW", "Width of cornerstone.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("LengthParam1", "L1", "Distance between stress lines 1.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("LengthParam2", "L2", "Distance between stress lines 2.", GH_ParamAccess.item);
-            //pManager.AddCurveParameter("Corners", "C", "Corner curves of shell.", GH_ParamAccess.list);
-            //pManager.AddCurveParameter("Edges", "E", "Edge curves of shell.", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Keystone Width", "KW", "Width of keystone.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Cornerstone Width", "CW", "Width of cornerstone.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Length Param1", "L1", "Distance between stress lines 1 (circular).", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Length Param2", "L2", "Distance between stress lines 2 (radial).", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("StressLines1", "SL1", "Stress lines related to tension.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("StressLines2", "SL2", "Stress lines related to compression.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("CableProfiles1", "CP1", "Cable profiles related to tension.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("CableProfiles2", "CP2", "Cable profiles related to compression.", GH_ParamAccess.list);
-            //pManager.AddCurveParameter("Extracted corners", "EC", "Extracted corners (for testing).", GH_ParamAccess.list);
-            //pManager.AddCurveParameter("Extracted edges", "EE", "Extracted edges (for testing).", GH_ParamAccess.list);
+            pManager.AddBrepParameter("Shell", "S", "Shell Brep.", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Stress Lines 1", "SL1", "Stress lines in first principal direction (circular).", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Stress Lines 2", "SL2", "Stress lines in second principal direction (radial).", GH_ParamAccess.list);
+            // cable curves not being used
+            //pManager.AddCurveParameter("CableCurves1", "CP1", "Cable curves in first direction.", GH_ParamAccess.list);
+            //pManager.AddCurveParameter("CableCurves", "CP2", "Cable curves in second direction.", GH_ParamAccess.list);
+            //TESTING
+            pManager.AddCurveParameter("Geodesics", "G", "Geodesic curves.", GH_ParamAccess.list);
+            pManager.AddPointParameter("Source points", "SP", "Source points.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Karamba.GHopper.Models.GH_Model ghModel = null;
+            GH_Model ghModel = null;
             Brep shell = null;
-            //List<Curve> corners = new List<Curve>();
-            //List<Curve> edges = new List<Curve>();
             double keystoneWidth = 0;
             double cornerstoneWidth = 0;
             double lengthParam1 = 0;
@@ -62,140 +62,118 @@ namespace ACORN_shells
             if (!DA.GetData(3, ref cornerstoneWidth)) return;
             if (!DA.GetData(4, ref lengthParam1)) return;
             if (!DA.GetData(5, ref lengthParam2)) return;
-            //if (!DA.GetDataList(6, corners)) return;
-            //if (!DA.GetDataList(7, edges)) return;
 
             var model = ghModel.Value;
-
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+            var shellSurf = shell.Surfaces[0];
 
-            // Find centroid of shell
-            var areaMassProp = AreaMassProperties.Compute(shell);
-            var centroid = areaMassProp.Centroid;
+            // --- Find shell apex (in cartesian XYZ space and surface UV space)
+            AreaMassProperties areaMassProp = AreaMassProperties.Compute(shell);
+            Point3d apex = areaMassProp.Centroid;
+            shellSurf.ClosestPoint(apex, out double u, out double v);
+            Point2d apexUV = new Point2d(u, v);
+
+
+            // --- make geodesic lines for locating source points to analyse stress lines at
 
             // extract shell corners and edges
             SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out List<Curve> edges);
 
+            // make geodesic lines, using shortest path from shell apex to midpoints of edges and corners
+            // trim geodesics to accommodate keystone and cornerstones
 
-
-            // Calculate points to analyse stress lines at
-            var edgeMidpoints = edges.Select(e => e.PointAtNormalizedLength(0.5)).ToList();
-            var cornerMidpoints = corners.Select(c => c.PointAtNormalizedLength(0.5)).ToList();
-            var wires = shell.GetWireframe(-1);
-            var wirePoints = new PointCloud(wires.Select(w => w.PointAtNormalizedLength(0.5)));
-            edgeMidpoints = edgeMidpoints.Select(e => wirePoints[wirePoints.ClosestPoint(e)].Location).ToList();
-            cornerMidpoints = cornerMidpoints.Select(c => wirePoints[wirePoints.ClosestPoint(c)].Location).ToList();
-
-            // Use shortest path to get edge generating lines
-            var keystonePoints = new List<Point3d>();
-            var edgeGenLines = new List<Curve>();
-
-            var shellSurf = shell.Surfaces[0];
-            double u, v;
-            shellSurf.ClosestPoint(centroid, out u, out v);
-            var centroidUV = new Point2d(u, v);
-            foreach(var p in edgeMidpoints)
+            List<Curve> edgeGeodesics = new List<Curve>();
+            List<Curve> cornerGeodesics = new List<Curve>();
+            List<Curve> edgeGeodesicsUntrimmed = new List<Curve>(); // to add to circular stress lines set
+ 
+            //foreach (var p in edgeMidpoints)
+            foreach (Curve e in edges)
             {
+                Point3d p = e.PointAtNormalizedLength(0.5);
                 shellSurf.ClosestPoint(p, out u, out v);
-                var pUV = new Point2d(u, v);
-                var line = shellSurf.ShortPath(centroidUV, pUV, fileTol);
-                line = line.Trim(CurveEnd.Start, keystoneWidth / 2 * Math.Sqrt(2));
-                keystonePoints.Add(line.PointAtNormalizedLength(0));
-                edgeGenLines.Add(line);
+                Point2d pUV = new Point2d(u, v);
+                Curve edgeGeodesic = shellSurf.ShortPath(apexUV, pUV, fileTol);
+                edgeGeodesicsUntrimmed.Add(edgeGeodesic);
+                // trim for keystone
+                edgeGeodesic = edgeGeodesic.Trim(CurveEnd.Start, keystoneWidth / 2 * Math.Sqrt(2)); //reduce by keystone half-diagonal (ARC?)
+                edgeGeodesics.Add(edgeGeodesic); // trimmed geodesics used for generating stress surves 2
             }
 
-            // Get keystone polylinecurve to trim corner generating lines
-
-            // because corners are extracted from surface, sort keystonePoints by polar coordinates (rho angle)
-            // detemine shell center for relative polar coordinates of keystone points - move to SHELLScommon
-            Point3d shellCenter = shell.GetBoundingBox(false).Center;
-            List<PointAndAngle> keystonePointsToOrder = new List<PointAndAngle>();
-
-            foreach (Point3d point in keystonePoints)
+            //foreach (var p in cornerMidpoints)
+            foreach (Curve c in corners)
             {
-                // get face center polar coordinate - move to SHELLScommon?
-                Vector3d orientation = new Vector3d(point) - new Vector3d(shellCenter);
-                double angle = Math.Atan2(orientation.Y, orientation.X);
-                //if (angle < 0) angle += Math.PI * 2; // ensures angle always positive, [0, 2Pi] 
-                keystonePointsToOrder.Add(new PointAndAngle { Point = point, Angle = angle });
-            }
-
-            // sort by angle
-            keystonePointsToOrder = keystonePointsToOrder.OrderBy(k => k.Angle).ToList();
-            keystonePoints = keystonePointsToOrder.Select(k => k.Point).ToList();
-
-            keystonePoints.Add(keystonePoints[0]);
-            Curve keystonePoly = new PolylineCurve(keystonePoints);
-            keystonePoly = Curve.ProjectToBrep(keystonePoly, shell, Vector3d.ZAxis, fileTol)[0];
-
-            // Use shortest path to get corner generating lines
-            var cornerGenLines = new List<Curve>();
-            foreach (var p in cornerMidpoints)
-            {
+                Point3d p = c.PointAtNormalizedLength(0.5);
+                // get full geodesic
                 shellSurf.ClosestPoint(p, out u, out v);
-                var pUV = new Point2d(u, v);
-                var line = shellSurf.ShortPath(centroidUV, pUV, fileTol);
-                line = line.Trim(CurveEnd.End, cornerstoneWidth);
-                var intersect = Rhino.Geometry.Intersect.Intersection.CurveCurve(
-                    line, keystonePoly, fileTol, fileTol)[0];
-                var param_trim = intersect.ParameterA;
-                line = line.Trim(intersect.ParameterA, 0);
-                cornerGenLines.Add(line);
+                Point2d pUV = new Point2d(u, v);
+                Curve cornerGeodesic = shellSurf.ShortPath(apexUV, pUV, fileTol);
+                // trim for keystone and cornerstone
+                cornerGeodesic = cornerGeodesic.Trim(CurveEnd.End, cornerstoneWidth); // reduce by cornerstone width (ARC?) 
+                cornerGeodesic = cornerGeodesic.Trim(CurveEnd.Start, keystoneWidth / 2); // reduce by keystone half-width (ARC?)
+                cornerGeodesics.Add(cornerGeodesic);
             }
 
-            // Find source points
-            var stressLineSources1 = new List<Point3d>();
-            var cableLineSources1 = new List<Point3d>();
-            foreach(var l in cornerGenLines)
+
+            // --- Find source points
+            // segment for segmentation layouts, cable for post-tensioning cable sheaves (not being used, but left here just in case)
+            // cable curves in between segment curves (and edges)
+            var segmentSources1 = new List<Point3d>();
+            var cableSources1 = new List<Point3d>();
+            foreach(var l in cornerGeodesics)
             {
                 var length = l.GetLength();
                 int divs = (int)Math.Ceiling(length / lengthParam1);// Want ceil to use as upper bound
-                var stressParams = Enumerable.Range(1, divs).Select(x => x / (double)divs).ToList();
+                var segmentParams = Enumerable.Range(0, divs + 1).Select(x => x / (double)divs).ToList();
+                segmentParams.RemoveAt(0); // remove first source point, on keystone
                 var cableParams = Enumerable.Range(0, divs).Select(x => (x + 0.5) / (double)divs).ToList();
-                stressLineSources1.AddRange(stressParams.Select(t => l.PointAtNormalizedLength(t)));
-                cableLineSources1.AddRange(cableParams.Select(t => l.PointAtNormalizedLength(t)));
+                segmentSources1.AddRange(segmentParams.Select(t => l.PointAtNormalizedLength(t)));
+                cableSources1.AddRange(cableParams.Select(t => l.PointAtNormalizedLength(t)));
             }
 
-            var stressLineSources2 = new List<Point3d>();
-            var cableLineSources2 = new List<Point3d>();
-            foreach (var l in edgeGenLines)
+            var segmentSources2 = new List<Point3d>();
+            var cableSources2 = new List<Point3d>();
+            foreach (var l in edgeGeodesics)
             {
                 var length = l.GetLength();
                 int divs = (int)Math.Ceiling(length / lengthParam2);// Want ceil to use as upper bound
-                var stressParams = Enumerable.Range(0, divs).Select(x => x / (double)divs).ToList();
+                var segmentParams = Enumerable.Range(0, divs + 1).Select(x => x / (double)divs).ToList();                
+                segmentParams.RemoveAt(divs); // remove last source point, on edge - replaced by edge itself
                 var cableParams = Enumerable.Range(0, divs).Select(x => (x + 0.5) / (double)divs).ToList();
-                stressLineSources2.AddRange(stressParams.Select(t => l.PointAtNormalizedLength(t)));
-                cableLineSources2.AddRange(cableParams.Select(t => l.PointAtNormalizedLength(t)));
+                segmentSources2.AddRange(segmentParams.Select(t => l.PointAtNormalizedLength(t)));
+                cableSources2.AddRange(cableParams.Select(t => l.PointAtNormalizedLength(t)));
             }
 
-            // Get stress lines
-            var stressLines1 = PrincipalStressLines(model, stressLineSources1).Item1;
-            var stressLines2 = PrincipalStressLines(model, stressLineSources2).Item2;
-            var cableProfiles1 = PrincipalStressLines(model, cableLineSources1).Item1;
-            var cableProfiles2 = PrincipalStressLines(model, cableLineSources2).Item2;
 
-            // Add line from centroid to edge to tension stress lines set
-            foreach (var p in edgeMidpoints)
-            {
-                shellSurf.ClosestPoint(p, out u, out v);
-                var pUV = new Point2d(u, v);
-                stressLines1.Add(shellSurf.ShortPath(centroidUV, pUV, fileTol));
-            }
+            // --- Get stress lines (uses Karamba API)
+            // Circular stress curves 1 (around supports) contain points in curve from edge midpoints to centroid
+            // Radial stress curves 2 (towards supports) contain points in curve from corner midpoint to centroid
 
-            // Add edges to compression stress lines set
-            foreach (var e in edges)
-            {
-                var pMid = e.PointAtNormalizedLength(0.5);
-                var idx = wirePoints.ClosestPoint(pMid);
-                stressLines2.Add(wires[idx]);
-            }
+            var segmentCurves1 = PrincipalStressLines(model, segmentSources1).Item1;
+            var segmentCurves2 = PrincipalStressLines(model, segmentSources2).Item2;
+            var cableCurves1 = PrincipalStressLines(model, cableSources1).Item1;
+            var cableCurve2 = PrincipalStressLines(model, cableSources2).Item2;
 
-            DA.SetDataList(0, stressLines1);
-            DA.SetDataList(1, stressLines2);
-            DA.SetDataList(2, cableProfiles1);
-            DA.SetDataList(3, cableProfiles2);
-            //DA.SetDataList(4, cornersE);
-            //DA.SetDataList(5, edgesE);
+            // Add apex-edge geodesic to circular stress lines set
+            segmentCurves1.AddRange(edgeGeodesicsUntrimmed);
+
+            // Add edges to radial stress lines set
+            segmentCurves2.AddRange(edges);
+
+
+            DA.SetData(0, shell);
+            DA.SetDataList(1, segmentCurves1);
+            DA.SetDataList(2, segmentCurves2);
+            // cable curves not being used
+            //DA.SetDataList(2, cableCurves1);
+            //DA.SetDataList(3, cableCurve2);
+
+            //TESTING
+            var geodesics = new List<Curve>(cornerGeodesics);
+            geodesics.AddRange(edgeGeodesics);
+            var sources = new List<Point3d>(segmentSources1);
+            sources.AddRange(segmentSources2);
+            DA.SetDataList(3, geodesics);
+            DA.SetDataList(4, sources);
         }
 
         private Tuple<List<Curve>, List<Curve>> PrincipalStressLines(Karamba.Models.Model model, List<Point3d> points)
@@ -247,12 +225,6 @@ namespace ACORN_shells
             }
 
             return Tuple.Create(stressLines1, stressLines2);
-        }
-
-        public class PointAndAngle
-        {
-            public Point3d Point { get; set; }
-            public double Angle { get; set; }
         }
 
         protected override System.Drawing.Bitmap Icon

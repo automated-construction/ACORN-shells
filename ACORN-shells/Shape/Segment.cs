@@ -20,8 +20,8 @@ namespace ACORN_shells
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBrepParameter("Shell", "S", "Shell Brep.", GH_ParamAccess.item);
-            pManager.AddCurveParameter("StressLines1", "SL1", "Stress lines related to tension.", GH_ParamAccess.list);
-            pManager.AddCurveParameter("StressLines2", "SL2", "Stress lines related to compression.", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Stress Lines 1", "SL1", "Stress lines in first principal direction (circular).", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Stress Lines 2", "SL2", "Stress lines in second principal direction (radial).", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -72,14 +72,14 @@ namespace ACORN_shells
                 kvp.Value.Sort();
                 var points = kvp.Value.Select(t => stressLines1[kvp.Key].PointAt(t)).ToList();
                 intersectionPoints.AddRange(points);
-                segmentLines.Add(new PolylineCurve(points));
+                segmentLines.AddRange(Curve.ProjectToBrep(new PolylineCurve(points), shell, Vector3d.ZAxis, fileTol)); ;
             }
 
             foreach (var kvp in points2)
             {
                 kvp.Value.Sort();
                 var points = kvp.Value.Select(t => stressLines2[kvp.Key].PointAt(t)).ToList();
-                segmentLines.Add(new PolylineCurve(points));
+                segmentLines.AddRange(Curve.ProjectToBrep(new PolylineCurve(points), shell, Vector3d.ZAxis, fileTol)); ;
             }
 
             // Make keystone
