@@ -37,8 +37,9 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Medial surface", "M", "Shell medial surface", GH_ParamAccess.list);
             pManager.AddBrepParameter("Bottom surface", "B", "Shell bottom surface (intrados)", GH_ParamAccess.list);
             pManager.AddMeshParameter("Shell meshes", "M", "Shell meshes to calculate thickness per face.", GH_ParamAccess.list);
-            //pManager.AddBooleanParameter("Quick?", "Q", "Quick measuring", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Quick?", "Q", "Quick measuring (only works for smooth surfaces)", GH_ParamAccess.item);
 
+            pManager[4].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -55,13 +56,13 @@ namespace ACORN_shells
             List<Brep> bottomSrfs = new List<Brep>();
             
             List<Mesh> meshes = new List<Mesh>();
-            //bool quick = false; 
+            bool quick = false; 
 
             if (!DA.GetDataList(0, topSrfs)) return;
             if (!DA.GetDataList(1, medialSrfs)) return;
             if (!DA.GetDataList(2, bottomSrfs)) return;
             if (!DA.GetDataList(3, meshes)) return;
-            //if (!DA.GetData(4, ref quick)) return;
+            DA.GetData(4, ref quick);
 
             double tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
@@ -104,13 +105,13 @@ namespace ACORN_shells
                     Point3d topPt = new Point3d();
                     Point3d bottomPt = new Point3d();
 
-                    topPt = topSrf.PointAt(medialU, medialV);
-                    bottomPt = bottomSrf.PointAt(medialU, medialV);
+                    //topPt = topSrf.PointAt(medialU, medialV);
+                    //bottomPt = bottomSrf.PointAt(medialU, medialV);
 
-                    /*
+                    
                     if (quick)
                     {
-                        // projecting points takes a long time, evaluating surfaces instead
+                        // projecting points takes a long time, evaluating surfaces instead - only works on single surfaced breps
                         // since top and bottom surface are constructed by moving control points vertically, 
                         // evaluating points should return vertically aligned points
                         topPt = topSrf.PointAt(medialU, medialV);
@@ -120,11 +121,11 @@ namespace ACORN_shells
                     {
                         // get distances by projecting points vertically onto top and bottom surfaces 
                         topPt = Intersection.ProjectPointsToBreps
-                            (new List<Brep>() { topSrf.ToBrep() }, new List<Point3d>() { medialPt }, Vector3d.ZAxis, tolerance)[0];
+                            (topSrfs, new List<Point3d>() { medialPt }, Vector3d.ZAxis, tolerance)[0];
                         bottomPt = Intersection.ProjectPointsToBreps
-                            (new List<Brep>() { bottomSrf.ToBrep() }, new List<Point3d>() { medialPt }, -Vector3d.ZAxis, tolerance)[0];
+                            (bottomSrfs, new List<Point3d>() { medialPt }, -Vector3d.ZAxis, tolerance)[0];
                     }
-                    */
+                    
 
                     // calculate distance
                     double currThickness = topPt.DistanceTo(bottomPt);

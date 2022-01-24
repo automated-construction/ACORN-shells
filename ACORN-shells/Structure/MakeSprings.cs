@@ -51,11 +51,11 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
             pManager.AddBrepParameter("Offset segments", "OS", "Shell segments (selected is S is True)", GH_ParamAccess.tree);
             pManager.AddPointParameter("Segment spring locations", "SL", "Segment spring locations", GH_ParamAccess.tree);
             pManager.AddPointParameter("Edge spring locations", "EL", "Edge spring locations", GH_ParamAccess.tree); //VIZ
             pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree); //VIZ
-            pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
             //pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
             //pManager.AddGenericParameter("Index Springs", "K", "Spring elements based on node index", GH_ParamAccess.tree);
             //pManager.AddPathParameter("Karamba Spring Start Vertices", "SV", "Karamba Spring Start Vertices", GH_ParamAccess.tree);
@@ -313,11 +313,11 @@ namespace ACORN_shells
                 foreach (BuilderBeam k3dSpring in k3dSpringsIndex.Branch(path))
                     ghSpringsIndex.Add(new GH_Element(k3dSpring));
 
-            DA.SetDataTree(0, offsetSegments);
-            DA.SetDataTree(1, segmentSpringLocations);
-            DA.SetDataTree(2, edgeSpringLocations);
-            DA.SetDataTree(3, edgeSpringLines);
-            DA.SetDataTree(4, ghSprings);
+            DA.SetDataTree(0, ghSprings);
+            DA.SetDataTree(1, offsetSegments);
+            DA.SetDataTree(2, segmentSpringLocations);
+            DA.SetDataTree(3, edgeSpringLocations);
+            DA.SetDataTree(4, edgeSpringLines);
             //DA.SetData(5, gapSize);
             //DA.SetDataTree(6, ghSpringsIndex);
 
