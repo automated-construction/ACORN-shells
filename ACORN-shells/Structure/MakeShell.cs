@@ -50,12 +50,12 @@ namespace ACORN_shells
             pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell [cm].", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.tree);
-            pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
-            pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
+            //pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
+            //pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
 
             pManager[3].Optional = true;
-            pManager[4].Optional = true;
-            pManager[5].Optional = true;
+            //pManager[4].Optional = true;
+            //pManager[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -81,8 +81,8 @@ namespace ACORN_shells
             if (!DA.GetDataTree(1, out inMeshes)) return;
             if (!DA.GetDataTree(2, out inThicknesses)) return;
             DA.GetDataTree(3, out ghMats);
-            DA.GetData(4, ref fixedSupport);
-            DA.GetData(5, ref orientedSupport);
+            //DA.GetData(4, ref fixedSupport);
+            //DA.GetData(5, ref orientedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // for extracting supports
             var logger = new Karamba.Utilities.MessageLogger();
