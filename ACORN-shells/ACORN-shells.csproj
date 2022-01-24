@@ -73,7 +73,7 @@
     <Compile Include="Analysis\ElementStress.cs" />
     <Compile Include="Utilities\FixMesh.cs" />
     <Compile Include="Shape\FormFindMembrane.cs" />
-    <Compile Include="Shape\LineToSpring.cs" />
+    <Compile Include="Structure\LineToSpring.cs" />
     <Compile Include="Utilities\DisassembleSupport.cs" />
     <Compile Include="Structure\LoadPattern.cs" />
     <Compile Include="Shape\PreliminaryModel.cs" />
@@ -85,7 +85,7 @@
     <Compile Include="Shape\VariableThicknessShell.cs" />
     <Compile Include="Structure\MakeShell.cs" />
     <Compile Include="Structure\ShellLoads.cs" />
-    <Compile Include="Shape\MakeSprings.cs" />
+    <Compile Include="Structure\MakeSprings.cs" />
     <Compile Include="Fabrication\SimulatePinbed.cs" />
     <Compile Include="Fabrication\GetAreaEfficiency.cs" />
     <Compile Include="Fabrication\FitModules.cs" />
