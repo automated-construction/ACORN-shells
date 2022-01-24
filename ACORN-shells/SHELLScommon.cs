@@ -38,12 +38,6 @@ namespace ACORN_shells
             return trimmedTree;
         }
 
-        /// <summary>
-        /// Extract corners and edges from shell surface, corners being the 4 shortest boundary edges
-        /// </summary>
-        /// <param name="shell">Shell surface</param>
-        /// <param name="corners">Shell corner curves</param>
-        /// <param name="edges">Shell edge curves</param>
         public static void GetShellEdges(Brep shell, out List<Curve> corners, out List<Curve> edges)
         {
             var shellAllEdges = shell.Edges;
@@ -55,7 +49,23 @@ namespace ACORN_shells
             int numAllEdges = sortedAllEdges.Count;
             for (int i = 0; i < numAllEdges / 2; i++) corners.Add(sortedAllEdges[i].EdgeCurve); // equivalent to GetRange(0,halfEdgeCount)
             for (int i = numAllEdges / 2; i < numAllEdges; i++) edges.Add(sortedAllEdges[i].EdgeCurve);
+        }
+        public static void GetShellEdgesZ(Brep shell, out List<Curve> corners, out List<Curve> edges)
+        {
+            var shellAllEdges = shell.Edges;
+            // sort edges by height
+            List<BrepEdge> sortedAllEdges = shellAllEdges.OrderBy(s => s.PointAtNormalizedLength(0.5).Z).ToList();
 
+            // get X lowest edges
+            int cornerCount = 4;
+            List<BrepEdge> sortedCornerEdges = sortedAllEdges.GetRange(0, cornerCount);
+            List<BrepEdge> sortedEdgeEdges = sortedAllEdges.GetRange(cornerCount, sortedAllEdges.Count - cornerCount);
+
+            // convert Brep edges to curves
+            corners = new List<Curve>();
+            edges = new List<Curve>();
+            foreach (BrepEdge e in sortedCornerEdges) corners.Add(e.EdgeCurve);
+            foreach (BrepEdge e in sortedEdgeEdges) edges.Add(e.EdgeCurve);
         }
     }
 }

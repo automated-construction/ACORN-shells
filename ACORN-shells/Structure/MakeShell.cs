@@ -269,7 +269,7 @@ namespace ACORN_shells
             GH_Structure<GH_Support> ghSupports = new GH_Structure<GH_Support>();
 
             // extract shell corners
-            SHELLScommon.GetShellEdges(shell, out List<Curve> corners, out _); // discarding shell edges
+            SHELLScommon.GetShellEdgesZ(shell, out List<Curve> corners, out _); // discarding shell edges
 
 
             // custom tolerance for finding support points // could be out of the loop

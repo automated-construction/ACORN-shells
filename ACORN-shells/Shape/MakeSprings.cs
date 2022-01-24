@@ -39,12 +39,14 @@ namespace ACORN_shells
         {
             pManager.AddBrepParameter("Shell segments", "SS", "Shell segments", GH_ParamAccess.list);
             //pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs (optional, default in every mesh vertex on interface)", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs)", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Gap size", "G", "Distance between segments (optional, for visualisation)", GH_ParamAccess.item);
+            //pManager.AddNumberParameter("Spring distance", "D", "Target distance between springs", GH_ParamAccess.item);
+            //pManager.AddNumberParameter("Gap size", "G", "Distance between segments (optional, for visualisation)", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Mesh resolution", "MRes", "Target mesh size [m]", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Edge refinement factor", "ERef", "Resolution refinement at Brep edges", GH_ParamAccess.item);
             pManager.AddGenericParameter("Springs Cross Section", "CS", "Karamba spring cross section", GH_ParamAccess.item);
 
             //pManager[1].Optional = true;
-            pManager[2].Optional = true;
+            //pManager[2].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -54,7 +56,7 @@ namespace ACORN_shells
             pManager.AddPointParameter("Edge spring locations", "EL", "Edge spring locations", GH_ParamAccess.tree); //VIZ
             pManager.AddLineParameter("Spring lines", "L", "Pin axes", GH_ParamAccess.tree); //VIZ
             pManager.AddGenericParameter("Karamba Springs", "K", "Spring elements for Karamba", GH_ParamAccess.tree);
-            pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
+            //pManager.AddNumberParameter("Gap size", "G", "Distance between segments", GH_ParamAccess.item);
             //pManager.AddGenericParameter("Index Springs", "K", "Spring elements based on node index", GH_ParamAccess.tree);
             //pManager.AddPathParameter("Karamba Spring Start Vertices", "SV", "Karamba Spring Start Vertices", GH_ParamAccess.tree);
             //pManager.AddPathParameter("Karamba Spring End Vertices", "EV", "Karamba Spring End Vertices", GH_ParamAccess.tree);
@@ -65,19 +67,20 @@ namespace ACORN_shells
             double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; //smaller tollerance works!
 
             List<Brep> segments = new List<Brep>();
-            double approxSpringDist = double.NaN;
-            double gapSize = 0.005; // optional, for viz
-            GH_CrossSection ghSection = null;
-            
+            double mRes = 1;
+            double eRef = 1;
+            GH_CrossSection ghSection = null;          
 
             if (!DA.GetDataList<Brep>(0, segments)) return;
-            if (!DA.GetData(1, ref approxSpringDist)) return;
-            DA.GetData(2, ref gapSize);
+            if (!DA.GetData(1, ref mRes)) return;
+            if (!DA.GetData(2, ref eRef)) return;
             if (!DA.GetData(3, ref ghSection)) return;
 
             var logger = new Karamba.Utilities.MessageLogger();
             var k3dKit = new KarambaCommon.Toolkit(); // for Builders
 
+            double approxSpringDist = mRes * eRef * 1.1;
+            double gapSize = 0.002;
 
             CroSec_Spring k3dSection = (CroSec_Spring) ghSection.Value;
 
@@ -315,7 +318,7 @@ namespace ACORN_shells
             DA.SetDataTree(2, edgeSpringLocations);
             DA.SetDataTree(3, edgeSpringLines);
             DA.SetDataTree(4, ghSprings);
-            DA.SetData(5, gapSize);
+            //DA.SetData(5, gapSize);
             //DA.SetDataTree(6, ghSpringsIndex);
 
             //DA.SetDataTree(6, k3dSpringsStartPaths);
