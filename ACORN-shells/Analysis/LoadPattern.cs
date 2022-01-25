@@ -20,8 +20,8 @@ namespace ACORN_shells
     {
         public LoadPattern()
           : base("Load Pattern", "LoadPattern",
-              "Create asymmetric load pattern for buulding use simulation",
-              "ACORN Shells", "  Structure")
+              "Create asymmetric load pattern for building use simulation",
+              "ACORN Shells", " Analysis")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
@@ -31,7 +31,7 @@ namespace ACORN_shells
             pManager.AddMeshParameter("Shell mesh", "SM", "Meshed shell.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Arc", "A", "Arc", GH_ParamAccess.item);
             pManager.AddNumberParameter("Offset", "O", "Offset", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Predefined", "D", "Predefined pattern (optional)", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Predefined", "D", "Predefined pattern (optional, overrides Arc and Offset)", GH_ParamAccess.item);
 
             pManager[3].Optional = true;
         }
@@ -156,6 +156,10 @@ namespace ACORN_shells
         public override Guid ComponentGuid
         {
             get { return new Guid("fe8a728b-4aba-430f-a614-e9b2ef20cf4f"); }
+        }
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.primary; }
         }
 
         public bool AngleInPattern(double angle, Tuple<double, double> loadPatternTuple)

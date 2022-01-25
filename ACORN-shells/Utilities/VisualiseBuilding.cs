@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Rhino;
 using Rhino.Collections;
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 using Rhino.Geometry.Intersect;
 
 using Grasshopper;
@@ -31,14 +32,16 @@ namespace ACORN
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("BayGeometry", "BG", "Bay geometry", GH_ParamAccess.item);
-            pManager.AddBrepParameter("Segments", "S", "Segment surfaces", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Thickness", "T", "Shell thickness", GH_ParamAccess.item);
+            pManager.AddBrepParameter("Top segments", "tS", "Top segment surfaces", GH_ParamAccess.list);
+            pManager.AddBrepParameter("Bottom segments", "bS", "Bottom segment surfaces", GH_ParamAccess.list);
+            //pManager.AddNumberParameter("Thickness", "T", "Shell thickness", GH_ParamAccess.item);
             pManager.AddNumberParameter("CornerRadius", "CR", "Corner radius", GH_ParamAccess.item);
+            pManager.AddNumberParameter("TieRodRadius", "TR", "Tie rod radius", GH_ParamAccess.item);
             pManager.AddNumberParameter("ColumnHeight", "CH", "Column height", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("FilletEdges", "FE", "Fillet edges for visualisation purposes. Computationally intensive, allow 20 seconds to calculate", GH_ParamAccess.item);
-            pManager.AddNumberParameter("TieRodRadius", "TR", "Tie rod radius. Optional, default is thickness/2", GH_ParamAccess.item);
             pManager.AddIntegerParameter("NrSpacers", "NS", "Number of spacers. Optional, default is 10", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("FilletEdges", "FE", "Fillet edges for visualisation purposes (computationally intensive). Optional", GH_ParamAccess.item);
 
+            pManager[4].Optional = true;
             pManager[6].Optional = true;
             pManager[7].Optional = true;
         }
@@ -51,31 +54,33 @@ namespace ACORN
             pManager.AddBrepParameter("Columns", "C", "Columns", GH_ParamAccess.list);
             pManager.AddBrepParameter("ColumnHeads", "CH", "Column heads", GH_ParamAccess.list);
             pManager.AddBrepParameter("TieRods", "TR", "Tie rods", GH_ParamAccess.item);
-            pManager.AddBrepParameter("Braces", "B", "Braces", GH_ParamAccess.tree);
+            //pManager.AddBrepParameter("Braces", "B", "Braces", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Curve bayGeometryInput = null;
-            List<Brep> segments = new List<Brep>();
-            double thickness = 0;
+            List<Brep> topSegments = new List<Brep>();
+            List<Brep> bottomSegments = new List<Brep>();
+            //double thickness = 0;
             double cornerRadius = 0;
-            double columnHeight = 0;
-            bool filletEdges = false;
             double tieRodRadius = 0;
+            double columnHeight = 0;
             int nrPts = 10;
+            bool filletEdges = false;
 
             if (!DA.GetData(0, ref bayGeometryInput)) return;
-            if (!DA.GetDataList(1, segments)) return;
-            if (!DA.GetData(2, ref thickness)) return;
+            if (!DA.GetDataList(1, topSegments)) return;
+            if (!DA.GetDataList(2, bottomSegments)) return;
+            //if (!DA.GetData(2, ref thickness)) return;
             if (!DA.GetData(3, ref cornerRadius)) return;
-            if (!DA.GetData(4, ref columnHeight)) return;
-            if (!DA.GetData(5, ref filletEdges)) return;
-            DA.GetData(6, ref tieRodRadius);
-            DA.GetData(7, ref nrPts);
+            if (!DA.GetData(4, ref tieRodRadius)) return;
+            if (!DA.GetData(5, ref columnHeight)) return;
+            DA.GetData(6, ref nrPts);
+            DA.GetData(7, ref filletEdges);
 
             // sets default tieRodRadius
-            if (tieRodRadius == 0) tieRodRadius = thickness / 2;
+            //if (tieRodRadius == 0) tieRodRadius = thickness / 4;
 
             double tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             PolylineCurve bayPolylineCurve = (PolylineCurve) bayGeometryInput;
@@ -85,17 +90,31 @@ namespace ACORN
 
             //bool filletEdges = false;
 
-            double filletRadius = 0.02; // make input? // depend on thickness
-            if (filletRadius > thickness / 3) filletRadius = thickness / 3; // ensure radius is smaller then thickness
+            double filletRadius = 0.01; // make input? // depend on thickness
+            //if (filletRadius > thickness / 3) filletRadius = thickness / 3; // ensure radius is smaller then thickness
 
-            Curve path = new Line(Point3d.Origin, Vector3d.ZAxis, thickness).ToNurbsCurve();
+            //Curve path = new Line(Point3d.Origin, Vector3d.ZAxis, thickness).ToNurbsCurve();
 
             List<Brep> thickSegments = new List<Brep>();
-            foreach (Brep segment in segments)
+            for (int s = 0; s < topSegments.Count; s++)
+            //foreach (Brep segment in topSegments)
             {
-                // add thickness upwards
+                // add thickness by lofting the two segments
+                Brep topSegment = topSegments[s];
+                List<NurbsCurve> topOutline = topSegment.Edges.Select(e => e.ToNurbsCurve()).ToList();
+                NurbsCurve joinedTopOutline = Curve.JoinCurves(topOutline)[0].ToNurbsCurve();
 
-                Brep thickSegment = segment.Faces[0].CreateExtrusion(path, true);
+                Brep bottomSegment = bottomSegments[s];
+                List<NurbsCurve> bottomOutline = bottomSegment.Edges.Select(e => e.ToNurbsCurve()).ToList();
+                NurbsCurve joinedBottomOutline = Curve.JoinCurves(bottomOutline)[0].ToNurbsCurve();
+                
+                Brep segmentWall = Brep.CreateFromLoft(
+                    new List<Curve> { joinedTopOutline, joinedBottomOutline }, 
+                    Point3d.Unset, Point3d.Unset, LoftType.Straight, false)[0];
+
+                Brep thickSegment = Brep.JoinBreps(
+                    new List<Brep> { topSegment, bottomSegment, segmentWall}, tol)[0];
+                //Brep thickSegment = segment.Faces[0].CreateExtrusion(path, true);
 
                 if (filletEdges)
                 {
@@ -129,16 +148,21 @@ namespace ACORN
                 thickSegments.Add(thickSegment);
             }
 
-            // -------------- flat floor -------------- //
-
-            // extract original surface by untrimming one segment
-            Brep singleSegment = segments[0];
-            Surface shell = singleSegment.Faces[0].UnderlyingSurface();
-
             // get bounding box from segments
             BoundingBox segmentsUnionBox = new BoundingBox();
             foreach (var segment in thickSegments)
                 segmentsUnionBox = BoundingBox.Union(segmentsUnionBox, segment.GetBoundingBox(false));
+            
+            
+            // -------------- flat floor -------------- //
+
+            // extract original surface by untrimming one segment
+            Brep singleSegment = topSegments[0];
+            Surface shell = singleSegment.Faces[0].UnderlyingSurface();
+            double floorThickness = 0.02;
+            Curve path = new Line(Point3d.Origin, Vector3d.ZAxis, floorThickness).ToNurbsCurve();
+
+
 
             // get topmost point (?)
             Point3d apex = segmentsUnionBox.PointAt(0.5, 0.5, 1.0);
@@ -154,6 +178,7 @@ namespace ACORN
 
             // make floorSpacers
             //List<Point3d> floorPts = new List<Point3d>();
+            double spacerRadius = 0.01;
             List<Brep> spacers = new List<Brep>();
             double ptDist = (double)1 / nrPts;
 
@@ -178,8 +203,8 @@ namespace ACORN
                             Line axis = new Line(projPt, pt);
 
                             Brep spacer = Brep.CreatePipe(
-                              axis.ToNurbsCurve(), thickness / 2, false, PipeCapMode.None, false, tol, tol)[0];
-                            spacer.Translate(new Vector3d(0, 0, thickness / 2));
+                              axis.ToNurbsCurve(), spacerRadius, false, PipeCapMode.None, false, tol, tol)[0];
+                            spacer.Translate(new Vector3d(0, 0, spacerRadius));
                             spacers.Add(spacer);
                         }
                     }
@@ -187,8 +212,8 @@ namespace ACORN
 
             // ------------ make columns --------------- //
             //double columnHeight = 3;
-            double columnHeadHeight = cornerRadius * 1.5;
-            double columnRadius = cornerRadius / 2;
+            double columnHeadHeight = cornerRadius/2;
+            double columnRadius = cornerRadius / 4;
             List<Brep> columns = new List<Brep>();
             List<Brep> columnHeads = new List<Brep>();
             Point3dList corners = bayGeometry;
@@ -202,7 +227,8 @@ namespace ACORN
 
 
                 Curve topColumnHead = new Circle(corner, cornerRadius).ToNurbsCurve();
-                Curve bottomColumnHead = new Circle(corner, columnRadius).ToNurbsCurve();
+                Curve bottomColumnHead = new Circle(corner, cornerRadius).ToNurbsCurve();
+                //Curve bottomColumnHead = new Circle(corner, columnRadius).ToNurbsCurve();
                 bottomColumnHead.Translate(new Vector3d(0, 0, -columnHeadHeight));
                 Brep columnHead = Brep.CreateFromLoft(
                   new List<Curve> { bottomColumnHead, topColumnHead },
@@ -213,13 +239,13 @@ namespace ACORN
 
             // missing: translate all up; add tierods
 
-            double freeHeight = columnHeight - shellHeight - thickness;
+            double freeHeight = columnHeight - shellHeight;
 
 
             // ------- make Tierods ----------- //
-
+            double tieRodLow = columnHeadHeight / 2;
             PolylineCurve tierodCurve = (PolylineCurve)bayCurve.Duplicate();
-            tierodCurve.Translate(new Vector3d(0, 0, -thickness));
+            tierodCurve.Translate(new Vector3d(0, 0, -tieRodLow));
             Brep tierods = Brep.CreatePipe(tierodCurve, tieRodRadius, false, PipeCapMode.None, false, tol, tol)[0];
 
             // ------- make X braces ---------- //
@@ -269,7 +295,7 @@ namespace ACORN
             DA.SetDataList(3, columns);
             DA.SetDataList(4, columnHeads);
             DA.SetData(5, tierods);
-            DA.SetDataTree(6, braceRods);
+            //DA.SetDataTree(6, braceRods);
         }
 
         public override GH_Exposure Exposure

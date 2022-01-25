@@ -36,7 +36,7 @@ namespace ACORN_shells
         public ShellLoads()
           : base("Shell Loads", "ShellLoads",
               "Create loads for Karamba FEA.",
-              "ACORN Shells", "  Structure")
+              "ACORN Shells", " Analysis")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
         }
@@ -47,10 +47,10 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Dead Load value", "DLV", "Dead Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddNumberParameter("Live Load value", "LLV", "Live Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddGenericParameter("Live Load pattern", "LLP", "Load pattern.", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Area adjustment factors", "AAF", "Area adjustment factors for testing gap", GH_ParamAccess.list); //TEST for area adjustements
+            //pManager.AddNumberParameter("Area adjustment factors", "AAF", "Area adjustment factors for testing gap", GH_ParamAccess.list); //TEST for area adjustements
 
 
-            pManager[4].Optional = true;
+            //pManager[4].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -72,7 +72,7 @@ namespace ACORN_shells
             if (!DA.GetData(1, ref deadLoadValue)) return;
             if (!DA.GetData(2, ref liveLoadValue)) return;
             if (!DA.GetDataList(3, loadPatterns)) return;
-            DA.GetDataList(4, areaFactors); //TEST for area adjustements
+            //DA.GetDataList(4, areaFactors); //TEST for area adjustements
 
             // Create Karamba loads
             List<Load> k3dLoads = new List<Karamba.Loads.Load>();
@@ -207,6 +207,12 @@ namespace ACORN_shells
         {
             get { return new Guid("4e59b772-fbd4-4253-9d1b-c4c4b5b841af"); }
         }
+
+        public override GH_Exposure Exposure
+        {
+            get { return GH_Exposure.primary; }
+        }
+
 
         public bool AngleInPattern(double angle, Tuple<double, double> loadPatternTuple)
         {

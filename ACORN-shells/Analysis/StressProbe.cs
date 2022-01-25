@@ -105,7 +105,7 @@ namespace ACORN_shells
 
         public override GH_Exposure Exposure
         {
-            get { return GH_Exposure.primary; }
+            get { return GH_Exposure.tertiary; }
         }
 
         protected override System.Drawing.Bitmap Icon

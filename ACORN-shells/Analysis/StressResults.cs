@@ -23,7 +23,7 @@ namespace ACORN_shells
     {
         public StressResults()
           : base("Stress Results", "StressResults",
-              "Gets principal stress results for whole shell",
+              "Gets stress results from shell analysis",
               "ACORN Shells", " Analysis")
         // adding spaces to category names as per https://www.grasshopper3d.com/forum/topics/change-order-of-plugin-sub-category-c 
         {
@@ -59,76 +59,27 @@ namespace ACORN_shells
             // convert GH_Model to Model
             Model k3dModelAnalysis = ghModelAnalysis.Value;
 
-            //------------ STRESSES
+            List<ElementStress> elementStresses = ElementStress.GetElementStresses(k3dModelAnalysis, out List<Mesh> rhMeshes);
 
-            // extract original shell mesh from k3dModel
-            List<IMesh> k3dMeshes = new List<IMesh>();
-            k3dModelAnalysis.Disassemble(out _, out _, out k3dMeshes, out _, out _, out _, out _, out _, out _, out _, out _);
-            // for segmented shell analysis, needs to cope with multipe meshes
-            List<Mesh> rhMeshes = new List<Mesh>();
-            foreach (IMesh k3dMesh in k3dMeshes) rhMeshes.Add(k3dMesh.Convert());
+            //sort all elements for Compression by looking at minimum stress value
+            List<ElementStress> sortedForCompression = elementStresses.OrderBy(s => s.CalculateMaximumCompression()).ToList();
+            List<ElementStress> sortedForTension = elementStresses.OrderByDescending(s => s.CalculateMaximumTension()).ToList();
 
-            // get first and second principal stress values for all elements, top and bottom layers
-            var superimp_factors = new feb.VectReal { 1 }; // according to https://discourse.mcneel.com/t/shell-principal-stresses-in-karamba-api/120629
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, -1, superimp_factors, out _, out _, out _,
-                out List<double> bottomPS1s, out List<double> bottomPS2s);
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, 1, superimp_factors, out _, out _, out _,
-                out List<double> topPS1s, out List<double> topPS2s);
-
-            // merge all stresses - create stressValue lists before? yes if we need them separately
-            List<List<double>> PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
-            List<double> allPSs = PSlists.SelectMany(e => e).ToList();
-
-            // create list of stressValue objects, pairing stress values and element indexes,  to sort "asynchronously" as in GH sort component
-            List<StressValue> stressValues = new List<StressValue>();
-            //List<ElementStress> stressValues = new List<ElementStress>();
-
-            // determine which mesh it belongs to through list partition, and which face in that mesh
-            foreach (List<double> PSlist in PSlists) { 
-                int meshIndex = 0;
-                int faceIndex = 0;
-                for (int elementIndex = 0; elementIndex < PSlist.Count; elementIndex++) {
-                    // element count is for ALL meshes, face count is for belonging mesh
-
-                    // creates instance of ElementStress 
-                    stressValues.Add(new StressValue { 
-                        Value = PSlist[elementIndex], 
-                        Element = elementIndex, 
-                        Mesh = meshIndex, 
-                        Face = faceIndex});
-
-                    // manage counts
-                    if (faceIndex < rhMeshes[meshIndex].Faces.Count-1)
-                        faceIndex++;
-                    else // reached the end of iterating all mesh's faces so next mesh
-                    {
-                        meshIndex++;
-                        faceIndex = 0;
-                    }
-                }
-            }
-            
-            // sort StressValues by value, from negative (compression) to positive (tension)
-            List<StressValue> sortedForCompression = stressValues.OrderBy(s => s.Value).ToList();
-            List<StressValue> sortedForTension = new List<StressValue>(sortedForCompression);
-            sortedForTension.Reverse();
-           
             // extract number of extreme elements based on input percentile
-            int countExtremeElements = (int) Math.Round (sortedForCompression.Count * (100 - percentile) / 100); // dividing by 4 lists merged together (not elegant, see comment for merge all stresses)            
-            List<StressValue> extremeElementsCompression = sortedForCompression.GetRange(0, countExtremeElements);
-            List<StressValue> extremeElementsTension = sortedForTension.GetRange(0, countExtremeElements);
+            int countExtremeElements = (int) Math.Round (elementStresses.Count * (100 - percentile) / 100);
 
             // get values for output, converted from kN/cm2 to MPa
-            double maxComp = extremeElementsCompression.First().Value * 10;
-            double maxCompP = extremeElementsCompression.Last().Value * 10;
-            double maxTens = extremeElementsTension.First().Value * 10;
-            double maxTensP = extremeElementsTension.Last().Value * 10;
-
+            double maxComp = sortedForCompression[0].CalculateMaximumCompression() * 10;
+            double maxCompP = sortedForCompression[countExtremeElements].CalculateMaximumCompression() * 10;
+            double maxTens = sortedForTension[0].CalculateMaximumTension() * 10;
+            double maxTensP = sortedForTension[countExtremeElements].CalculateMaximumTension() * 10;
 
             // generate meshes with extreme stress elements
             // for visualisation purposes, even if analysing multiple meshes (eg, segmented shell)
-            List<Mesh> meshesComp = MakeExtremeMeshes(rhMeshes, extremeElementsCompression);
-            List<Mesh> meshesTens = MakeExtremeMeshes(rhMeshes, extremeElementsTension);
+            List<ElementStress> extremeElementsCompression = sortedForCompression.GetRange(0, countExtremeElements);
+            List<ElementStress> extremeElementsTension = sortedForTension.GetRange(0, countExtremeElements);
+            List<Mesh> meshesComp = ElementStress.MakeExtremeMeshes(rhMeshes, extremeElementsCompression);
+            List<Mesh> meshesTens = ElementStress.MakeExtremeMeshes(rhMeshes, extremeElementsTension);
 
             DA.SetData(0, maxComp);
             DA.SetData(1, maxCompP);
@@ -142,7 +93,7 @@ namespace ACORN_shells
 
         public override GH_Exposure Exposure
         {
-            get { return GH_Exposure.primary; }
+            get { return GH_Exposure.tertiary; }
         }
 
         protected override System.Drawing.Bitmap Icon
@@ -150,55 +101,13 @@ namespace ACORN_shells
             get
             {
                 // You can add image files to your project resources and access them like this:
-                return ACORN_shells.Properties.Resources.stressResOLD;
+                return ACORN_shells.Properties.Resources.stressRes;
             }
         }
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("8eaddef5-3ab9-4e5a-bd1d-6ae4645cdac0"); }
-        }
-        /// <summary>
-        /// Creates meshes with the elements top % stress values
-        /// Support and outputs multiple meshes
-        /// </summary>
-        /// <param name="origMeshes"></param>
-        /// <param name="SVs"></param>
-        /// <returns></returns>
-        private List<Mesh> MakeExtremeMeshes (List<Mesh> origMeshes, List<StressValue> SVs)
-        {
-            List<Mesh> extMeshes = new List<Mesh>();
-
-            // copy vertices from original mesh(es) to extreme mesh
-            foreach (Mesh rhMesh in origMeshes)
-            {
-                Mesh meshTens = new Mesh();
-                meshTens.Vertices.AddVertices(rhMesh.Vertices);
-                extMeshes.Add(meshTens);
-            }
-
-            // copy top valued element faces from original mesh to extreme mesh
-            foreach (StressValue sv in SVs)
-                //meshComp.Faces.AddFace(rhMesh.Faces[sv.Element]);
-                extMeshes[sv.Mesh].Faces.AddFace(origMeshes[sv.Mesh].Faces[sv.Face]);
-
-            // finish off
-            foreach (Mesh extMesh in extMeshes)
-            {
-                extMesh.Normals.ComputeNormals();
-                extMesh.Compact();
-            }
-
-            return extMeshes;
-        }
-
-        class StressValue
-        {
-            public double Value { get; set; }
-            public int Element { get; set; }
-            public int Mesh { get; set; } // mesh to which element belongs - support for multiple meshes
-            public int Face { get; set; } // face index in Mesh
-
+            get { return new Guid("37196fa0-d39d-42cb-bb5e-245f880583e8"); }
         }
     }
 }

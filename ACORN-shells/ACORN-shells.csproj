@@ -69,23 +69,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
-    <Compile Include="Analysis\StressResultsNEW.cs" />
+    <Compile Include="Analysis\StressResults.cs" />
     <Compile Include="Analysis\ElementStress.cs" />
     <Compile Include="Structure\SpringCS.cs" />
     <Compile Include="Utilities\FixMesh.cs" />
     <Compile Include="Shape\FormFindMembrane.cs" />
     <Compile Include="Structure\LineToSpring.cs" />
     <Compile Include="Utilities\DisassembleSupport.cs" />
-    <Compile Include="Structure\LoadPattern.cs" />
+    <Compile Include="Analysis\LoadPattern.cs" />
     <Compile Include="Shape\PreliminaryModel.cs" />
     <Compile Include="Analysis\StressProbe.cs" />
-    <Compile Include="Analysis\StressResults.cs" />
-    <Compile Include="Analysis\AnalysisResultsFinal.cs" />
-    <Compile Include="Analysis\AnalysisResultsExternal.cs" />
+    <None Include="Analysis\StressResultsOLD.cs" />
+    <Compile Include="Analysis\AnalysisResults.cs" />
+    <None Include="Analysis\AnalysisResultsExternal.cs" />
     <Compile Include="Structure\VariableThicknessMesh.cs" />
     <Compile Include="Shape\VariableThicknessShell.cs" />
     <Compile Include="Structure\MakeShell.cs" />
-    <Compile Include="Structure\ShellLoads.cs" />
+    <Compile Include="Analysis\ShellLoads.cs" />
     <Compile Include="Structure\MakeSprings.cs" />
     <Compile Include="Fabrication\SimulatePinbed.cs" />
     <Compile Include="Fabrication\GetAreaEfficiency.cs" />
@@ -101,7 +101,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Analysis\AnalysisResults.cs" />
+    <None Include="Analysis\AnalysisResultsOLD.cs" />
     <Compile Include="Utilities\VisualiseBuilding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

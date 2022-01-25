@@ -34,11 +34,11 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Shell segments", "SS", "Shell segments", GH_ParamAccess.tree);
             pManager.AddRectangleParameter("Modules", "M", "Rectangles corresponding to modules", GH_ParamAccess.tree);
             pManager.AddBooleanParameter("Variable height", "VH", "Enables variable module height within same segment. Optional, default is false", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Selected segments", "S", "Operate on selected segments [optional, for testing; if no input, computes all segments]", GH_ParamAccess.list);
             pManager.AddNumberParameter("Maximum pin length", "ML", "Maximum pin length", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Selected segments", "S", "Operate on selected segments [optional, for testing; if no input, computes all segments]", GH_ParamAccess.list);
 
-            pManager[2].Optional = true;
-            pManager[3].Optional = true;
+            //pManager[2].Optional = true;
+            pManager[4].Optional = true;
 
         }
 
@@ -50,7 +50,7 @@ namespace ACORN_shells
             pManager.AddBoxParameter("Boxes", "B", "Boxes", GH_ParamAccess.tree); // test
             pManager.AddLineParameter("Pin axes", "PA", "Pin axes", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Pin heights", "PH", "Pin heights", GH_ParamAccess.tree);
-            pManager.AddColourParameter("Pin colors", "PC", "Pin colors relative to heights", GH_ParamAccess.tree);
+            pManager.AddColourParameter("Pin colors", "PC", "Pin colors relative to heights (red means above max height)", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -59,15 +59,15 @@ namespace ACORN_shells
             GH_Structure<GH_Brep> ghSegmentTree = new GH_Structure<GH_Brep>();
             GH_Structure<GH_Rectangle> ghModuleTree = new GH_Structure<GH_Rectangle>();
             bool variableHeights = false;
-            List<int> selectedSegmentIndexes = new List<int>();
             double maxPinLength = 0;
+            List<int> selectedSegmentIndexes = new List<int>();
 
             //if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetDataTree<GH_Brep>(0, out ghSegmentTree)) return;
             if (!DA.GetDataTree<GH_Rectangle>(1, out ghModuleTree)) return;
-            DA.GetData(2, ref variableHeights);
-            DA.GetDataList(3, selectedSegmentIndexes);
-            if (!DA.GetData(4, ref maxPinLength)) return;
+            if (!DA.GetData(2, ref variableHeights)) return;
+            if (!DA.GetData(3, ref maxPinLength)) return;
+            DA.GetDataList(4, selectedSegmentIndexes);
 
 
 
