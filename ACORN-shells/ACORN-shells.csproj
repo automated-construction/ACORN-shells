@@ -72,6 +72,7 @@
     <Compile Include="Analysis\StressResults.cs" />
     <Compile Include="Analysis\ElementStress.cs" />
     <Compile Include="Structure\SpringCS.cs" />
+    <Compile Include="Utilities\DisassemblePointLoad.cs" />
     <Compile Include="Utilities\FixMesh.cs" />
     <Compile Include="Shape\FormFindMembrane.cs" />
     <Compile Include="Structure\LineToSpring.cs" />
@@ -129,6 +130,7 @@
     <None Include="Resources\fitModule.png" />
     <None Include="Resources\analysisRes.png" />
     <None Include="Resources\analysisResOLD.png" />
+    <None Include="Resources\disLoad.png" />
     <Content Include="Resources\formfind.png" />
     <None Include="Resources\lineSpring.png" />
     <None Include="Resources\loadPatt.png" />

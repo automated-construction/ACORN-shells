@@ -103,6 +103,16 @@ namespace ACORN_shells.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap disLoad {
+            get {
+                object obj = ResourceManager.GetObject("disLoad", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap disSupp {
             get {
                 object obj = ResourceManager.GetObject("disSupp", resourceCulture);
