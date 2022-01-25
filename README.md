@@ -1,39 +1,33 @@
 # ACORN-shells
 
-ACORN: Automating COncrete constRuctioN (https://automated.construction/)
+Design and optimisation of thin shells for building slabs\
+ACORN: Automating Concrete Construction (https://automated.construction/)
 
-Design and optimisation of thin shells for building slabs
+**WORK IN PROGRESS** The code in this repository is still under development.
 
-**WORK IN PROGRESS** The code in this repository is still under development. Find below a visual for development road map (orange is under development).
-
-![roadmap_210322](https://user-images.githubusercontent.com/5091001/111985154-2c0b4c00-8b04-11eb-95d8-29b294e862fb.jpg)
+***
 
 **Installing and using the plugin**
 
-Copy plugin file above (ACORN-shells.gha) to the Grasshopper plugins folder.
-
-Open the plugins folder: open Grasshopper, go to File > Special Folders > Components Folder. Typically in C:\Users\{username}\AppData\Roaming\Grasshopper\Libraries
-
-Unblock plugin: right-click plugin file, select Properties > click Unblock.
+* Open the plugins folder: open Grasshopper, go to File > Special Folders > Components Folder. Typically in ```%AppData%\Grasshopper\Libraries```
+* Download plugin file above (ACORN-shells.gha) and copy it to the Grasshopper plugins folder
+* Unblock plugin: right-click plugin file, select Properties > click Unblock
 
 Restart Rhino.
 
-**File structure**
+**Example files**
 
-After installing the plugin, you should be able to run example files that can be found in the Examples folder.
+After installing the plugin, you should be able to run the files in the Examples folder.
 
-Files with prefix WIP in examples folder are ongoing experiments.
+**Dependencies** Plugins need to be installed
+* Karamba3D [1.3.3]: https://www.karamba3d.com/ (ACORN-Shells needs a licensed version of Karamba)
+* Kiwi!3D [BETA 0.5.0]: https://www.kiwi3d.com/
 
-**Publications**
-
-* 
-
-**Dependencies**
+**Referenced libraries**
 
 * RhinoCommon: https://developer.rhino3d.com/6/guides/rhinocommon/
-* Karamba3D [1.3.3]: https://www.karamba3d.com/
-* Kiwi!3D [BETA 0.5.0]: https://www.kiwi3d.com/
+* Grasshopper API: https://developer.rhino3d.com/api/grasshopper
 
 **Contact**
 
-Eduardo Costa - ec977@bath.ac.uk
+Eduardo Costa - ec977@bath.ac.uk - https://github.com/castroecosta
