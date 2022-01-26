@@ -40,9 +40,13 @@ namespace ACORN_shells
             GH_Load ghLoad = new GH_Load();
             if (!DA.GetData(0, ref ghLoad)) return;
 
-            PointLoad k3dLoad = (PointLoad) ghLoad.Value; // should check if it is point load
-            Point3d position = k3dLoad.position.Convert();
-            int index = k3dLoad.node_ind;
+            Load k3dLoad = ghLoad.Value;
+            //if not pointload, return - should throw exception
+            if (!k3dLoad.GetType().Equals(typeof(PointLoad))) return;
+
+            PointLoad k3dPointLoad = (PointLoad) k3dLoad;
+            Point3d position = k3dPointLoad.position.Convert();
+            int index = k3dPointLoad.node_ind;
 
             DA.SetData(0, position);
             DA.SetData(1, index);
