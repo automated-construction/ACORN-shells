@@ -50,10 +50,10 @@ namespace ACORN_shells
             pManager.AddMeshParameter("Meshes", "M", "Shell mesh(es).", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Thickness", "T", "Thickness(es) of shell [cm].", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Material", "MAT", "Shell material. Default is concrete.", GH_ParamAccess.tree);
+            pManager.AddBooleanParameter("Oriented support", "O", "Supports aligned with corner curves. Optional, default is false", GH_ParamAccess.item);
             //pManager.AddBooleanParameter("FixedSupport", "F", "True = fixed supports; False (default) = pinned supports.", GH_ParamAccess.item); // to remove?
-            //pManager.AddBooleanParameter("Oriented support", "O", "Oriented support", GH_ParamAccess.item); // to remove?
 
-            pManager[3].Optional = true;
+            pManager[4].Optional = true;
             //pManager[4].Optional = true;
             //pManager[5].Optional = true;
         }
@@ -62,6 +62,7 @@ namespace ACORN_shells
         {
             pManager.AddGenericParameter("Shell Elements", "E", "Shell elements for Karamba", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Shell Supports", "S", "Shell supports for Karamba", GH_ParamAccess.tree);
+            //pManager.AddPlaneParameter("Support planes", "P", "Orientation planes for supports", GH_ParamAccess.list); //TEST
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -81,8 +82,8 @@ namespace ACORN_shells
             if (!DA.GetDataTree(1, out inMeshes)) return;
             if (!DA.GetDataTree(2, out inThicknesses)) return;
             DA.GetDataTree(3, out ghMats);
-            //DA.GetData(4, ref fixedSupport);
-            //DA.GetData(5, ref orientedSupport);
+            DA.GetData(4, ref orientedSupport);
+            //DA.GetData(5, ref fixedSupport);
 
             var fileTol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // for extracting supports
             var logger = new Karamba.Utilities.MessageLogger();
@@ -283,6 +284,7 @@ namespace ACORN_shells
 
             
             List<Support> k3dSupports = new List<Support>();
+            //List<Plane> suppPlanes = new List<Plane>(); //TEST
 
             foreach (GH_Path path in ghMeshes.Paths)
             {
@@ -307,6 +309,8 @@ namespace ACORN_shells
 
                 bool fixedRotation = fixedSupport;
 
+                
+
 
                 foreach (var c in corners)
                 {
@@ -316,10 +320,12 @@ namespace ACORN_shells
                     if (orientedSupport)
                     {
                         // determine support orientation plane (for straight support line; consider curved in the future)
-                        Vector3d supportXAxis = c.TangentAt(0.5);
+                        c.NormalizedLengthParameter(0.5, out double t);
+                        Vector3d supportXAxis = c.TangentAt(t);
                         Vector3d supportYAxis = Vector3d.CrossProduct(Vector3d.ZAxis, supportXAxis);
                         supportOrientation = new Plane(cornerCenter, supportXAxis, supportYAxis);
                     }
+                    //suppPlanes.Add(supportOrientation); //TEST
 
 
                     foreach (Point3d v in uniqueMeshVertices)
@@ -418,6 +424,8 @@ namespace ACORN_shells
 */
             DA.SetDataTree(0, ghShells);
             DA.SetDataTree(1, ghSupports);
+            
+            //DA.SetDataList(2, suppPlanes); //TEST
         }
 
         protected override System.Drawing.Bitmap Icon
