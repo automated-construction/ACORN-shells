@@ -64,7 +64,6 @@ namespace ACORN_shells
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; //smaller tollerance works!
 
             List<Brep> segments = new List<Brep>();
             double mRes = 1;
@@ -81,6 +80,8 @@ namespace ACORN_shells
 
             double approxSpringDist = mRes * eRef * 1.1;
             double gapSize = 0.002;
+            //double tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; //smaller tollerance works!
+            double tol = gapSize / 2;
 
             CroSec_Spring k3dSection = (CroSec_Spring) ghSection.Value;
 
