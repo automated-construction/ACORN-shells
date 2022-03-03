@@ -323,7 +323,8 @@ namespace ACORN_shells
                         c.NormalizedLengthParameter(0.5, out double t);
                         Vector3d supportXAxis = c.TangentAt(t);
                         Vector3d supportYAxis = Vector3d.CrossProduct(Vector3d.ZAxis, supportXAxis);
-                        supportOrientation = new Plane(cornerCenter, supportXAxis, supportYAxis);
+                        //supportOrientation = new Plane(cornerCenter, supportXAxis, supportYAxis);
+                        supportOrientation = new Plane(Point3d.Origin, supportXAxis, supportYAxis); // only needs orientation, not origin
                     }
                     //suppPlanes.Add(supportOrientation); //TEST
 

@@ -28,13 +28,14 @@ namespace ACORN_shells
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddPointParameter("Position", "Pos", "Support position", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Translation X", "Tx", "Translation in global x-direction", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Translation Y", "Ty", "Translation in global y-direction", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Translation Z", "Tz", "Translation in global z-direction", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Rotation X", "Tx", "Rotation about global x-direction", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Rotation Y", "Ty", "Rotation about global y-direction", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Rotation Z", "Tz", "Rotation about global z-direction", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Rotation X", "Rx", "Rotation about global x-direction", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Rotation Y", "Ry", "Rotation about global y-direction", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Rotation Z", "Rz", "Rotation about global z-direction", GH_ParamAccess.item);
+            pManager.AddPlaneParameter("Orientation", "Ori", "Support local coordinate system (for oriented supports)", GH_ParamAccess.item);
+            pManager.AddPointParameter("Position", "Pos", "Support position", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -43,7 +44,7 @@ namespace ACORN_shells
             if (!DA.GetData(0, ref ghSupport)) return;
 
             Support k3dSupport = ghSupport.Value;
-            Point3d position = k3dSupport.position.Convert();
+            Point3d supportPosition = k3dSupport.position.Convert();
             bool Tx = k3dSupport.Condition[0];
             bool Ty = k3dSupport.Condition[1];
             bool Tz = k3dSupport.Condition[2];
@@ -51,13 +52,18 @@ namespace ACORN_shells
             bool Ry = k3dSupport.Condition[4];
             bool Rz = k3dSupport.Condition[5];
 
-            DA.SetData(0, position);
-            DA.SetData(1, Tx);
-            DA.SetData(2, Ty);
-            DA.SetData(3, Tz);
-            DA.SetData(4, Rx);
-            DA.SetData(5, Ry);
-            DA.SetData(6, Rz);
+            //get local coordinate system (if oriented supports)
+            Plane supportOrientation = Plane.WorldXY;
+            if (k3dSupport.hasLocalCoosys) supportOrientation = k3dSupport.local_coosys.Convert();
+
+            DA.SetData(0, Tx);
+            DA.SetData(1, Ty);
+            DA.SetData(2, Tz);
+            DA.SetData(3, Rx);
+            DA.SetData(4, Ry);
+            DA.SetData(5, Rz);
+            DA.SetData(6, supportOrientation);
+            DA.SetData(7, supportPosition);
         }
 
         protected override System.Drawing.Bitmap Icon
