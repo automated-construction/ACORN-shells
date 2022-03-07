@@ -44,6 +44,12 @@
     <Reference Include="Grasshopper, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
       <HintPath>..\packages\Grasshopper.6.29.20238.11501\lib\net45\Grasshopper.dll</HintPath>
     </Reference>
+    <Reference Include="karamba">
+      <HintPath>..\packages\Karamba\karamba.dll</HintPath>
+    </Reference>
+    <Reference Include="karambaCommon">
+      <HintPath>..\packages\Karamba\karambaCommon.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Rhino.UI, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <HintPath>..\packages\RhinoCommon.6.29.20238.11501\lib\net45\Rhino.UI.dll</HintPath>
@@ -58,14 +64,6 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="KarambaCommon">
-      <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karambaCommon.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Karamba">
-      <HintPath>C:\Program Files\Rhino 6\Plug-ins\Karamba\karamba.gha</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ACORN-shellsInfo.cs" />
