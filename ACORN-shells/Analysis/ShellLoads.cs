@@ -82,7 +82,7 @@ namespace ACORN_shells
             foreach (Tuple<double, double> loadPattern in loadPatterns)
             {
                 GH_Path path = new GH_Path(loadCase); // for checkPoints, for testing
-
+                string loadCaseName = loadCase.ToString();
 
                 // Gravitational load
 
@@ -103,12 +103,12 @@ namespace ACORN_shells
                 // one for each load case
 
                 Load gravity = new GravityLoad (new Vector3(0, 0, -1 * areaFactorGravity * DL_FACTOR));
-                gravity.loadcase = loadCase;
+                gravity.LcName = loadCaseName;
                 k3dLoads.Add(gravity);
 
 
-                var k3dFL = new KarambaCommon.Factories.FactoryLoad();
-                UnitsConversionFactory ucf = UnitsConversionFactories.Conv();
+                var k3dFL = new Karamba.Factories.FactoryLoad();
+                UnitsConversionFactory ucf = UnitsConversionFactory.Conv();
                 UnitConversion m = ucf.m();
 
                 // determine shell center for relative polar coordinates of face centers FOR LIVELOAD
@@ -141,7 +141,7 @@ namespace ACORN_shells
 
 
                     MeshLoad deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
-                    deadLoad.loadcase = loadCase;
+                    deadLoad.LcName = loadCaseName;
                     k3dLoads.Add(deadLoad);
 
 
@@ -175,7 +175,7 @@ namespace ACORN_shells
                     }
 
                     MeshLoad liveLoad = k3dFL.MeshLoad(liveLoadVectors, baseMesh, LoadOrientation.proj);
-                    liveLoad.loadcase = loadCase;
+                    liveLoad.LcName = loadCaseName;
                     k3dLoads.Add(liveLoad);
 
                     // increments loadCase

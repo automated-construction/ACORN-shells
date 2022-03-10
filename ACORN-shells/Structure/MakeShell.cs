@@ -34,6 +34,7 @@ namespace ACORN_shells
         double G_3 = 12920000;
         double DENSITY = 25;
         double F_Y = 25000;
+        double F_C = -35000;
         double ALPHA_T = 0.00001;
 
         public MakeShell()
@@ -106,7 +107,7 @@ namespace ACORN_shells
 
 
             // -------------- MATERIALS: accepts multiple materials for each segment
-            GH_FemMaterial k3dDefaultMaterial = new GH_FemMaterial (k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T)); //default material
+            GH_FemMaterial k3dDefaultMaterial = new GH_FemMaterial (k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, F_C, FemMaterial.FlowHypothesis.mises, ALPHA_T)); //default material
             //List<FemMaterial> k3dMaterials = new List<FemMaterial>(); // to match meshes list, works if only one mesh
             GH_Structure<GH_FemMaterial> k3dMats = new GH_Structure<GH_FemMaterial>();
 

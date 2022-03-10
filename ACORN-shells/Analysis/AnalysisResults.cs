@@ -79,14 +79,14 @@ namespace ACORN
             List<double> bucklingFactors = new List<double>();
             if (fast)
             {
-                ThIAnalyze.solve(k3dModel, out List<double> maxDispsThI, out _, out _, out string warning, out k3dModelAnalysis);
+                AnalyzeThI.solve(k3dModel, out List<double> maxDispsThI, out _, out _, out string warning, out k3dModelAnalysis);
                 errorMsgs.Add(warning);
                 maxDisp = maxDispsThI[0] * 100; // assuming results in [m], even though component outputs in [cm]
             }
             else
             {
                 // using defaults from GH AnalyzeThII component
-                AnalyzeThII.solve(k3dModel, -1, 1.0e-7, 50, false, out List<double> maxDispsThII, out _, out _, out k3dModelAnalysis, out string warning);
+                AnalyzeThII.solve(k3dModel, "-1", 1.0e-7, 50, false, out List<double> maxDispsThII, out _, out _, out k3dModelAnalysis, out string warning);
                 errorMsgs.Add(warning);
                 maxDisp = maxDispsThII[0] * 100; // assuming results in [m], even though component outputs in [cm];
 

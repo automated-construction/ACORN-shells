@@ -7,6 +7,7 @@ using Rhino.Geometry;
 using Karamba.GHopper.Geometry;
 using Karamba.Geometry;
 using Karamba.GHopper.Loads;
+using Karamba.Materials;
 
 namespace ACORN_shells
 {
@@ -21,6 +22,7 @@ namespace ACORN_shells
         double G_3 = 12920000;
         double DENSITY = 25;
         double F_Y = 25000;
+        double F_C = -35000;
         double ALPHA_T = 0.00001;
 
         public PreliminaryModel()
@@ -57,8 +59,8 @@ namespace ACORN_shells
 
 
             // Make a default concrete material for Karamba
-            Karamba.Materials.FemMaterial k3dMaterial = null;
-            k3dMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, ALPHA_T);
+            FemMaterial k3dMaterial = null;
+            k3dMaterial = k3dKit.Material.IsotropicMaterial("CONC", "CONC", E, G_12, G_3, DENSITY, F_Y, F_C, FemMaterial.FlowHypothesis.mises, ALPHA_T);
 
             // Cross section (predefined, allow input) OR component to make shell
             // Use default thickness 1/100 of span
