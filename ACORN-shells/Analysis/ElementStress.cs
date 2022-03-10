@@ -10,6 +10,7 @@ using Karamba.GHopper.Models;
 using Karamba.Results;
 using Karamba.Models;
 using Karamba.GHopper.Geometry;
+using Karamba.Loads.Combinations;
 
 namespace ACORN_shells
 {
@@ -49,16 +50,17 @@ namespace ACORN_shells
 
             // get first and second principal stress values for all elements, top and bottom layers
             var superimp_factors = new feb.VectReal { 1 }; // according to https://discourse.mcneel.com/t/shell-principal-stresses-in-karamba-api/120629
+            LCSuperPosition superpos_factors = new LCSuperPosition(1, k3dModelAnalysis);
             // get stresses for top layer
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, 1, superimp_factors, 
-                out List<Point3> princ_origins_top, 
-                out List<Vector3> princ_vec1s_top, out List<Vector3> princ_vec2s_top,
-                out List<double> princ_val1s_top, out List<double> princ_val2s_top);
+            PrincipalStressDirs.solve(k3dModelAnalysis, superpos_factors, 0, 1,
+                out IList<Point3> princ_origins_top, 
+                out IList<Vector3> princ_vec1s_top, out IList<Vector3> princ_vec2s_top,
+                out IList<double> princ_val1s_top, out IList<double> princ_val2s_top);
             // get stresses for bottom layer
-            PrincipalStressDirs.solve(k3dModelAnalysis, 0, -1, superimp_factors,
-                out List<Point3> princ_origins_bottom,
-                out List<Vector3> princ_vec1s_bottom, out List<Vector3> princ_vec2s_bottom,
-                out List<double> princ_val1s_bottom, out List<double> princ_val2s_bottom);
+            PrincipalStressDirs.solve(k3dModelAnalysis, superpos_factors, 0, -1, 
+                out IList<Point3> princ_origins_bottom,
+                out IList<Vector3> princ_vec1s_bottom, out IList<Vector3> princ_vec2s_bottom,
+                out IList<double> princ_val1s_bottom, out IList<double> princ_val2s_bottom);
 
             //List<List<double>> PSlists = new List<List<double>> { bottomPS1s, bottomPS2s, topPS1s, topPS2s };
             //List<double> allPSs = PSlists.SelectMany(e => e).ToList();
