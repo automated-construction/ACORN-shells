@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ACORN.ACORN_shellsInfo">
+    <Position X="4.75" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAgAAAACAAAEAQAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>ACORN-shellsInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN.AnalysisResults" Collapsed="true">
+    <Position X="2.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Analysis\AnalysisResults.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN.VisualiseBuilding" Collapsed="true">
+    <Position X="7.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Utilities\VisualiseBuilding.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.ElementStress">
+    <Position X="11.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAEAAAQAAgAgAAAAAoEBAQAAAAIAEAAAUAggAAAAEA=</HashCode>
+      <FileName>Analysis\ElementStress.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.LoadPattern" Collapsed="true">
+    <Position X="9.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAABAAAAEAAAA=</HashCode>
+      <FileName>Analysis\LoadPattern.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.ShellLoads" Collapsed="true">
+    <Position X="2.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAQAAAABAAGQEAABABAAAABBQAAgEAAAA=</HashCode>
+      <FileName>Analysis\ShellLoads.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.StressProbe" Collapsed="true">
+    <Position X="0.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Analysis\StressProbe.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.StressResults" Collapsed="true">
+    <Position X="2.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Analysis\StressResults.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.FitBoundingBox" Collapsed="true">
+    <Position X="9.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Fabrication\FitBoundingBox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.FitModules" Collapsed="true">
+    <Position X="0.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Fabrication\FitModules.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.GetAreaEfficiency" Collapsed="true">
+    <Position X="5.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Fabrication\GetAreaEfficiency.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.SimulatePinbed" Collapsed="true">
+    <Position X="5.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Fabrication\SimulatePinbed.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.FormFindMembrane" Collapsed="true">
+    <Position X="4" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABIABAEAEAAEAJgQIBCAAAEAABAAAAIAAAAYAAEAAAA=</HashCode>
+      <FileName>Shape\FormFindMembrane.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.MakeShellPlan" Collapsed="true">
+    <Position X="2.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Shape\MakeShellPlan.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.PreliminaryModel" Collapsed="true">
+    <Position X="5.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAQAAAABAAGQEAABABAAAAAAAAAgEAAAA=</HashCode>
+      <FileName>Shape\PreliminaryModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.Segment" Collapsed="true">
+    <Position X="0.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Shape\Segment.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.StressLines" Collapsed="true">
+    <Position X="9.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAACAAAAAABAAAAEgABAAAAAAAAAAAAEAABA=</HashCode>
+      <FileName>Shape\StressLines.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.VariableThicknessShell" Collapsed="true">
+    <Position X="5.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Shape\VariableThicknessShell.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.SHELLScommon">
+    <Position X="10.75" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAgAAAAAAAAAI=</HashCode>
+      <FileName>SHELLScommon.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.LineToSpring" Collapsed="true">
+    <Position X="7.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Structure\LineToSpring.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.MakeShell" Collapsed="true">
+    <Position X="0.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAQAAAAAAAGQEAABABAAAAAAAAAgEAAAA=</HashCode>
+      <FileName>Structure\MakeShell.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.MakeSprings" Collapsed="true">
+    <Position X="4" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Structure\MakeSprings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.SpringCS">
+    <Position X="10" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Structure\SpringCS.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.VariableThicknessMesh">
+    <Position X="7" Y="9" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Structure\VariableThicknessMesh.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.DisassemblePointLoad" Collapsed="true">
+    <Position X="4" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Utilities\DisassemblePointLoad.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.DisassembleSupport" Collapsed="true">
+    <Position X="5.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Utilities\DisassembleSupport.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACORN_shells.FixMesh" Collapsed="true">
+    <Position X="2.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIABAAAAAAAAAAAABAAAAEAABAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Utilities\FixMesh.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GH.MiscToolbox.Components.Utilities.PsarrasBoundingBox" Collapsed="true">
+    <Position X="7.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAIAAAAAAAAAgAAAoIAAEAAAAEAAAAAAIIAA=</HashCode>
+      <FileName>Fabrication\PsarrasBoundingBox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="System.Object" Collapsed="true">
+    <Position X="3.25" Y="8" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Grasshopper.Kernel.GH_Component" Collapsed="true">
+    <Position X="5.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
