@@ -50,7 +50,7 @@ namespace ACORN_shells
 
             // get first and second principal stress values for all elements, top and bottom layers
             var superimp_factors = new feb.VectReal { 1 }; // according to https://discourse.mcneel.com/t/shell-principal-stresses-in-karamba-api/120629
-            LCSuperPosition superpos_factors = new LCSuperPosition(1, k3dModelAnalysis);
+            LCSuperPosition superpos_factors = new LCSuperPosition(0, k3dModelAnalysis);
             // get stresses for top layer
             PrincipalStressDirs.solve(k3dModelAnalysis, superpos_factors, 0, 1,
                 out IList<Point3> princ_origins_top, 
