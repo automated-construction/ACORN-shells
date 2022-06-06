@@ -48,6 +48,7 @@ namespace ACORN_shells
             pManager.AddNumberParameter("Live Load value", "LLV", "Live Load value [kN/m2].", GH_ParamAccess.item);
             pManager.AddGenericParameter("Live Load pattern", "LLP", "Load pattern.", GH_ParamAccess.list);
             //pManager.AddNumberParameter("Area adjustment factors", "AAF", "Area adjustment factors for testing gap", GH_ParamAccess.list); //TEST for area adjustements
+            pManager.AddBooleanParameter("Load State", "ULS?", " True: ULS, apply safety factors; False: SLS, do not apply safety factors", GH_ParamAccess.item);
 
 
             //pManager[4].Optional = true;
@@ -68,11 +69,15 @@ namespace ACORN_shells
             //List<int> loadPatterns = new List<int>(); // for multiple load patterns as load cases
             List<double> areaFactors= new List<double>();// TEST for area adjustements
 
+            bool ULS = false; // if ULS, apply safety factors; else, SLS so do not apply
+
             if (!DA.GetDataList(0, shellMeshes)) return;
             if (!DA.GetData(1, ref deadLoadValue)) return;
             if (!DA.GetData(2, ref liveLoadValue)) return;
             if (!DA.GetDataList(3, loadPatterns)) return;
             //DA.GetDataList(4, areaFactors); //TEST for area adjustements
+            if (!DA.GetData(4, ref ULS)) return;
+
 
             // Create Karamba loads
             List<Load> k3dLoads = new List<Karamba.Loads.Load>();
@@ -101,8 +106,12 @@ namespace ACORN_shells
                     areaFactorGravity = 1;
 
                 // one for each load case
+                Load gravity;
+                if (ULS) 
+                    gravity = new GravityLoad (new Vector3(0, 0, -1 * areaFactorGravity * DL_FACTOR));
+                else
+                    gravity = new GravityLoad (new Vector3(0, 0, -1 * areaFactorGravity));
 
-                Load gravity = new GravityLoad (new Vector3(0, 0, -1 * areaFactorGravity * DL_FACTOR));
                 gravity.loadcase = loadCase;
                 k3dLoads.Add(gravity);
 
@@ -139,8 +148,11 @@ namespace ACORN_shells
 
                     //----------- Dead load mesh load - same as Loads component > MeshLoad Const   
 
-
-                    MeshLoad deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
+                    MeshLoad deadLoad;
+                    if (ULS)
+                        deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue * DL_FACTOR)) }, baseMesh, LoadOrientation.proj);
+                    else
+                        deadLoad = k3dFL.MeshLoad(new List<Vector3>() { new Vector3(0, 0, -(deadLoadValue)) }, baseMesh, LoadOrientation.proj);
                     deadLoad.loadcase = loadCase;
                     k3dLoads.Add(deadLoad);
 
@@ -164,7 +176,10 @@ namespace ACORN_shells
                         // check if polar coordinate of face center is within load patterndomain,                
                         if (AngleInPattern (faceAngle, loadPattern))
                         {
-                            liveLoadVectors.Add(new Vector3(0, 0, -(liveLoadValue * LL_FACTOR)));
+                            if (ULS)
+                                liveLoadVectors.Add(new Vector3(0, 0, -(liveLoadValue * LL_FACTOR)));
+                            else
+                                liveLoadVectors.Add(new Vector3(0, 0, -(liveLoadValue)));
                             //checkPoints.Add(faceCenter); // for testing - remove in the end
                             checkPointTree.Append(new GH_Point (faceCenter), path);
 
