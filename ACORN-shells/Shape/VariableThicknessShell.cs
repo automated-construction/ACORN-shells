@@ -26,6 +26,7 @@ namespace ACORN_shells
             pManager.AddBrepParameter("Shell surface", "S", "Shell surface.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Thickness at apex", "Ta", "Thickness of shell at apex.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Thickness at supports", "Ts", "Thickness of shell at supports.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Quadratic?", "Q", "Quadratic or Linear interpolation?", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -39,11 +40,13 @@ namespace ACORN_shells
         {
             Brep shell = null;
             double thickApex = 0;
-            double thickSupp = 0;          
+            double thickSupp = 0;
+            bool quadratic = false;
 
             if (!DA.GetData(0, ref shell)) return;
             if (!DA.GetData(1, ref thickApex)) return;
             if (!DA.GetData(2, ref thickSupp)) return;
+            if (!DA.GetData(3, ref quadratic)) return;
 
             double tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
             double thickExtra = thickSupp - thickApex;
@@ -84,9 +87,10 @@ namespace ACORN_shells
 
                         // calculate extra thickness, interpolating between input thickness values for edge and apex
                         // hardcoded option between linear and quadratic interpolation
-                        double positionFactor = 1;
-                        positionFactor = Math.Pow (currCtrlPt.DistanceTo(apex) / semidiagonal, 2); //quadratic interpolation
-                        //positionFactor = currCtrlPt.DistanceTo(apex) / semidiagonal;             //linear interpolation
+                        double positionFactor = currCtrlPt.DistanceTo(apex) / semidiagonal; //linear interpolation
+                        if (quadratic)
+                            positionFactor = Math.Pow (positionFactor, 2); //quadratic interpolation
+                            
 
                         double currThickness = (thickApex + (thickExtra * positionFactor)) * layerFactor;
 

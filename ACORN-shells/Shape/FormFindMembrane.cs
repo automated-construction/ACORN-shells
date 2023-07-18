@@ -18,7 +18,7 @@ namespace ACORN_shells
         int CRV_DEGREE = 3;
         int CRV_SUBDIV = 8;
         int SURF_DEGREE = 3;
-        int SURF_SUBDIV = 15;
+        int SURF_SUBDIV = 30;
         int[] ANAL_OUTPUT = new int[] { 1, 2, 3 };
         int FF_STEPS = 5; // make input?
         int FF_ITERS = 5; // make input?
