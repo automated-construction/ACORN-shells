@@ -29,4 +29,4 @@ After installing the plugin, you should be able to run the files in the Examples
 
 **Contact**
 
-Eduardo Costa - <a href="https://github.com/castroecosta" target="_blank">github.com/castroecosta</a> // Eduardo.Costa@uwe.ac.uk // ec977@bath.ac.uk
+Eduardo Costa - <a href="https://github.com/castroecosta" target="_blank">github.com/castroecosta</a> // Eduardo.Costa@uwe.ac.uk
